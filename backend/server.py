@@ -3018,6 +3018,43 @@ async def get_all_affiliates():
 # ROUTES - Notifications System
 # =========================
 
+async def send_telegram_notification(title: str, message: str, link: Optional[str] = None):
+    """Send notification to Telegram"""
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        logger.warning("Telegram credentials not configured")
+        return False
+    
+    try:
+        # Format message with HTML
+        text = f"<b>{title}</b>\n\n{message}"
+        
+        if link:
+            # Add link if provided
+            base_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+            full_link = f"{base_url}{link}"
+            text += f"\n\n🔗 <a href='{full_link}'>Ver más</a>"
+        
+        # Send message via Telegram Bot API
+        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+        payload = {
+            "chat_id": TELEGRAM_CHAT_ID,
+            "text": text,
+            "parse_mode": "HTML"
+        }
+        
+        response = requests.post(url, json=payload, timeout=10)
+        
+        if response.status_code == 200:
+            logger.info(f"Telegram notification sent successfully: {title}")
+            return True
+        else:
+            logger.error(f"Telegram API error: {response.status_code} - {response.text}")
+            return False
+            
+    except Exception as e:
+        logger.error(f"Error sending Telegram notification: {str(e)}")
+        return False
+
 async def create_notification_internal(
     user_email: str,
     notification_type: str,
