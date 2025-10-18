@@ -1,12 +1,13 @@
-from fastapi import FastAPI, APIRouter, HTTPException, BackgroundTasks, Request
+from fastapi import FastAPI, APIRouter, HTTPException, BackgroundTasks, Request, Depends, status
 from fastapi.responses import RedirectResponse
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, EmailStr
 from typing import List, Optional, Dict, Any
 import uuid
 import secrets
@@ -17,6 +18,8 @@ from emergentintegrations.payments.stripe.checkout import StripeCheckout, Checko
 import asyncio
 from social_integrations import SocialMediaPublisher
 from wordpress_integration import WordPressIntegration
+from passlib.context import CryptContext
+from jose import JWTError, jwt
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
