@@ -105,6 +105,18 @@
 user_problem_statement: "Implementar sistema completo de pagos y procesamiento con Stripe, incluyendo suscripciones recurrentes, checkout integrado, y dashboard avanzado de ingresos con tracking de códigos de descuento, ROI por campaña y comisiones de afiliados"
 
 backend:
+  - task: "Sistema de Notificaciones - Backend"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Modelos Notification y NotificationPreferences, endpoints CRUD completos, sistema de preferencias, función helper create_notification_internal, notificaciones automáticas en pagos y comisiones"
+
   - task: "Endpoint Analytics Dashboard Enhanced"
     implemented: true
     working: "NA"
