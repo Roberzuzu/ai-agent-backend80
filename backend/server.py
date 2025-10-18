@@ -3378,6 +3378,400 @@ async def update_notification_preferences(
         raise HTTPException(status_code=500, detail=str(e))
 
 # =========================
+# ROUTES - AI Recommendations System
+# =========================
+
+async def generate_product_embedding(product: dict) -> List[float]:
+    """Generate OpenAI embedding for a product"""
+    if not openai_client:
+        logger.warning("OpenAI client not configured")
+        return []
+    
+    try:
+        # Create text representation of product
+        text = f"{product['name']} {product['description']} {product.get('category', '')}"
+        
+        # Generate embedding
+        response = openai_client.embeddings.create(
+            model="text-embedding-ada-002",
+            input=text
+        )
+        
+        embedding = response.data[0].embedding
+        
+        # Store in database
+        embedding_doc = {
+            "product_id": product['id'],
+            "embedding": embedding,
+            "text_used": text,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.product_embeddings.update_one(
+            {"product_id": product['id']},
+            {"$set": embedding_doc},
+            upsert=True
+        )
+        
+        return embedding
+        
+    except Exception as e:
+        logger.error(f"Error generating embedding: {str(e)}")
+        return []
+
+async def get_similarity_recommendations(
+    user_email: str,
+    limit: int = 10,
+    category: Optional[str] = None
+) -> List[dict]:
+    """Get recommendations based on embedding similarity"""
+    try:
+        # Get user's recent interactions
+        interactions = await db.user_interactions.find(
+            {"user_email": user_email},
+            {"_id": 0}
+        ).sort("created_at", -1).limit(5).to_list(5)
+        
+        if not interactions:
+            # No interactions, return popular products
+            return await get_popular_products(limit, category)
+        
+        # Get products user interacted with
+        interacted_product_ids = [i['product_id'] for i in interactions]
+        interacted_products = await db.products.find(
+            {"id": {"$in": interacted_product_ids}},
+            {"_id": 0}
+        ).to_list(len(interacted_product_ids))
+        
+        if not interacted_products:
+            return await get_popular_products(limit, category)
+        
+        # Get embeddings for interacted products
+        interacted_embeddings = []
+        for product in interacted_products:
+            embedding_doc = await db.product_embeddings.find_one(
+                {"product_id": product['id']},
+                {"_id": 0}
+            )
+            
+            if not embedding_doc:
+                # Generate if doesn't exist
+                embedding = await generate_product_embedding(product)
+                if embedding:
+                    interacted_embeddings.append(embedding)
+            else:
+                interacted_embeddings.append(embedding_doc['embedding'])
+        
+        if not interacted_embeddings:
+            return await get_popular_products(limit, category)
+        
+        # Calculate average embedding of user's interests
+        avg_embedding = np.mean(interacted_embeddings, axis=0)
+        
+        # Get all products (excluding already interacted)
+        query = {"id": {"$nin": interacted_product_ids}}
+        if category:
+            query["category"] = category
+        
+        all_products = await db.products.find(query, {"_id": 0}).to_list(1000)
+        
+        # Get/generate embeddings for all products
+        recommendations = []
+        for product in all_products:
+            embedding_doc = await db.product_embeddings.find_one(
+                {"product_id": product['id']},
+                {"_id": 0}
+            )
+            
+            if not embedding_doc:
+                embedding = await generate_product_embedding(product)
+                if not embedding:
+                    continue
+            else:
+                embedding = embedding_doc['embedding']
+            
+            # Calculate cosine similarity
+            similarity = cosine_similarity(
+                [avg_embedding],
+                [embedding]
+            )[0][0]
+            
+            recommendations.append({
+                "product": product,
+                "score": float(similarity),
+                "reason": "Similar a tus productos vistos",
+                "algorithm": "similarity"
+            })
+        
+        # Sort by score and return top N
+        recommendations.sort(key=lambda x: x['score'], reverse=True)
+        return recommendations[:limit]
+        
+    except Exception as e:
+        logger.error(f"Error in similarity recommendations: {str(e)}")
+        return []
+
+async def get_collaborative_recommendations(
+    user_email: str,
+    limit: int = 10,
+    category: Optional[str] = None
+) -> List[dict]:
+    """Get recommendations based on collaborative filtering"""
+    try:
+        # Get user's interactions
+        user_interactions = await db.user_interactions.find(
+            {"user_email": user_email},
+            {"_id": 0}
+        ).to_list(1000)
+        
+        if not user_interactions:
+            return await get_popular_products(limit, category)
+        
+        # Get products user interacted with
+        user_product_ids = set([i['product_id'] for i in user_interactions])
+        
+        # Find similar users (users who interacted with same products)
+        similar_users_cursor = db.user_interactions.aggregate([
+            {"$match": {"product_id": {"$in": list(user_product_ids)}, "user_email": {"$ne": user_email}}},
+            {"$group": {"_id": "$user_email", "common_products": {"$addToSet": "$product_id"}}},
+            {"$project": {"user_email": "$_id", "overlap": {"$size": "$common_products"}, "_id": 0}},
+            {"$sort": {"overlap": -1}},
+            {"$limit": 10}
+        ])
+        
+        similar_users = await similar_users_cursor.to_list(10)
+        
+        if not similar_users:
+            return await get_popular_products(limit, category)
+        
+        similar_user_emails = [u['user_email'] for u in similar_users]
+        
+        # Get products these similar users interacted with
+        similar_user_interactions = await db.user_interactions.find(
+            {
+                "user_email": {"$in": similar_user_emails},
+                "product_id": {"$nin": list(user_product_ids)}
+            },
+            {"_id": 0}
+        ).to_list(1000)
+        
+        # Count product interactions and calculate scores
+        product_scores = {}
+        for interaction in similar_user_interactions:
+            product_id = interaction['product_id']
+            score = interaction.get('interaction_score', 1.0)
+            
+            if product_id not in product_scores:
+                product_scores[product_id] = 0
+            product_scores[product_id] += score
+        
+        # Get top products
+        top_product_ids = sorted(product_scores.keys(), key=lambda x: product_scores[x], reverse=True)[:limit]
+        
+        # Fetch product details
+        query = {"id": {"$in": top_product_ids}}
+        if category:
+            query["category"] = category
+        
+        products = await db.products.find(query, {"_id": 0}).to_list(limit)
+        
+        # Create recommendations
+        recommendations = []
+        for product in products:
+            recommendations.append({
+                "product": product,
+                "score": product_scores[product['id']],
+                "reason": "Usuarios similares también compraron esto",
+                "algorithm": "collaborative"
+            })
+        
+        return recommendations
+        
+    except Exception as e:
+        logger.error(f"Error in collaborative recommendations: {str(e)}")
+        return []
+
+async def get_popular_products(limit: int = 10, category: Optional[str] = None) -> List[dict]:
+    """Get popular products as fallback"""
+    try:
+        # Count interactions per product
+        pipeline = [
+            {"$group": {"_id": "$product_id", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}},
+            {"$limit": limit * 2}  # Get more to filter by category
+        ]
+        
+        popular_cursor = db.user_interactions.aggregate(pipeline)
+        popular = await popular_cursor.to_list(limit * 2)
+        
+        if not popular:
+            # No interactions, return featured products
+            query = {"is_featured": True}
+            if category:
+                query["category"] = category
+            products = await db.products.find(query, {"_id": 0}).limit(limit).to_list(limit)
+        else:
+            product_ids = [p['_id'] for p in popular]
+            query = {"id": {"$in": product_ids}}
+            if category:
+                query["category"] = category
+            products = await db.products.find(query, {"_id": 0}).to_list(limit)
+        
+        recommendations = []
+        for product in products[:limit]:
+            recommendations.append({
+                "product": product,
+                "score": 1.0,
+                "reason": "Producto popular",
+                "algorithm": "popular"
+            })
+        
+        return recommendations
+        
+    except Exception as e:
+        logger.error(f"Error getting popular products: {str(e)}")
+        return []
+
+@api_router.post("/recommendations/track")
+async def track_interaction(
+    user_email: str,
+    product_id: str,
+    interaction_type: str,  # view, click, purchase, add_to_cart
+    session_id: Optional[str] = None
+):
+    """Track user interaction for recommendations"""
+    try:
+        # Define interaction scores
+        score_map = {
+            "view": 0.5,
+            "click": 1.0,
+            "add_to_cart": 2.0,
+            "purchase": 5.0,
+            "wishlist": 1.5
+        }
+        
+        interaction = {
+            "id": str(uuid.uuid4()),
+            "user_email": user_email,
+            "product_id": product_id,
+            "interaction_type": interaction_type,
+            "interaction_score": score_map.get(interaction_type, 1.0),
+            "session_id": session_id,
+            "metadata": {},
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.user_interactions.insert_one(interaction)
+        
+        return {
+            "message": "Interaction tracked",
+            "interaction_id": interaction['id']
+        }
+        
+    except Exception as e:
+        logger.error(f"Error tracking interaction: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/recommendations")
+async def get_recommendations(request: RecommendationRequest):
+    """Get personalized product recommendations"""
+    try:
+        if request.algorithm == "similarity":
+            recommendations = await get_similarity_recommendations(
+                request.user_email,
+                request.limit,
+                request.category
+            )
+        elif request.algorithm == "collaborative":
+            recommendations = await get_collaborative_recommendations(
+                request.user_email,
+                request.limit,
+                request.category
+            )
+        else:  # hybrid
+            # Get both types and merge
+            similarity_recs = await get_similarity_recommendations(
+                request.user_email,
+                request.limit // 2 + 1,
+                request.category
+            )
+            collaborative_recs = await get_collaborative_recommendations(
+                request.user_email,
+                request.limit // 2 + 1,
+                request.category
+            )
+            
+            # Merge and deduplicate
+            all_recs = similarity_recs + collaborative_recs
+            seen_ids = set()
+            recommendations = []
+            for rec in all_recs:
+                if rec['product']['id'] not in seen_ids:
+                    seen_ids.add(rec['product']['id'])
+                    recommendations.append(rec)
+                    if len(recommendations) >= request.limit:
+                        break
+        
+        # Format response
+        response = []
+        for rec in recommendations:
+            product = rec['product']
+            response.append(RecommendationResponse(
+                product_id=product['id'],
+                product_name=product['name'],
+                product_description=product['description'],
+                product_price=product['price'],
+                product_image=product.get('image_url'),
+                product_category=product['category'],
+                score=rec['score'],
+                reason=rec['reason'],
+                algorithm_used=rec['algorithm']
+            ))
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error getting recommendations: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/recommendations/generate-embeddings")
+async def generate_all_embeddings():
+    """Generate embeddings for all products (admin endpoint)"""
+    try:
+        if not openai_client:
+            raise HTTPException(status_code=503, detail="OpenAI not configured")
+        
+        products = await db.products.find({}, {"_id": 0}).to_list(1000)
+        
+        generated = 0
+        skipped = 0
+        
+        for product in products:
+            # Check if embedding already exists
+            existing = await db.product_embeddings.find_one({"product_id": product['id']})
+            if existing:
+                skipped += 1
+                continue
+            
+            embedding = await generate_product_embedding(product)
+            if embedding:
+                generated += 1
+        
+        return {
+            "message": "Embeddings generation complete",
+            "generated": generated,
+            "skipped": skipped,
+            "total": len(products)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating embeddings: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# =========================
 # ROUTES - Amazon Associates Integration
 # =========================
 
