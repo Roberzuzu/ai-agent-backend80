@@ -1182,6 +1182,66 @@ async def get_checkout_status(session_id: str):
                     sub_doc['updated_at'] = sub_doc['updated_at'].isoformat()
                     
                     await db.subscriptions.insert_one(sub_doc)
+            
+            # If payment successful and has affiliate code, create commission
+            if status.payment_status == "paid":
+                affiliate_code = transaction.get('metadata', {}).get('affiliate_code') or status.metadata.get('affiliate_code')
+                
+                if affiliate_code:
+                    # Find affiliate
+                    affiliate = await db.affiliates.find_one({"unique_code": affiliate_code}, {"_id": 0})
+                    
+                    if affiliate:
+                        # Check if commission already exists
+                        existing_commission = await db.affiliate_commissions.find_one({
+                            "transaction_id": session_id
+                        }, {"_id": 0})
+                        
+                        if not existing_commission:
+                            # Calculate commission
+                            commission_rate = affiliate['commission_rate']
+                            commission_amount = transaction['amount'] * (commission_rate / 100)
+                            
+                            # Create commission record
+                            commission = AffiliateCommission(
+                                affiliate_id=affiliate['id'],
+                                transaction_id=session_id,
+                                product_id=transaction.get('product_id'),
+                                order_amount=transaction['amount'],
+                                commission_rate=commission_rate,
+                                commission_amount=commission_amount,
+                                status="approved"  # Auto-approve for now
+                            )
+                            
+                            comm_doc = commission.model_dump()
+                            comm_doc['created_at'] = comm_doc['created_at'].isoformat()
+                            if comm_doc.get('approved_at'):
+                                comm_doc['approved_at'] = comm_doc['approved_at'].isoformat()
+                            if comm_doc.get('paid_at'):
+                                comm_doc['paid_at'] = comm_doc['paid_at'].isoformat()
+                            
+                            await db.affiliate_commissions.insert_one(comm_doc)
+                            
+                            # Update affiliate stats
+                            await db.affiliates.update_one(
+                                {"id": affiliate['id']},
+                                {
+                                    "$inc": {
+                                        "total_conversions": 1,
+                                        "total_earnings": commission_amount
+                                    }
+                                }
+                            )
+                            
+                            # Update affiliate link conversions
+                            if transaction.get('product_id'):
+                                await db.affiliate_links.update_one(
+                                    {
+                                        "affiliate_id": affiliate['id'],
+                                        "product_id": transaction['product_id']
+                                    },
+                                    {"$inc": {"conversions": 1}}
+                                )
         
         return {
             "status": status.status,
