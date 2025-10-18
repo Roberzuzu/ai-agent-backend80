@@ -42,6 +42,35 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+# =========================
+# SECURITY SYSTEMS
+# =========================
+from security.rate_limiter import RateLimiter
+from security.api_keys import APIKeyManager
+from security.audit_logs import AuditLogger
+from security.two_factor import TwoFactorManager
+from security.headers import (
+    SecurityHeadersMiddleware,
+    IPWhitelistMiddleware,
+    CSRFProtectionMiddleware
+)
+
+# Initialize security managers
+rate_limiter = RateLimiter()
+api_key_manager = APIKeyManager(db)
+audit_logger = AuditLogger(db, retention_days=90)
+two_factor_manager = TwoFactorManager(db, app_name="Social Media Monetization")
+
+# Configure trusted IPs for rate limiting (from environment)
+trusted_ips = os.environ.get('TRUSTED_IPS', '').split(',')
+for ip in trusted_ips:
+    if ip.strip():
+        rate_limiter.add_trusted_ip(ip.strip())
+
+# Configure IP whitelist for admin endpoints (from environment)
+admin_whitelist_ips = os.environ.get('ADMIN_WHITELIST_IPS', '').split(',')
+admin_whitelist = [ip.strip() for ip in admin_whitelist_ips if ip.strip()]
+
 # Configure logging
 logger = logging.getLogger(__name__)
 
