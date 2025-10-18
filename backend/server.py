@@ -612,6 +612,115 @@ async def generate_ai_content(request: AIGenerationRequest):
     }
 
 # =========================
+# ROUTES - WordPress Integration
+# =========================
+
+@api_router.get("/wordpress/status")
+async def wordpress_status():
+    """Test WordPress connection"""
+    return wordpress_client.test_connection()
+
+@api_router.post("/wordpress/sync-product/{product_id}")
+async def sync_product_to_wordpress(product_id: str):
+    """Sync a product to WooCommerce"""
+    # Get product from MongoDB
+    product = await db.products.find_one({"id": product_id}, {"_id": 0})
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    # Convert datetime to string if needed
+    if isinstance(product.get('created_at'), datetime):
+        product['created_at'] = product['created_at'].isoformat()
+    
+    # Sync to WordPress
+    result = wordpress_client.create_product(product)
+    
+    if result['success']:
+        # Save WordPress product ID to MongoDB
+        await db.products.update_one(
+            {"id": product_id},
+            {"$set": {"wc_product_id": result.get('wc_product_id')}}
+        )
+        return result
+    else:
+        raise HTTPException(status_code=400, detail=result.get('error'))
+
+@api_router.post("/wordpress/sync-all-products")
+async def sync_all_products_to_wordpress():
+    """Sync all products to WooCommerce"""
+    products = await db.products.find({}, {"_id": 0}).to_list(100)
+    
+    results = []
+    for product in products:
+        # Skip if already synced
+        if product.get('wc_product_id'):
+            continue
+        
+        # Convert datetime
+        if isinstance(product.get('created_at'), datetime):
+            product['created_at'] = product['created_at'].isoformat()
+        
+        result = wordpress_client.create_product(product)
+        
+        if result['success']:
+            await db.products.update_one(
+                {"id": product['id']},
+                {"$set": {"wc_product_id": result.get('wc_product_id')}}
+            )
+        
+        results.append({
+            'product_id': product['id'],
+            'product_name': product['name'],
+            'success': result['success'],
+            'wc_product_id': result.get('wc_product_id'),
+            'error': result.get('error')
+        })
+    
+    return {
+        'total': len(products),
+        'synced': len([r for r in results if r['success']]),
+        'results': results
+    }
+
+@api_router.post("/wordpress/create-blog-post/{content_id}")
+async def create_wordpress_blog_post(content_id: str):
+    """Create a WordPress blog post from content"""
+    # Get content from MongoDB
+    content = await db.content_ideas.find_one({"id": content_id}, {"_id": 0})
+    if not content:
+        raise HTTPException(status_code=404, detail="Content not found")
+    
+    # Convert datetime
+    if isinstance(content.get('created_at'), datetime):
+        content['created_at'] = content['created_at'].isoformat()
+    
+    # Create blog post
+    result = wordpress_client.create_blog_post(content)
+    
+    if result['success']:
+        # Save WordPress post ID to MongoDB
+        await db.content_ideas.update_one(
+            {"id": content_id},
+            {"$set": {
+                "wp_post_id": result.get('post_id'),
+                "wp_permalink": result.get('permalink')
+            }}
+        )
+        return result
+    else:
+        raise HTTPException(status_code=400, detail=result.get('error'))
+
+@api_router.get("/wordpress/products")
+async def get_wordpress_products():
+    """Get products from WooCommerce"""
+    result = wordpress_client.get_products(per_page=20)
+    
+    if result['success']:
+        return result
+    else:
+        raise HTTPException(status_code=400, detail=result.get('error'))
+
+# =========================
 # ROOT ROUTE
 # =========================
 
@@ -625,7 +734,8 @@ async def root():
             "Content Creator",
             "Monetization Manager",
             "Social Manager",
-            "Ad Manager"
+            "Ad Manager",
+            "WordPress Integration"
         ]
     }
 
