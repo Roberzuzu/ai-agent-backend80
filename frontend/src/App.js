@@ -14,7 +14,8 @@ import RevenueAnalyticsPage from './pages/RevenueAnalyticsPage';
 import AffiliatePage from './pages/AffiliatePage';
 import AffiliateDashboardPage from './pages/AffiliateDashboardPage';
 import AffiliatePayoutsPage from './pages/AffiliatePayoutsPage';
-import { TrendingUp, Sparkles, DollarSign, Share2, Megaphone, LayoutDashboard, CreditCard, BarChart3, Users } from 'lucide-react';
+import AdvancedMonetizationPage from './pages/AdvancedMonetizationPage';
+import { TrendingUp, Sparkles, DollarSign, Share2, Megaphone, LayoutDashboard, CreditCard, BarChart3, Users, Zap } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
