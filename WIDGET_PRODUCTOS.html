@@ -1,0 +1,292 @@
+<!-- Widget de Productos Destacados - Herramientas y Accesorios -->
+<div id="featured-products-widget" class="featured-products-ha">
+    <h3>🔧 Productos Destacados - Descuentos Hasta 25%</h3>
+    <div class="products-slider-ha">
+        
+        <!-- Producto 1: Taladro Inalámbrico -->
+        <div class="product-card-ha">
+            <h4>Taladro Inalámbrico Profesional 20V</h4>
+            <p class="description-ha">Con 2 baterías, cargador rápido y maletín</p>
+            <div class="price-box-ha">
+                <span class="price-ha">$89.99</span>
+                <span class="original-ha">$105.88</span>
+            </div>
+            <div class="discount-badge-ha">15% OFF</div>
+            <code class="code-ha">Código: TALADRO15</code>
+            <a href="https://herramientasyaccesorios.store/producto/taladro-inalambrico" class="btn-ha">Ver Producto →</a>
+        </div>
+        
+        <!-- Producto 2: Sierra Circular -->
+        <div class="product-card-ha">
+            <h4>Sierra Circular Compacta 7.25"</h4>
+            <p class="description-ha">1500W con guía láser y ajuste de ángulo</p>
+            <div class="price-box-ha">
+                <span class="price-ha">$129.99</span>
+                <span class="original-ha">$162.49</span>
+            </div>
+            <div class="discount-badge-ha">20% OFF</div>
+            <code class="code-ha">Código: SIERRA20</code>
+            <a href="https://herramientasyaccesorios.store/producto/sierra-circular" class="btn-ha">Ver Producto →</a>
+        </div>
+        
+        <!-- Producto 3: Organizador de Pared -->
+        <div class="product-card-ha">
+            <h4>Organizador de Pared Modular</h4>
+            <p class="description-ha">Sistema modular con 24 ganchos y estantes</p>
+            <div class="price-box-ha">
+                <span class="price-ha">$69.99</span>
+                <span class="original-ha">$82.34</span>
+            </div>
+            <div class="discount-badge-ha">15% OFF</div>
+            <code class="code-ha">Código: ORGAN15</code>
+            <a href="https://herramientasyaccesorios.store/producto/organizador-pared" class="btn-ha">Ver Producto →</a>
+        </div>
+        
+        <!-- Producto 4: Nivel Láser -->
+        <div class="product-card-ha">
+            <h4>Nivel Láser 360° Autonivelante</h4>
+            <p class="description-ha">Con trípode ajustable y alcance de 30m</p>
+            <div class="price-box-ha">
+                <span class="price-ha">$79.99</span>
+                <span class="original-ha">$106.65</span>
+            </div>
+            <div class="discount-badge-ha">25% OFF</div>
+            <code class="code-ha">Código: NIVEL25</code>
+            <a href="https://herramientasyaccesorios.store/producto/nivel-laser" class="btn-ha">Ver Producto →</a>
+        </div>
+        
+        <!-- Producto 5: Multiherramienta -->
+        <div class="product-card-ha">
+            <h4>Multiherramienta Oscilante 350W</h4>
+            <p class="description-ha">Con 30 accesorios y 6 velocidades</p>
+            <div class="price-box-ha">
+                <span class="price-ha">$84.99</span>
+                <span class="original-ha">$106.24</span>
+            </div>
+            <div class="discount-badge-ha">20% OFF</div>
+            <code class="code-ha">Código: MULTI20</code>
+            <a href="https://herramientasyaccesorios.store/producto/multiherramienta" class="btn-ha">Ver Producto →</a>
+        </div>
+
+        <!-- Producto 6: Drill Kit -->
+        <div class="product-card-ha">
+            <h4>Professional Cordless Drill Kit</h4>
+            <p class="description-ha">Kit completo con baterías y maletín</p>
+            <div class="price-box-ha">
+                <span class="price-ha">$149.99</span>
+                <span class="original-ha">$174.99</span>
+            </div>
+            <div class="discount-badge-ha">15% OFF</div>
+            <code class="code-ha">Código: DRILL20</code>
+            <a href="https://herramientasyaccesorios.store/producto/drill-kit" class="btn-ha">Ver Producto →</a>
+        </div>
+        
+    </div>
+    <div class="widget-footer-ha">
+        <p>✨ Descuentos válidos por tiempo limitado</p>
+    </div>
+</div>
+
+<style>
+/* Estilos del Widget de Productos Destacados */
+.featured-products-ha {
+    padding: 30px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    margin: 30px 0;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.featured-products-ha h3 {
+    text-align: center;
+    font-size: 26px;
+    margin: 0 0 25px 0;
+    color: white;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.products-slider-ha {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.product-card-ha {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.product-card-ha:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.25);
+}
+
+.product-card-ha::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+.product-card-ha h4 {
+    margin: 0 0 10px 0;
+    color: #2c3e50;
+    font-size: 18px;
+    font-weight: 700;
+    min-height: 50px;
+    line-height: 1.3;
+}
+
+.description-ha {
+    color: #7f8c8d;
+    font-size: 13px;
+    margin: 0 0 15px 0;
+    min-height: 40px;
+    line-height: 1.4;
+}
+
+.price-box-ha {
+    margin: 15px 0 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.price-ha {
+    font-size: 32px;
+    font-weight: 800;
+    color: #27ae60;
+    line-height: 1;
+}
+
+.original-ha {
+    font-size: 18px;
+    color: #95a5a6;
+    text-decoration: line-through;
+}
+
+.discount-badge-ha {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    display: inline-block;
+    margin: 10px 0;
+    font-weight: 700;
+    box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+    animation: pulse-ha 2s infinite;
+}
+
+@keyframes pulse-ha {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.code-ha {
+    display: block;
+    background: #ecf0f1;
+    color: #2c3e50;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    margin: 12px 0;
+    border: 2px dashed #bdc3c7;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 1px;
+}
+
+.btn-ha {
+    display: block;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white !important;
+    text-align: center;
+    padding: 14px 20px;
+    border-radius: 8px;
+    text-decoration: none !important;
+    margin-top: 15px;
+    font-weight: 700;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.btn-ha:hover {
+    background: linear-gradient(135deg, #2980b9, #21618c);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(52, 152, 219, 0.4);
+}
+
+.widget-footer-ha {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 2px solid rgba(255,255,255,0.2);
+}
+
+.widget-footer-ha p {
+    color: white;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .products-slider-ha {
+        grid-template-columns: 1fr;
+    }
+    
+    .featured-products-ha {
+        padding: 20px 15px;
+        margin: 20px 0;
+    }
+    
+    .featured-products-ha h3 {
+        font-size: 22px;
+    }
+    
+    .product-card-ha h4 {
+        font-size: 16px;
+        min-height: auto;
+    }
+    
+    .price-ha {
+        font-size: 28px;
+    }
+}
+
+/* Animación de entrada */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.product-card-ha {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.product-card-ha:nth-child(1) { animation-delay: 0.1s; }
+.product-card-ha:nth-child(2) { animation-delay: 0.2s; }
+.product-card-ha:nth-child(3) { animation-delay: 0.3s; }
+.product-card-ha:nth-child(4) { animation-delay: 0.4s; }
+.product-card-ha:nth-child(5) { animation-delay: 0.5s; }
+.product-card-ha:nth-child(6) { animation-delay: 0.6s; }
+</style>
