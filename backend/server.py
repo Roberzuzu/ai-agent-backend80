@@ -557,6 +557,76 @@ class AnalyticsConfig(BaseModel):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 # =========================
+# MEMBERSHIP LIMITS MODELS
+# =========================
+
+class MembershipTier(BaseModel):
+    """Membership tier configuration"""
+    tier: str  # basic, pro, vip
+    name: str
+    limits: Dict[str, Any]  # Limits configuration
+
+class UsageTracking(BaseModel):
+    """Track user usage for limits"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_email: str
+    resource_type: str  # products, posts, campaigns, etc.
+    count: int = 0
+    period_start: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    period_end: datetime = Field(default_factory=lambda: datetime.now(timezone.utc) + timedelta(days=30))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class LimitCheckResponse(BaseModel):
+    """Response for limit check"""
+    allowed: bool
+    current_usage: int
+    limit: int
+    percentage: float
+    remaining: int
+    tier: str
+    message: str
+    needs_upgrade: bool = False
+
+# Membership limits configuration
+MEMBERSHIP_LIMITS = {
+    "basic": {
+        "name": "Básico",
+        "products_limit": 10,
+        "posts_per_month": 20,
+        "campaigns_limit": 3,
+        "affiliates_limit": 5,
+        "email_campaigns_per_month": 10,
+        "ab_tests_concurrent": 2,
+        "storage_mb": 100,
+        "api_calls_per_day": 1000
+    },
+    "pro": {
+        "name": "Pro",
+        "products_limit": -1,  # -1 means unlimited
+        "posts_per_month": 100,
+        "campaigns_limit": 10,
+        "affiliates_limit": 25,
+        "email_campaigns_per_month": 50,
+        "ab_tests_concurrent": 5,
+        "storage_mb": 1000,
+        "api_calls_per_day": 10000
+    },
+    "vip": {
+        "name": "VIP",
+        "products_limit": -1,
+        "posts_per_month": -1,
+        "campaigns_limit": -1,
+        "affiliates_limit": -1,
+        "email_campaigns_per_month": -1,
+        "ab_tests_concurrent": -1,
+        "storage_mb": -1,
+        "api_calls_per_day": -1
+    }
+}
+
+# =========================
 # ADVANCED MONETIZATION MODELS
 # =========================
 
