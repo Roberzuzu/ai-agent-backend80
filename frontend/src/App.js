@@ -25,7 +25,9 @@ function Navigation() {
     { path: '/content', icon: Sparkles, label: 'Content Creator' },
     { path: '/products', icon: DollarSign, label: 'Monetization' },
     { path: '/social', icon: Share2, label: 'Social Manager' },
-    { path: '/campaigns', icon: Megaphone, label: 'Ad Manager' }
+    { path: '/campaigns', icon: Megaphone, label: 'Ad Manager' },
+    { path: '/subscriptions', icon: CreditCard, label: 'Suscripciones' },
+    { path: '/revenue', icon: BarChart3, label: 'Ingresos' }
   ];
   
   return (
