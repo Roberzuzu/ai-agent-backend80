@@ -159,6 +159,8 @@ function App() {
               <Route path="/conversion" element={<ConversionOptimizationPage />} />
               <Route path="/payment-success" element={<PaymentSuccessPage />} />
               <Route path="/payment-cancelled" element={<PaymentCancelledPage />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
+              <Route path="/notifications/preferences" element={<NotificationPreferencesPage />} />
             </Routes>
           </main>
         </BrowserRouter>
