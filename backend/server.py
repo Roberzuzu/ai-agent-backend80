@@ -1764,6 +1764,17 @@ async def get_checkout_status(session_id: str):
                 {"$set": update_data}
             )
             
+            # Send notification for successful payment
+            if status.payment_status == "paid" and transaction.get('user_email'):
+                await create_notification_internal(
+                    user_email=transaction['user_email'],
+                    notification_type="payment",
+                    title="💰 ¡Pago Recibido!",
+                    message=f"Tu pago de ${transaction['amount']} ha sido procesado exitosamente.",
+                    link="/revenue",
+                    icon="payment"
+                )
+            
             # If payment successful and it's a subscription, create subscription record
             if status.payment_status == "paid" and transaction['payment_type'] == "subscription":
                 existing_subscription = await db.subscriptions.find_one({
