@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
+import { Toaster } from 'sonner';
 import '@/App.css';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import Dashboard from './pages/Dashboard';
+import DashboardEnhanced from './pages/DashboardEnhanced';
 import TrendsPage from './pages/TrendsPage';
 import ContentPage from './pages/ContentPage';
 import ProductsPage from './pages/ProductsPage';
@@ -21,7 +24,7 @@ import AffiliatePayoutsPage from './pages/AffiliatePayoutsPage';
 import AdvancedMonetizationPage from './pages/AdvancedMonetizationPage';
 import ConversionOptimizationPage from './pages/ConversionOptimizationPage';
 import WebhookMonitorPage from './pages/WebhookMonitorPage';
-import { TrendingUp, Sparkles, DollarSign, Share2, Megaphone, LayoutDashboard, CreditCard, BarChart3, Users, Zap, Target, LogOut, User, Activity } from 'lucide-react';
+import { TrendingUp, Sparkles, DollarSign, Share2, Megaphone, LayoutDashboard, CreditCard, BarChart3, Users, Zap, Target, LogOut, User, Activity, Gauge } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
