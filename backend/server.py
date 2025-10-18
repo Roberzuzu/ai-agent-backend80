@@ -5693,6 +5693,285 @@ async def get_collection_indexes(collection_name: str):
         raise HTTPException(status_code=500, detail=f"Get indexes failed: {str(e)}")
 
 # =========================
+# SECURITY ENDPOINTS
+# =========================
+
+# API Keys Management
+@api_router.post("/api-keys", status_code=201)
+async def create_api_key(
+    request: Request,
+    name: str,
+    scopes: List[str] = [],
+    expires_in_days: Optional[int] = None
+):
+    """Create a new API key"""
+    user_email = "admin@example.com"  # TODO: Get from authenticated user
+    
+    try:
+        api_key_obj, plain_key = await api_key_manager.create_api_key(
+            user_email=user_email,
+            name=name,
+            scopes=scopes,
+            expires_in_days=expires_in_days
+        )
+        
+        # Log the action
+        await audit_logger.log_from_request(
+            request,
+            action="apikey.create",
+            resource_type="api_key",
+            resource_id=api_key_obj.id,
+            details={"name": name, "scopes": scopes}
+        )
+        
+        return {
+            "id": api_key_obj.id,
+            "name": api_key_obj.name,
+            "key": plain_key,  # Only shown once!
+            "key_prefix": api_key_obj.key_prefix,
+            "scopes": api_key_obj.scopes,
+            "expires_at": api_key_obj.expires_at,
+            "created_at": api_key_obj.created_at,
+            "warning": "Save this key securely. It will not be shown again."
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@api_router.get("/api-keys")
+async def list_api_keys():
+    """List all API keys for current user"""
+    user_email = "admin@example.com"  # TODO: Get from authenticated user
+    
+    keys = await api_key_manager.list_api_keys(user_email)
+    return {"keys": [k.model_dump() for k in keys]}
+
+
+@api_router.delete("/api-keys/{key_id}")
+async def revoke_api_key(key_id: str, request: Request):
+    """Revoke an API key"""
+    user_email = "admin@example.com"  # TODO: Get from authenticated user
+    
+    success = await api_key_manager.revoke_api_key(key_id, user_email)
+    
+    if success:
+        await audit_logger.log_from_request(
+            request,
+            action="apikey.revoke",
+            resource_type="api_key",
+            resource_id=key_id
+        )
+        return {"message": "API key revoked successfully"}
+    
+    raise HTTPException(status_code=404, detail="API key not found")
+
+
+@api_router.post("/api-keys/{key_id}/rotate")
+async def rotate_api_key(key_id: str, request: Request):
+    """Rotate an API key (create new, revoke old)"""
+    user_email = "admin@example.com"  # TODO: Get from authenticated user
+    
+    try:
+        new_key_obj, plain_key = await api_key_manager.rotate_api_key(key_id, user_email)
+        
+        await audit_logger.log_from_request(
+            request,
+            action="apikey.rotate",
+            resource_type="api_key",
+            resource_id=key_id,
+            details={"new_key_id": new_key_obj.id}
+        )
+        
+        return {
+            "id": new_key_obj.id,
+            "name": new_key_obj.name,
+            "key": plain_key,
+            "key_prefix": new_key_obj.key_prefix,
+            "expires_at": new_key_obj.expires_at,
+            "warning": "Save this key securely. It will not be shown again."
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# Two-Factor Authentication
+@api_router.post("/auth/2fa/setup")
+async def setup_2fa(request: Request):
+    """Setup 2FA for current user"""
+    user_email = "admin@example.com"  # TODO: Get from authenticated user
+    
+    try:
+        setup_info = await two_factor_manager.setup_2fa(user_email)
+        
+        await audit_logger.log_from_request(
+            request,
+            action="auth.2fa_setup",
+            resource_type="user",
+            resource_id=user_email
+        )
+        
+        return {
+            "qr_code": setup_info.qr_code,
+            "manual_entry_key": setup_info.manual_entry_key,
+            "backup_codes": setup_info.backup_codes,
+            "message": "Scan QR code with authenticator app, then verify with a code to enable 2FA"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@api_router.post("/auth/2fa/enable")
+async def enable_2fa(verification_code: str, request: Request):
+    """Enable 2FA after verifying first code"""
+    user_email = "admin@example.com"  # TODO: Get from authenticated user
+    
+    success = await two_factor_manager.enable_2fa(user_email, verification_code)
+    
+    if success:
+        await audit_logger.log_from_request(
+            request,
+            action="auth.2fa_enable",
+            resource_type="user",
+            resource_id=user_email
+        )
+        return {"message": "2FA enabled successfully"}
+    
+    raise HTTPException(status_code=400, detail="Invalid verification code")
+
+
+@api_router.post("/auth/2fa/disable")
+async def disable_2fa(verification_code: str, request: Request):
+    """Disable 2FA"""
+    user_email = "admin@example.com"  # TODO: Get from authenticated user
+    
+    success = await two_factor_manager.disable_2fa(user_email, verification_code)
+    
+    if success:
+        await audit_logger.log_from_request(
+            request,
+            action="auth.2fa_disable",
+            resource_type="user",
+            resource_id=user_email
+        )
+        return {"message": "2FA disabled successfully"}
+    
+    raise HTTPException(status_code=400, detail="Invalid verification code or 2FA not enabled")
+
+
+@api_router.get("/auth/2fa/status")
+async def get_2fa_status():
+    """Get 2FA status for current user"""
+    user_email = "admin@example.com"  # TODO: Get from authenticated user
+    
+    status_info = await two_factor_manager.get_2fa_status(user_email)
+    return status_info
+
+
+@api_router.post("/auth/2fa/backup-codes/regenerate")
+async def regenerate_backup_codes(verification_code: str, request: Request):
+    """Regenerate backup codes"""
+    user_email = "admin@example.com"  # TODO: Get from authenticated user
+    
+    new_codes = await two_factor_manager.regenerate_backup_codes(user_email, verification_code)
+    
+    if new_codes:
+        await audit_logger.log_from_request(
+            request,
+            action="auth.2fa_backup_regenerate",
+            resource_type="user",
+            resource_id=user_email
+        )
+        return {"backup_codes": new_codes}
+    
+    raise HTTPException(status_code=400, detail="Invalid verification code")
+
+
+# Audit Logs
+@api_router.get("/audit-logs")
+async def search_audit_logs(
+    user_email: Optional[str] = None,
+    action: Optional[str] = None,
+    resource_type: Optional[str] = None,
+    status: Optional[str] = None,
+    days: int = 7,
+    limit: int = 100
+):
+    """Search audit logs"""
+    from datetime import timedelta
+    
+    start_date = datetime.now(timezone.utc) - timedelta(days=days)
+    
+    logs = await audit_logger.search_logs(
+        user_email=user_email,
+        action=action,
+        resource_type=resource_type,
+        status=status,
+        start_date=start_date,
+        limit=limit
+    )
+    
+    return {"logs": [log.model_dump() for log in logs]}
+
+
+@api_router.get("/audit-logs/stats")
+async def get_audit_stats(days: int = 30):
+    """Get audit log statistics"""
+    stats = await audit_logger.get_stats(days=days)
+    return stats
+
+
+@api_router.get("/audit-logs/security-events")
+async def get_security_events(days: int = 7, limit: int = 100):
+    """Get recent security events"""
+    events = await audit_logger.get_security_events(days=days, limit=limit)
+    return {"events": [event.model_dump() for event in events]}
+
+
+@api_router.get("/audit-logs/user/{user_email}")
+async def get_user_activity(user_email: str, days: int = 30, limit: int = 100):
+    """Get activity history for a user"""
+    logs = await audit_logger.get_user_activity(user_email, days=days, limit=limit)
+    return {"logs": [log.model_dump() for log in logs]}
+
+
+# Rate Limiter Info
+@api_router.get("/security/rate-limiter/stats")
+async def get_rate_limiter_stats():
+    """Get rate limiter statistics"""
+    return rate_limiter.get_stats()
+
+
+@api_router.post("/security/rate-limiter/reset/{identifier}")
+async def reset_rate_limit(identifier: str):
+    """Reset rate limit for an identifier (admin only)"""
+    await rate_limiter.reset_identifier(identifier)
+    return {"message": f"Rate limit reset for {identifier}"}
+
+
+# Security Dashboard
+@api_router.get("/security/dashboard")
+async def get_security_dashboard():
+    """Get comprehensive security dashboard"""
+    # Get recent audit stats
+    audit_stats = await audit_logger.get_stats(days=7)
+    
+    # Get security events
+    security_events = await audit_logger.get_security_events(days=7, limit=20)
+    
+    # Get rate limiter stats
+    rate_limiter_stats = rate_limiter.get_stats()
+    
+    # Get failed operations
+    failed_ops = await audit_logger.get_failed_operations(days=7, limit=20)
+    
+    return {
+        "audit_stats": audit_stats,
+        "recent_security_events": [e.model_dump() for e in security_events],
+        "rate_limiter": rate_limiter_stats,
+        "recent_failures": [f.model_dump() for f in failed_ops]
+    }
+
+# =========================
 # ROOT ROUTE
 # =========================
 
