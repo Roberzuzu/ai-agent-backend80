@@ -2772,6 +2772,449 @@ async def contribute_to_goal(goal_id: str, amount: float):
     return {"message": "Contribution added", "current_amount": goal['current_amount']}
 
 # =========================
+# ROUTES - Conversion Optimization
+# =========================
+
+# A/B Testing Endpoints
+@api_router.post("/ab-tests")
+async def create_ab_test(test: ABTestCreate):
+    """Create a new A/B test"""
+    ab_test = ABTest(**test.model_dump())
+    
+    doc = ab_test.model_dump()
+    doc['started_at'] = doc['started_at'].isoformat()
+    doc['created_at'] = doc['created_at'].isoformat()
+    if doc.get('ended_at'):
+        doc['ended_at'] = doc['ended_at'].isoformat()
+    
+    await db.ab_tests.insert_one(doc)
+    return ab_test
+
+@api_router.get("/ab-tests")
+async def get_ab_tests(status: Optional[str] = None):
+    """Get all A/B tests"""
+    query = {}
+    if status:
+        query["status"] = status
+    
+    tests = await db.ab_tests.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    for test in tests:
+        if isinstance(test.get('started_at'), str):
+            test['started_at'] = datetime.fromisoformat(test['started_at'])
+        if isinstance(test.get('ended_at'), str):
+            test['ended_at'] = datetime.fromisoformat(test['ended_at'])
+        if isinstance(test.get('created_at'), str):
+            test['created_at'] = datetime.fromisoformat(test['created_at'])
+        
+        # Calculate conversion rates for each variant
+        for variant in test.get('variants', []):
+            if variant['impressions'] > 0:
+                variant['conversion_rate'] = round((variant['conversions'] / variant['impressions']) * 100, 2)
+            else:
+                variant['conversion_rate'] = 0
+    
+    return tests
+
+@api_router.get("/ab-tests/{test_id}")
+async def get_ab_test(test_id: str):
+    """Get specific A/B test with analysis"""
+    test = await db.ab_tests.find_one({"id": test_id}, {"_id": 0})
+    if not test:
+        raise HTTPException(status_code=404, detail="Test not found")
+    
+    # Calculate statistics
+    variants = test.get('variants', [])
+    for variant in variants:
+        if variant['impressions'] > 0:
+            variant['conversion_rate'] = round((variant['conversions'] / variant['impressions']) * 100, 2)
+            variant['average_order_value'] = round(variant['revenue'] / variant['conversions'], 2) if variant['conversions'] > 0 else 0
+        else:
+            variant['conversion_rate'] = 0
+            variant['average_order_value'] = 0
+    
+    # Determine winner (simple version)
+    if test['metric'] == 'conversion_rate':
+        winner = max(variants, key=lambda x: x.get('conversion_rate', 0)) if variants else None
+    elif test['metric'] == 'revenue':
+        winner = max(variants, key=lambda x: x.get('revenue', 0)) if variants else None
+    else:
+        winner = None
+    
+    test['suggested_winner'] = winner['variant_name'] if winner else None
+    
+    if isinstance(test.get('started_at'), str):
+        test['started_at'] = datetime.fromisoformat(test['started_at'])
+    if isinstance(test.get('ended_at'), str):
+        test['ended_at'] = datetime.fromisoformat(test['ended_at'])
+    if isinstance(test.get('created_at'), str):
+        test['created_at'] = datetime.fromisoformat(test['created_at'])
+    
+    return test
+
+@api_router.post("/ab-tests/{test_id}/track")
+async def track_ab_test_event(test_id: str, variant_name: str, event_type: str, amount: float = 0):
+    """Track impression or conversion for A/B test variant"""
+    test = await db.ab_tests.find_one({"id": test_id}, {"_id": 0})
+    if not test:
+        raise HTTPException(status_code=404, detail="Test not found")
+    
+    # Find variant index
+    variant_index = next((i for i, v in enumerate(test['variants']) if v['variant_name'] == variant_name), None)
+    if variant_index is None:
+        raise HTTPException(status_code=404, detail="Variant not found")
+    
+    # Update based on event type
+    if event_type == "impression":
+        update_path = f"variants.{variant_index}.impressions"
+        await db.ab_tests.update_one(
+            {"id": test_id},
+            {"$inc": {update_path: 1}}
+        )
+    elif event_type == "conversion":
+        update_data = {
+            f"variants.{variant_index}.conversions": 1,
+            f"variants.{variant_index}.revenue": amount
+        }
+        await db.ab_tests.update_one(
+            {"id": test_id},
+            {"$inc": update_data}
+        )
+    
+    return {"message": "Event tracked", "test_id": test_id, "variant": variant_name}
+
+@api_router.patch("/ab-tests/{test_id}/status")
+async def update_ab_test_status(test_id: str, status: str, winner: Optional[str] = None):
+    """Update A/B test status"""
+    update_data = {"status": status}
+    
+    if status == "completed":
+        update_data["ended_at"] = datetime.now(timezone.utc).isoformat()
+        if winner:
+            update_data["winner"] = winner
+    
+    result = await db.ab_tests.update_one(
+        {"id": test_id},
+        {"$set": update_data}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Test not found")
+    
+    return {"message": "Test status updated", "status": status}
+
+# Product Recommendations Endpoints
+@api_router.get("/recommendations/{user_email}")
+async def get_product_recommendations(user_email: str, limit: int = 5):
+    """Get AI-powered product recommendations for user"""
+    try:
+        # Get user's purchase history
+        transactions = await db.payment_transactions.find(
+            {"user_email": user_email, "payment_status": "paid"},
+            {"_id": 0}
+        ).to_list(100)
+        
+        purchased_product_ids = [t.get('product_id') for t in transactions if t.get('product_id')]
+        
+        # Get all products
+        products = await db.products.find({}, {"_id": 0}).to_list(1000)
+        
+        # Simple recommendation algorithm
+        recommendations = []
+        
+        if purchased_product_ids:
+            # Get products from same categories
+            purchased_products = [p for p in products if p['id'] in purchased_product_ids]
+            categories = set(p.get('category', 'General') for p in purchased_products)
+            
+            similar_products = [
+                p for p in products 
+                if p['id'] not in purchased_product_ids 
+                and p.get('category') in categories
+            ]
+            
+            recommendations.extend(similar_products[:limit])
+        
+        # Fill with popular products if needed
+        if len(recommendations) < limit:
+            # Get products with most sales
+            product_sales = {}
+            for product in products:
+                if product['id'] not in purchased_product_ids:
+                    sales_count = len([t for t in transactions if t.get('product_id') == product['id']])
+                    product_sales[product['id']] = sales_count
+            
+            popular = sorted(product_sales.items(), key=lambda x: x[1], reverse=True)
+            popular_product_ids = [p[0] for p in popular[:limit - len(recommendations)]]
+            popular_products = [p for p in products if p['id'] in popular_product_ids]
+            recommendations.extend(popular_products)
+        
+        # Create recommendation record
+        rec = ProductRecommendation(
+            user_email=user_email,
+            recommended_products=[p['id'] for p in recommendations],
+            recommendation_type="personalized",
+            confidence_score=0.8
+        )
+        
+        rec_doc = rec.model_dump()
+        rec_doc['created_at'] = rec_doc['created_at'].isoformat()
+        await db.product_recommendations.insert_one(rec_doc)
+        
+        return {
+            "user_email": user_email,
+            "recommendations": recommendations[:limit],
+            "recommendation_type": "personalized"
+        }
+        
+    except Exception as e:
+        logger.error(f"Recommendation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/recommendations/product/{product_id}/similar")
+async def get_similar_products(product_id: str, limit: int = 4):
+    """Get similar products based on category and attributes"""
+    product = await db.products.find_one({"id": product_id}, {"_id": 0})
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    category = product.get('category', 'General')
+    
+    # Find products in same category
+    similar = await db.products.find(
+        {"category": category, "id": {"$ne": product_id}},
+        {"_id": 0}
+    ).limit(limit).to_list(limit)
+    
+    return {
+        "source_product": product,
+        "similar_products": similar,
+        "recommendation_type": "similar"
+    }
+
+# Email Marketing Endpoints
+@api_router.post("/email/templates")
+async def create_email_template(template: EmailTemplateCreate):
+    """Create email template"""
+    email_template = EmailTemplate(**template.model_dump())
+    
+    doc = email_template.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    
+    await db.email_templates.insert_one(doc)
+    return email_template
+
+@api_router.get("/email/templates")
+async def get_email_templates(template_type: Optional[str] = None):
+    """Get all email templates"""
+    query = {}
+    if template_type:
+        query["template_type"] = template_type
+    
+    templates = await db.email_templates.find(query, {"_id": 0}).to_list(100)
+    
+    for template in templates:
+        if isinstance(template.get('created_at'), str):
+            template['created_at'] = datetime.fromisoformat(template['created_at'])
+    
+    return templates
+
+@api_router.post("/email/campaigns")
+async def create_email_campaign(campaign: EmailCampaignCreate):
+    """Create email campaign"""
+    # Verify template exists
+    template = await db.email_templates.find_one({"id": campaign.template_id}, {"_id": 0})
+    if not template:
+        raise HTTPException(status_code=404, detail="Template not found")
+    
+    email_campaign = EmailCampaign(**campaign.model_dump())
+    
+    doc = email_campaign.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    if doc.get('scheduled_at'):
+        doc['scheduled_at'] = doc['scheduled_at'].isoformat()
+    if doc.get('sent_at'):
+        doc['sent_at'] = doc['sent_at'].isoformat()
+    
+    await db.email_campaigns.insert_one(doc)
+    return email_campaign
+
+@api_router.get("/email/campaigns")
+async def get_email_campaigns(status: Optional[str] = None):
+    """Get email campaigns"""
+    query = {}
+    if status:
+        query["status"] = status
+    
+    campaigns = await db.email_campaigns.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    for campaign in campaigns:
+        if isinstance(campaign.get('created_at'), str):
+            campaign['created_at'] = datetime.fromisoformat(campaign['created_at'])
+        if campaign.get('scheduled_at') and isinstance(campaign['scheduled_at'], str):
+            campaign['scheduled_at'] = datetime.fromisoformat(campaign['scheduled_at'])
+        if campaign.get('sent_at') and isinstance(campaign['sent_at'], str):
+            campaign['sent_at'] = datetime.fromisoformat(campaign['sent_at'])
+        
+        # Calculate metrics
+        if campaign['recipients_count'] > 0:
+            campaign['open_rate'] = round((campaign['opened_count'] / campaign['recipients_count']) * 100, 2)
+            campaign['click_rate'] = round((campaign['clicked_count'] / campaign['recipients_count']) * 100, 2)
+            campaign['conversion_rate'] = round((campaign['converted_count'] / campaign['recipients_count']) * 100, 2)
+        else:
+            campaign['open_rate'] = 0
+            campaign['click_rate'] = 0
+            campaign['conversion_rate'] = 0
+    
+    return campaigns
+
+@api_router.patch("/email/campaigns/{campaign_id}/send")
+async def send_email_campaign(campaign_id: str):
+    """Send email campaign (simulated)"""
+    campaign = await db.email_campaigns.find_one({"id": campaign_id}, {"_id": 0})
+    if not campaign:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    
+    # Simulate sending
+    recipient_count = 100  # Mock count
+    
+    await db.email_campaigns.update_one(
+        {"id": campaign_id},
+        {"$set": {
+            "status": "sent",
+            "sent_at": datetime.now(timezone.utc).isoformat(),
+            "recipients_count": recipient_count
+        }}
+    )
+    
+    return {
+        "message": "Campaign sent",
+        "campaign_id": campaign_id,
+        "recipients": recipient_count
+    }
+
+# Cart Abandonment Endpoints
+@api_router.post("/cart/abandoned")
+async def create_abandoned_cart(cart: AbandonedCartCreate):
+    """Create abandoned cart record"""
+    abandoned_cart = AbandonedCart(**cart.model_dump())
+    
+    doc = abandoned_cart.model_dump()
+    doc['abandoned_at'] = doc['abandoned_at'].isoformat()
+    if doc.get('recovery_email_sent_at'):
+        doc['recovery_email_sent_at'] = doc['recovery_email_sent_at'].isoformat()
+    if doc.get('recovered_at'):
+        doc['recovered_at'] = doc['recovered_at'].isoformat()
+    
+    await db.abandoned_carts.insert_one(doc)
+    return abandoned_cart
+
+@api_router.get("/cart/abandoned")
+async def get_abandoned_carts(recovered: Optional[bool] = None, limit: int = 50):
+    """Get abandoned carts"""
+    query = {}
+    if recovered is not None:
+        query["recovered"] = recovered
+    
+    carts = await db.abandoned_carts.find(query, {"_id": 0}).sort("abandoned_at", -1).limit(limit).to_list(limit)
+    
+    for cart in carts:
+        if isinstance(cart.get('abandoned_at'), str):
+            cart['abandoned_at'] = datetime.fromisoformat(cart['abandoned_at'])
+        if cart.get('recovery_email_sent_at') and isinstance(cart['recovery_email_sent_at'], str):
+            cart['recovery_email_sent_at'] = datetime.fromisoformat(cart['recovery_email_sent_at'])
+        if cart.get('recovered_at') and isinstance(cart['recovered_at'], str):
+            cart['recovered_at'] = datetime.fromisoformat(cart['recovered_at'])
+    
+    return carts
+
+@api_router.post("/cart/abandoned/{cart_id}/send-recovery")
+async def send_cart_recovery_email(cart_id: str, discount_percentage: float = 10.0):
+    """Send cart recovery email with discount"""
+    cart = await db.abandoned_carts.find_one({"id": cart_id}, {"_id": 0})
+    if not cart:
+        raise HTTPException(status_code=404, detail="Abandoned cart not found")
+    
+    # Generate discount code
+    discount_code = f"RECOVER{str(uuid.uuid4())[:8].upper()}"
+    
+    # Create recovery record
+    recovery = CartRecovery(
+        abandoned_cart_id=cart_id,
+        discount_code=discount_code,
+        discount_percentage=discount_percentage,
+        email_sent=True
+    )
+    
+    recovery_doc = recovery.model_dump()
+    recovery_doc['created_at'] = recovery_doc['created_at'].isoformat()
+    await db.cart_recoveries.insert_one(recovery_doc)
+    
+    # Update cart
+    await db.abandoned_carts.update_one(
+        {"id": cart_id},
+        {"$set": {
+            "recovery_email_sent": True,
+            "recovery_email_sent_at": datetime.now(timezone.utc).isoformat(),
+            "recovery_discount_code": discount_code
+        }}
+    )
+    
+    return {
+        "message": "Recovery email sent",
+        "discount_code": discount_code,
+        "discount_percentage": discount_percentage
+    }
+
+@api_router.patch("/cart/abandoned/{cart_id}/recover")
+async def mark_cart_recovered(cart_id: str, recovered_amount: float):
+    """Mark cart as recovered"""
+    result = await db.abandoned_carts.update_one(
+        {"id": cart_id},
+        {"$set": {
+            "recovered": True,
+            "recovered_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Cart not found")
+    
+    # Update recovery record
+    await db.cart_recoveries.update_one(
+        {"abandoned_cart_id": cart_id},
+        {"$set": {
+            "recovered": True,
+            "recovered_amount": recovered_amount
+        }}
+    )
+    
+    return {"message": "Cart marked as recovered", "amount": recovered_amount}
+
+@api_router.get("/cart/analytics")
+async def get_cart_analytics():
+    """Get cart abandonment analytics"""
+    all_carts = await db.abandoned_carts.find({}, {"_id": 0}).to_list(1000)
+    
+    total_abandoned = len(all_carts)
+    total_value = sum(cart['total_amount'] for cart in all_carts)
+    recovered_carts = [cart for cart in all_carts if cart.get('recovered')]
+    recovered_count = len(recovered_carts)
+    recovered_value = sum(cart['total_amount'] for cart in recovered_carts)
+    
+    recovery_emails_sent = len([cart for cart in all_carts if cart.get('recovery_email_sent')])
+    
+    return {
+        "total_abandoned_carts": total_abandoned,
+        "total_abandoned_value": round(total_value, 2),
+        "recovered_carts": recovered_count,
+        "recovered_value": round(recovered_value, 2),
+        "recovery_rate": round((recovered_count / total_abandoned * 100), 2) if total_abandoned > 0 else 0,
+        "recovery_emails_sent": recovery_emails_sent,
+        "average_cart_value": round(total_value / total_abandoned, 2) if total_abandoned > 0 else 0
+    }
+
+# =========================
 # ROOT ROUTE
 # =========================
 
