@@ -1053,6 +1053,10 @@ async def create_checkout_session(request: CheckoutRequest, http_request: Reques
                 "user_email": request.user_email or "guest"
             }
             
+            # Add affiliate code if provided
+            if request.affiliate_code:
+                metadata["affiliate_code"] = request.affiliate_code
+            
         elif request.payment_type == "subscription":
             if not request.plan_id:
                 raise HTTPException(status_code=400, detail="plan_id required for subscription payment")
