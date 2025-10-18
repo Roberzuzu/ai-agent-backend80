@@ -647,12 +647,20 @@ class PaymentSystemTester:
             return False
 
     def run_all_tests(self):
-        """Run all payment system tests"""
-        print("🚀 Starting Comprehensive Payment System Testing")
-        print("=" * 60)
+        """Run all payment system and database optimization tests"""
+        print("🚀 Starting Comprehensive Backend Testing (Payment System + Database Optimization)")
+        print("=" * 80)
         
-        # Test sequence
+        # Test sequence - Database tests first as requested
         tests = [
+            # Database Optimization Tests (Priority)
+            ("Database Info", self.test_database_info),
+            ("Database Backups List", self.test_database_backups_list),
+            ("Database Backup Create", self.test_database_backup_create),
+            ("Payment Transactions Indexes", self.test_database_indexes_payment_transactions),
+            ("Notifications Indexes", self.test_database_indexes_notifications),
+            
+            # Payment System Tests
             ("Subscription Plans", self.test_subscription_plans),
             ("Get Products", self.get_products),
             ("Product Checkout", self.test_product_checkout),
