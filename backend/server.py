@@ -5560,6 +5560,100 @@ async def get_cart_analytics():
     }
 
 # =========================
+# DATABASE MANAGEMENT ENDPOINTS
+# =========================
+
+@api_router.get("/database/info")
+async def get_database_info():
+    """Get database statistics and collection info"""
+    try:
+        collections = await db.list_collection_names()
+        
+        # Get collection stats
+        collection_stats = {}
+        for col_name in collections:
+            if col_name != "_migrations":  # Skip internal collection
+                stats = await db.command("collStats", col_name)
+                collection_stats[col_name] = {
+                    "count": stats.get("count", 0),
+                    "size_mb": round(stats.get("size", 0) / (1024 * 1024), 2),
+                    "indexes": stats.get("nindexes", 0)
+                }
+        
+        # Get migration info
+        migrations_cursor = db["_migrations"].find({})
+        migrations = await migrations_cursor.to_list(length=None)
+        
+        return {
+            "database_name": os.environ['DB_NAME'],
+            "collections_count": len(collections),
+            "collections": collection_stats,
+            "migrations_applied": len(migrations),
+            "last_migration": migrations[-1] if migrations else None
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Database info error: {str(e)}")
+
+
+@api_router.post("/database/backup")
+async def create_database_backup(background_tasks: BackgroundTasks):
+    """Create a database backup (runs in background)"""
+    try:
+        from database.backup import MongoBackupManager
+        
+        def run_backup():
+            manager = MongoBackupManager(
+                mongo_url=os.environ['MONGO_URL'],
+                db_name=os.environ['DB_NAME']
+            )
+            manager.run_backup_job()
+        
+        background_tasks.add_task(run_backup)
+        
+        return {
+            "message": "Backup job started in background",
+            "status": "processing"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Backup failed: {str(e)}")
+
+
+@api_router.get("/database/backups")
+async def list_database_backups():
+    """List available database backups"""
+    try:
+        from database.backup import MongoBackupManager
+        
+        manager = MongoBackupManager(
+            mongo_url=os.environ['MONGO_URL'],
+            db_name=os.environ['DB_NAME']
+        )
+        
+        backups = manager.list_backups()
+        
+        return {
+            "count": len(backups),
+            "backups": backups
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"List backups failed: {str(e)}")
+
+
+@api_router.get("/database/indexes/{collection_name}")
+async def get_collection_indexes(collection_name: str):
+    """Get indexes for a specific collection"""
+    try:
+        collection = db[collection_name]
+        indexes = await collection.index_information()
+        
+        return {
+            "collection": collection_name,
+            "indexes": indexes
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Get indexes failed: {str(e)}")
+
+# =========================
 # ROOT ROUTE
 # =========================
 
