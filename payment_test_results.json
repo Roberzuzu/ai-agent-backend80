@@ -1,16 +1,16 @@
 {
   "summary": {
-    "passed": 7,
+    "passed": 9,
     "total": 9,
-    "success_rate": "77.8%",
-    "timestamp": "2025-10-18T15:28:13.034114"
+    "success_rate": "100.0%",
+    "timestamp": "2025-10-18T15:28:44.222671"
   },
   "detailed_results": [
     {
       "test": "Subscription Plans",
       "success": true,
       "details": "All 3 plans verified with correct prices and names",
-      "timestamp": "2025-10-18T15:28:11.484020",
+      "timestamp": "2025-10-18T15:28:43.206101",
       "response_data": [
         {
           "id": "basic",
@@ -57,25 +57,28 @@
     },
     {
       "test": "Get Products",
-      "success": false,
-      "details": "No products found for testing",
-      "timestamp": "2025-10-18T15:28:11.500831",
-      "response_data": null
+      "success": true,
+      "details": "Retrieved 3 products",
+      "timestamp": "2025-10-18T15:28:43.215174",
+      "response_data": 3
     },
     {
       "test": "Product Checkout",
-      "success": false,
-      "details": "No products available for testing",
-      "timestamp": "2025-10-18T15:28:11.500867",
-      "response_data": null
+      "success": true,
+      "details": "Checkout session created for product 'Sierra Circular Makita 7-1/4' ($199.99)",
+      "timestamp": "2025-10-18T15:28:43.611599",
+      "response_data": {
+        "session_id": "cs_test_a1x6wqldZKStPGz2evaeOri6BbHRe9IEo8rcMd7SiO8gXQt48LboDAGY4l",
+        "has_stripe_url": true
+      }
     },
     {
       "test": "Subscription Checkout",
       "success": true,
       "details": "Checkout session created for basic plan ($9.99/month)",
-      "timestamp": "2025-10-18T15:28:12.926660",
+      "timestamp": "2025-10-18T15:28:44.103265",
       "response_data": {
-        "session_id": "cs_test_a1Mt6YUoqzIXm6sdZ6XqL5FaBB2mZ5JClXVWmsjQYGJ6tyfONeSPVwZBVh",
+        "session_id": "cs_test_a1ORlW8Klv4qFBwPnB4TqotevRet3TDUlhxhgvSiLcpXpy9u3YtBVR6Z4D",
         "has_stripe_url": true
       }
     },
@@ -83,7 +86,7 @@
       "test": "Revenue Analytics",
       "success": true,
       "details": "Total Revenue: $0, MRR: $0.0",
-      "timestamp": "2025-10-18T15:28:12.939165",
+      "timestamp": "2025-10-18T15:28:44.151835",
       "response_data": {
         "total_revenue": 0,
         "product_revenue": 0,
@@ -99,19 +102,19 @@
     {
       "test": "Campaign ROI",
       "success": true,
-      "details": "Found 0 campaigns, Average ROI: 0%",
-      "timestamp": "2025-10-18T15:28:12.951523",
+      "details": "Found 2 campaigns, Average ROI: -100.0%",
+      "timestamp": "2025-10-18T15:28:44.159459",
       "response_data": {
-        "total_ad_spend": 0,
+        "total_ad_spend": 800.0,
         "total_revenue": 0,
-        "average_roi": 0
+        "average_roi": -100.0
       }
     },
     {
       "test": "Affiliate Commissions",
       "success": true,
       "details": "Total Commissions: $0, Rate: 10.0%",
-      "timestamp": "2025-10-18T15:28:12.960982",
+      "timestamp": "2025-10-18T15:28:44.165968",
       "response_data": {
         "total_commissions": 0,
         "commission_rate": 10.0,
@@ -123,22 +126,22 @@
       "test": "Advanced Dashboard",
       "success": true,
       "details": "Complete dashboard with all sections: ['overview', 'revenue', 'campaign_roi', 'affiliate_commissions', 'generated_at']",
-      "timestamp": "2025-10-18T15:28:13.015010",
+      "timestamp": "2025-10-18T15:28:44.215752",
       "response_data": {
-        "products": 0,
+        "products": 3,
         "trends": 0,
         "content": 0,
         "social_posts": 0,
-        "campaigns": 0
+        "campaigns": 2
       }
     },
     {
       "test": "Payment History",
       "success": true,
-      "details": "Retrieved 1 payment transactions",
-      "timestamp": "2025-10-18T15:28:13.033976",
+      "details": "Retrieved 3 payment transactions",
+      "timestamp": "2025-10-18T15:28:44.222539",
       "response_data": {
-        "transaction_count": 1
+        "transaction_count": 3
       }
     }
   ]
