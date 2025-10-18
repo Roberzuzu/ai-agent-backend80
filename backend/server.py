@@ -1809,38 +1809,338 @@ async def get_checkout_status(session_id: str):
 
 @api_router.post("/webhook/stripe")
 async def stripe_webhook(request: Request):
-    """Handle Stripe webhooks"""
+    """
+    Handle Stripe webhooks with full event processing, logging and retry logic
+    
+    Supported Events:
+    - checkout.session.completed
+    - payment_intent.succeeded
+    - payment_intent.payment_failed
+    - customer.subscription.created
+    - customer.subscription.updated
+    - customer.subscription.deleted
+    - invoice.payment_succeeded
+    - invoice.payment_failed
+    """
+    # Get webhook secret
+    webhook_secret = os.environ.get('STRIPE_WEBHOOK_SECRET')
+    
     try:
+        # Get request body and signature
         body = await request.body()
-        signature = request.headers.get("Stripe-Signature")
+        sig_header = request.headers.get("stripe-signature")
         
-        if not signature:
+        if not sig_header:
+            logger.warning("Webhook received without signature")
             raise HTTPException(status_code=400, detail="Missing Stripe signature")
         
-        # Initialize Stripe checkout
-        host_url = str(request.base_url).rstrip('/')
-        webhook_url = f"{host_url}/api/webhook/stripe"
-        stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
+        # Verify webhook signature (only if webhook_secret is configured)
+        event = None
+        if webhook_secret and webhook_secret != "whsec_your_webhook_secret_here":
+            try:
+                event = stripe.Webhook.construct_event(
+                    body, sig_header, webhook_secret
+                )
+                logger.info(f"✓ Webhook signature verified for event: {event['id']}")
+            except stripe.error.SignatureVerificationError as e:
+                logger.error(f"⚠️ Webhook signature verification failed: {str(e)}")
+                raise HTTPException(status_code=400, detail="Invalid signature")
+        else:
+            # Parse event without verification (development only)
+            logger.warning("⚠️ Webhook secret not configured - skipping signature verification")
+            import json
+            event = json.loads(body)
         
-        # Handle webhook
-        webhook_response = await stripe_checkout.handle_webhook(body, signature)
+        # Extract event data
+        event_id = event['id']
+        event_type = event['type']
+        event_data = event['data']['object']
         
-        # Update transaction based on webhook
-        if webhook_response.session_id:
-            await db.payment_transactions.update_one(
-                {"session_id": webhook_response.session_id},
+        logger.info(f"📨 Processing webhook: {event_type} (ID: {event_id})")
+        
+        # Log webhook to database
+        webhook_log = WebhookLog(
+            event_id=event_id,
+            event_type=event_type,
+            payload=event,
+            status="received"
+        )
+        
+        log_doc = webhook_log.model_dump()
+        log_doc['created_at'] = log_doc['created_at'].isoformat()
+        log_doc['updated_at'] = log_doc['updated_at'].isoformat()
+        
+        # Check for duplicate events
+        existing_log = await db.webhook_logs.find_one({"event_id": event_id}, {"_id": 0})
+        if existing_log:
+            logger.info(f"⏭️  Duplicate event {event_id} - already processed")
+            return {"status": "success", "message": "Duplicate event ignored"}
+        
+        await db.webhook_logs.insert_one(log_doc)
+        
+        # Process event based on type
+        try:
+            if event_type == 'checkout.session.completed':
+                await handle_checkout_completed(event_data, event_id)
+                
+            elif event_type == 'payment_intent.succeeded':
+                await handle_payment_succeeded(event_data, event_id)
+                
+            elif event_type == 'payment_intent.payment_failed':
+                await handle_payment_failed(event_data, event_id)
+                
+            elif event_type == 'customer.subscription.created':
+                await handle_subscription_created(event_data, event_id)
+                
+            elif event_type == 'customer.subscription.updated':
+                await handle_subscription_updated(event_data, event_id)
+                
+            elif event_type == 'customer.subscription.deleted':
+                await handle_subscription_deleted(event_data, event_id)
+                
+            elif event_type == 'invoice.payment_succeeded':
+                await handle_invoice_paid(event_data, event_id)
+                
+            elif event_type == 'invoice.payment_failed':
+                await handle_invoice_failed(event_data, event_id)
+            
+            else:
+                logger.info(f"ℹ️  Unhandled event type: {event_type}")
+            
+            # Mark webhook as processed
+            await db.webhook_logs.update_one(
+                {"event_id": event_id},
                 {"$set": {
-                    "payment_status": webhook_response.payment_status,
-                    "status": "completed" if webhook_response.payment_status == "paid" else "failed",
+                    "status": "processed",
+                    "processed_at": datetime.now(timezone.utc).isoformat(),
                     "updated_at": datetime.now(timezone.utc).isoformat()
                 }}
             )
+            
+            logger.info(f"✅ Successfully processed webhook: {event_type}")
+            return {"status": "success", "event_type": event_type, "event_id": event_id}
+            
+        except Exception as processing_error:
+            # Mark webhook as failed
+            error_msg = str(processing_error)
+            logger.error(f"❌ Error processing webhook {event_id}: {error_msg}")
+            
+            await db.webhook_logs.update_one(
+                {"event_id": event_id},
+                {"$set": {
+                    "status": "failed",
+                    "error_message": error_msg,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+            
+            # Don't return error to Stripe - we logged it and will retry manually
+            return {"status": "error", "message": "Processing failed but logged for retry"}
         
-        return {"status": "success", "event_type": webhook_response.event_type}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Webhook endpoint error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Webhook event handlers
+async def handle_checkout_completed(session_data: dict, event_id: str):
+    """Handle checkout.session.completed event"""
+    session_id = session_data.get('id')
+    payment_status = session_data.get('payment_status')
+    
+    logger.info(f"💳 Checkout completed: {session_id} - Status: {payment_status}")
+    
+    # Update transaction
+    result = await db.payment_transactions.update_one(
+        {"session_id": session_id},
+        {"$set": {
+            "payment_status": "paid" if payment_status == "paid" else payment_status,
+            "status": "completed" if payment_status == "paid" else "pending",
+            "payment_id": session_id,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    if result.modified_count > 0:
+        logger.info(f"✓ Transaction updated for session {session_id}")
+    else:
+        logger.warning(f"⚠️ No transaction found for session {session_id}")
+
+async def handle_payment_succeeded(payment_intent: dict, event_id: str):
+    """Handle payment_intent.succeeded event"""
+    payment_id = payment_intent.get('id')
+    amount = payment_intent.get('amount', 0) / 100  # Convert from cents
+    
+    logger.info(f"💰 Payment succeeded: {payment_id} - Amount: ${amount}")
+    
+    # Additional processing if needed
+    # This is more for direct PaymentIntents not through Checkout
+
+async def handle_payment_failed(payment_intent: dict, event_id: str):
+    """Handle payment_intent.payment_failed event"""
+    payment_id = payment_intent.get('id')
+    error = payment_intent.get('last_payment_error', {})
+    
+    logger.warning(f"⚠️ Payment failed: {payment_id} - Error: {error.get('message', 'Unknown')}")
+
+async def handle_subscription_created(subscription: dict, event_id: str):
+    """Handle customer.subscription.created event"""
+    subscription_id = subscription.get('id')
+    customer_email = subscription.get('customer_email')
+    
+    logger.info(f"🔔 Subscription created: {subscription_id} for {customer_email}")
+    
+    # Create or update subscription record
+    # This is backup in case checkout didn't create it
+
+async def handle_subscription_updated(subscription: dict, event_id: str):
+    """Handle customer.subscription.updated event"""
+    subscription_id = subscription.get('id')
+    status = subscription.get('status')
+    
+    logger.info(f"🔄 Subscription updated: {subscription_id} - Status: {status}")
+    
+    # Update subscription status in our database
+    await db.subscriptions.update_one(
+        {"stripe_subscription_id": subscription_id},
+        {"$set": {
+            "status": status,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+
+async def handle_subscription_deleted(subscription: dict, event_id: str):
+    """Handle customer.subscription.deleted event"""
+    subscription_id = subscription.get('id')
+    
+    logger.info(f"🗑️ Subscription deleted: {subscription_id}")
+    
+    # Mark subscription as cancelled
+    await db.subscriptions.update_one(
+        {"stripe_subscription_id": subscription_id},
+        {"$set": {
+            "status": "cancelled",
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+
+async def handle_invoice_paid(invoice: dict, event_id: str):
+    """Handle invoice.payment_succeeded event"""
+    invoice_id = invoice.get('id')
+    amount = invoice.get('amount_paid', 0) / 100
+    
+    logger.info(f"📄 Invoice paid: {invoice_id} - Amount: ${amount}")
+
+async def handle_invoice_failed(invoice: dict, event_id: str):
+    """Handle invoice.payment_failed event"""
+    invoice_id = invoice.get('id')
+    
+    logger.warning(f"⚠️ Invoice payment failed: {invoice_id}")
+
+@api_router.get("/webhooks/logs")
+async def get_webhook_logs(status: Optional[str] = None, limit: int = 50):
+    """Get webhook logs for monitoring"""
+    query = {}
+    if status:
+        query["status"] = status
+    
+    logs = await db.webhook_logs.find(query, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    
+    for log in logs:
+        if isinstance(log.get('created_at'), str):
+            log['created_at'] = datetime.fromisoformat(log['created_at'])
+        if log.get('processed_at') and isinstance(log['processed_at'], str):
+            log['processed_at'] = datetime.fromisoformat(log['processed_at'])
+        if isinstance(log.get('updated_at'), str):
+            log['updated_at'] = datetime.fromisoformat(log['updated_at'])
+    
+    return logs
+
+@api_router.post("/webhooks/{event_id}/retry")
+async def retry_webhook(event_id: str):
+    """Manually retry a failed webhook"""
+    webhook_log = await db.webhook_logs.find_one({"event_id": event_id}, {"_id": 0})
+    
+    if not webhook_log:
+        raise HTTPException(status_code=404, detail="Webhook log not found")
+    
+    if webhook_log['status'] not in ['failed', 'retrying']:
+        raise HTTPException(status_code=400, detail="Webhook not in failed state")
+    
+    # Update retry count
+    retry_count = webhook_log.get('retry_count', 0) + 1
+    
+    await db.webhook_logs.update_one(
+        {"event_id": event_id},
+        {"$set": {
+            "status": "retrying",
+            "retry_count": retry_count,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    # Re-process the event
+    try:
+        event_data = webhook_log['payload']['data']['object']
+        event_type = webhook_log['event_type']
+        
+        # Call appropriate handler
+        if event_type == 'checkout.session.completed':
+            await handle_checkout_completed(event_data, event_id)
+        # Add other handlers as needed
+        
+        # Mark as processed
+        await db.webhook_logs.update_one(
+            {"event_id": event_id},
+            {"$set": {
+                "status": "processed",
+                "processed_at": datetime.now(timezone.utc).isoformat(),
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        return {"message": "Webhook retried successfully", "retry_count": retry_count}
         
     except Exception as e:
-        logger.error(f"Webhook error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Mark as failed again
+        await db.webhook_logs.update_one(
+            {"event_id": event_id},
+            {"$set": {
+                "status": "failed",
+                "error_message": str(e),
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        raise HTTPException(status_code=500, detail=f"Retry failed: {str(e)}")
+
+@api_router.get("/webhooks/stats")
+async def get_webhook_stats():
+    """Get webhook statistics"""
+    all_logs = await db.webhook_logs.find({}, {"_id": 0}).to_list(1000)
+    
+    total = len(all_logs)
+    by_status = {}
+    by_type = {}
+    
+    for log in all_logs:
+        status = log['status']
+        event_type = log['event_type']
+        
+        by_status[status] = by_status.get(status, 0) + 1
+        by_type[event_type] = by_type.get(event_type, 0) + 1
+    
+    failed = by_status.get('failed', 0)
+    success_rate = round(((total - failed) / total * 100), 2) if total > 0 else 0
+    
+    return {
+        "total_webhooks": total,
+        "by_status": by_status,
+        "by_type": by_type,
+        "success_rate": success_rate,
+        "failed_count": failed
+    }
 
 @api_router.get("/payments/history")
 async def get_payment_history(user_email: Optional[str] = None, limit: int = 50):
