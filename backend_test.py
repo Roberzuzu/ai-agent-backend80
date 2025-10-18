@@ -408,6 +408,244 @@ class PaymentSystemTester:
             self.log_test("Payment History", False, f"Exception: {str(e)}")
             return False
 
+    def test_database_info(self):
+        """Test GET /api/database/info"""
+        print("🔍 Testing Database Info...")
+        try:
+            response = self.session.get(f"{BASE_URL}/database/info")
+            
+            if response.status_code == 200:
+                db_info = response.json()
+                
+                # Verify required fields
+                required_fields = ["database_name", "collections_count", "collections", "migrations_applied", "last_migration"]
+                missing_fields = [field for field in required_fields if field not in db_info]
+                if missing_fields:
+                    self.log_test("Database Info Structure", False, 
+                                f"Missing fields: {missing_fields}", db_info)
+                    return False
+                
+                # Verify collections is array
+                if not isinstance(db_info["collections"], list):
+                    self.log_test("Database Info Collections Type", False, 
+                                "collections should be an array", type(db_info["collections"]))
+                    return False
+                
+                # Check main collections have indexes (> 1 means more than just _id index)
+                main_collections = ["users", "products", "payment_transactions", "subscriptions", "affiliates", "notifications"]
+                collections_dict = {col["name"]: col for col in db_info["collections"]}
+                
+                for col_name in main_collections:
+                    if col_name in collections_dict:
+                        indexes = collections_dict[col_name].get("indexes", 0)
+                        if indexes <= 1:
+                            self.log_test("Database Indexes Check", False, 
+                                        f"Collection {col_name} has only {indexes} indexes (should have > 1)", 
+                                        collections_dict[col_name])
+                            return False
+                
+                self.log_test("Database Info", True, 
+                            f"Database: {db_info['database_name']}, Collections: {db_info['collections_count']}, Migrations: {db_info['migrations_applied']}", 
+                            {"collections_with_indexes": len([c for c in db_info["collections"] if c.get("indexes", 0) > 1])})
+                return True
+            else:
+                self.log_test("Database Info", False, f"HTTP {response.status_code}", response.text)
+                return False
+                
+        except Exception as e:
+            self.log_test("Database Info", False, f"Exception: {str(e)}")
+            return False
+
+    def test_database_backups_list(self):
+        """Test GET /api/database/backups"""
+        print("🔍 Testing Database Backups List...")
+        try:
+            response = self.session.get(f"{BASE_URL}/database/backups")
+            
+            if response.status_code == 200:
+                backups_data = response.json()
+                
+                # Verify required fields
+                required_fields = ["count", "backups"]
+                missing_fields = [field for field in required_fields if field not in backups_data]
+                if missing_fields:
+                    self.log_test("Database Backups Structure", False, 
+                                f"Missing fields: {missing_fields}", backups_data)
+                    return False
+                
+                # Verify backups is array
+                if not isinstance(backups_data["backups"], list):
+                    self.log_test("Database Backups Array Type", False, 
+                                "backups should be an array", type(backups_data["backups"]))
+                    return False
+                
+                # If there are backups, verify structure
+                if backups_data["backups"]:
+                    backup = backups_data["backups"][0]
+                    backup_fields = ["path", "name", "size_mb", "modified"]
+                    missing_backup_fields = [field for field in backup_fields if field not in backup]
+                    if missing_backup_fields:
+                        self.log_test("Database Backup Item Structure", False,
+                                    f"Missing backup fields: {missing_backup_fields}", backup)
+                        return False
+                
+                self.log_test("Database Backups List", True, 
+                            f"Found {backups_data['count']} backups available", 
+                            {"backup_count": backups_data["count"]})
+                return True
+            else:
+                self.log_test("Database Backups List", False, f"HTTP {response.status_code}", response.text)
+                return False
+                
+        except Exception as e:
+            self.log_test("Database Backups List", False, f"Exception: {str(e)}")
+            return False
+
+    def test_database_backup_create(self):
+        """Test POST /api/database/backup"""
+        print("🔍 Testing Database Backup Creation...")
+        try:
+            response = self.session.post(f"{BASE_URL}/database/backup")
+            
+            if response.status_code == 200:
+                backup_result = response.json()
+                
+                # Verify required fields
+                required_fields = ["message", "status"]
+                missing_fields = [field for field in required_fields if field not in backup_result]
+                if missing_fields:
+                    self.log_test("Database Backup Create Structure", False, 
+                                f"Missing fields: {missing_fields}", backup_result)
+                    return False
+                
+                # Verify status is "processing"
+                if backup_result["status"] != "processing":
+                    self.log_test("Database Backup Status", False, 
+                                f"Expected status 'processing', got '{backup_result['status']}'", backup_result)
+                    return False
+                
+                self.log_test("Database Backup Create", True, 
+                            f"Backup initiated with status: {backup_result['status']}", 
+                            backup_result)
+                return True
+            else:
+                self.log_test("Database Backup Create", False, f"HTTP {response.status_code}", response.text)
+                return False
+                
+        except Exception as e:
+            self.log_test("Database Backup Create", False, f"Exception: {str(e)}")
+            return False
+
+    def test_database_indexes_payment_transactions(self):
+        """Test GET /api/database/indexes/payment_transactions"""
+        print("🔍 Testing Payment Transactions Indexes...")
+        try:
+            response = self.session.get(f"{BASE_URL}/database/indexes/payment_transactions")
+            
+            if response.status_code == 200:
+                indexes_data = response.json()
+                
+                # Verify required fields
+                required_fields = ["collection", "indexes"]
+                missing_fields = [field for field in required_fields if field not in indexes_data]
+                if missing_fields:
+                    self.log_test("Payment Transactions Indexes Structure", False, 
+                                f"Missing fields: {missing_fields}", indexes_data)
+                    return False
+                
+                # Verify collection name
+                if indexes_data["collection"] != "payment_transactions":
+                    self.log_test("Payment Transactions Collection Name", False, 
+                                f"Expected collection 'payment_transactions', got '{indexes_data['collection']}'", indexes_data)
+                    return False
+                
+                # Verify indexes is array
+                if not isinstance(indexes_data["indexes"], list):
+                    self.log_test("Payment Transactions Indexes Array", False, 
+                                "indexes should be an array", type(indexes_data["indexes"]))
+                    return False
+                
+                # Check for specific expected indexes
+                expected_indexes = ["user_email", "payment_status", "session_id_unique", "user_status", "created_at_desc", "type_status"]
+                index_names = [idx.get("name", "") for idx in indexes_data["indexes"]]
+                
+                missing_indexes = []
+                for expected_idx in expected_indexes:
+                    if not any(expected_idx in name for name in index_names):
+                        missing_indexes.append(expected_idx)
+                
+                if missing_indexes:
+                    self.log_test("Payment Transactions Expected Indexes", False, 
+                                f"Missing expected indexes: {missing_indexes}", index_names)
+                    return False
+                
+                self.log_test("Payment Transactions Indexes", True, 
+                            f"Found {len(indexes_data['indexes'])} indexes including expected ones", 
+                            {"total_indexes": len(indexes_data["indexes"]), "expected_found": len(expected_indexes) - len(missing_indexes)})
+                return True
+            else:
+                self.log_test("Payment Transactions Indexes", False, f"HTTP {response.status_code}", response.text)
+                return False
+                
+        except Exception as e:
+            self.log_test("Payment Transactions Indexes", False, f"Exception: {str(e)}")
+            return False
+
+    def test_database_indexes_notifications(self):
+        """Test GET /api/database/indexes/notifications"""
+        print("🔍 Testing Notifications Indexes...")
+        try:
+            response = self.session.get(f"{BASE_URL}/database/indexes/notifications")
+            
+            if response.status_code == 200:
+                indexes_data = response.json()
+                
+                # Verify required fields
+                required_fields = ["collection", "indexes"]
+                missing_fields = [field for field in required_fields if field not in indexes_data]
+                if missing_fields:
+                    self.log_test("Notifications Indexes Structure", False, 
+                                f"Missing fields: {missing_fields}", indexes_data)
+                    return False
+                
+                # Verify collection name
+                if indexes_data["collection"] != "notifications":
+                    self.log_test("Notifications Collection Name", False, 
+                                f"Expected collection 'notifications', got '{indexes_data['collection']}'", indexes_data)
+                    return False
+                
+                # Verify indexes is array
+                if not isinstance(indexes_data["indexes"], list):
+                    self.log_test("Notifications Indexes Array", False, 
+                                "indexes should be an array", type(indexes_data["indexes"]))
+                    return False
+                
+                # Check for specific expected indexes
+                expected_indexes = ["user_email", "is_read", "user_read", "user_created", "type", "created_at_desc"]
+                index_names = [idx.get("name", "") for idx in indexes_data["indexes"]]
+                
+                missing_indexes = []
+                for expected_idx in expected_indexes:
+                    if not any(expected_idx in name for name in index_names):
+                        missing_indexes.append(expected_idx)
+                
+                if missing_indexes:
+                    self.log_test("Notifications Expected Indexes", False, 
+                                f"Missing expected indexes: {missing_indexes}", index_names)
+                    return False
+                
+                self.log_test("Notifications Indexes", True, 
+                            f"Found {len(indexes_data['indexes'])} indexes including expected ones", 
+                            {"total_indexes": len(indexes_data["indexes"]), "expected_found": len(expected_indexes) - len(missing_indexes)})
+                return True
+            else:
+                self.log_test("Notifications Indexes", False, f"HTTP {response.status_code}", response.text)
+                return False
+                
+        except Exception as e:
+            self.log_test("Notifications Indexes", False, f"Exception: {str(e)}")
+            return False
+
     def run_all_tests(self):
         """Run all payment system tests"""
         print("🚀 Starting Comprehensive Payment System Testing")
