@@ -222,33 +222,77 @@ function SocialPage() {
                   )}
                 </div>
               )}
-              <div className="flex space-x-2">
+              <div className="flex flex-wrap gap-2">
                 {post.status === 'pending' && (
                   <>
                     <button
-                      onClick={() => updateStatus(post.id, 'scheduled')}
-                      className="btn-secondary text-sm"
+                      onClick={() => publishToSocial(post.id)}
+                      className="btn-primary text-sm flex items-center space-x-1"
+                      title="Publicar automáticamente (requiere tokens configurados)"
                     >
-                      <Calendar className="w-4 h-4 inline mr-1" />
-                      Schedule
+                      <Send className="w-4 h-4" />
+                      <span>Auto-Publish</span>
+                    </button>
+                    <button
+                      onClick={() => copyContent(post.content)}
+                      className="btn-secondary text-sm flex items-center space-x-1"
+                      title="Copiar contenido para pegar manualmente"
+                    >
+                      <Copy className="w-4 h-4" />
+                      <span>Copy Text</span>
+                    </button>
+                    <button
+                      onClick={() => updateStatus(post.id, 'scheduled')}
+                      className="btn-secondary text-sm flex items-center space-x-1"
+                    >
+                      <Calendar className="w-4 h-4" />
+                      <span>Schedule</span>
                     </button>
                     <button
                       onClick={() => updateStatus(post.id, 'published')}
-                      className="btn-primary text-sm"
+                      className="btn-secondary text-sm flex items-center space-x-1"
+                      title="Marcar como publicado manualmente"
                     >
-                      <CheckCircle className="w-4 h-4 inline mr-1" />
-                      Publish Now
+                      <CheckCircle className="w-4 h-4" />
+                      <span>Mark Published</span>
                     </button>
                   </>
                 )}
                 {post.status === 'scheduled' && (
-                  <button
-                    onClick={() => updateStatus(post.id, 'published')}
-                    className="btn-primary text-sm"
-                  >
-                    <CheckCircle className="w-4 h-4 inline mr-1" />
-                    Publish Now
-                  </button>
+                  <>
+                    <button
+                      onClick={() => publishToSocial(post.id)}
+                      className="btn-primary text-sm flex items-center space-x-1"
+                    >
+                      <Send className="w-4 h-4" />
+                      <span>Auto-Publish</span>
+                    </button>
+                    <button
+                      onClick={() => copyContent(post.content)}
+                      className="btn-secondary text-sm flex items-center space-x-1"
+                    >
+                      <Copy className="w-4 h-4" />
+                      <span>Copy</span>
+                    </button>
+                  </>
+                )}
+                {post.status === 'failed' && (
+                  <>
+                    <button
+                      onClick={() => publishToSocial(post.id)}
+                      className="btn-primary text-sm flex items-center space-x-1"
+                    >
+                      <Send className="w-4 h-4" />
+                      <span>Retry</span>
+                    </button>
+                    <button
+                      onClick={() => copyContent(post.content)}
+                      className="btn-secondary text-sm flex items-center space-x-1"
+                    >
+                      <Copy className="w-4 h-4" />
+                      <span>Copy</span>
+                    </button>
+                  </>
                 )}
               </div>
             </div>
