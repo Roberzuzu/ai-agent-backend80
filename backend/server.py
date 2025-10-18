@@ -218,6 +218,78 @@ class CheckoutRequest(BaseModel):
     user_email: Optional[str] = None
     origin_url: str
     metadata: Optional[Dict[str, Any]] = {}
+    affiliate_code: Optional[str] = None  # For tracking affiliate referrals
+
+# =========================
+# AFFILIATE PROGRAM MODELS
+# =========================
+
+class Affiliate(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    email: str
+    unique_code: str  # Unique affiliate code
+    commission_rate: float = 10.0  # Percentage
+    status: str = "active"  # active, suspended, pending
+    total_earnings: float = 0.0
+    total_clicks: int = 0
+    total_conversions: int = 0
+    payment_email: Optional[str] = None  # PayPal email for payouts
+    payment_method: str = "paypal"  # paypal, bank_transfer, stripe
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class AffiliateCreate(BaseModel):
+    name: str
+    email: str
+    payment_email: Optional[str] = None
+    payment_method: str = "paypal"
+
+class AffiliateLink(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    affiliate_id: str
+    product_id: Optional[str] = None  # None means general link
+    unique_code: str
+    clicks: int = 0
+    conversions: int = 0
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class AffiliateLinkCreate(BaseModel):
+    product_id: Optional[str] = None
+
+class AffiliateCommission(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    affiliate_id: str
+    transaction_id: str
+    product_id: Optional[str] = None
+    order_amount: float
+    commission_rate: float
+    commission_amount: float
+    status: str = "pending"  # pending, approved, paid
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    approved_at: Optional[datetime] = None
+    paid_at: Optional[datetime] = None
+
+class AffiliatePayout(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    affiliate_id: str
+    amount: float
+    method: str  # paypal, bank_transfer, stripe
+    status: str = "pending"  # pending, processing, completed, failed
+    payment_email: Optional[str] = None
+    transaction_ref: Optional[str] = None
+    notes: Optional[str] = None
+    requested_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    processed_at: Optional[datetime] = None
+
+class AffiliatePayoutRequest(BaseModel):
+    amount: float
+    payment_method: str = "paypal"
+    payment_email: str
 
 # =========================
 # AI HELPER FUNCTIONS
