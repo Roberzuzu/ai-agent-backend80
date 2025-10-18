@@ -86,19 +86,23 @@ function Navigation() {
           </div>
 
           {/* User Menu */}
-          <div className="relative">
-            <button
-              onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center space-x-3 px-4 py-2 rounded-lg hover:bg-white/10 transition-colors"
-            >
-              <div className="bg-white/20 w-8 h-8 rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-white" />
-              </div>
-              <div className="hidden md:block text-left">
-                <p className="text-sm font-medium text-white">{user?.full_name}</p>
-                <p className="text-xs text-white/70 capitalize">{user?.role}</p>
-              </div>
-            </button>
+          <div className="flex items-center gap-3">
+            {/* Notification Bell */}
+            <NotificationBell />
+            
+            <div className="relative">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center space-x-3 px-4 py-2 rounded-lg hover:bg-white/10 transition-colors"
+              >
+                <div className="bg-white/20 w-8 h-8 rounded-full flex items-center justify-center">
+                  <User className="w-5 h-5 text-white" />
+                </div>
+                <div className="hidden md:block text-left">
+                  <p className="text-sm font-medium text-white">{user?.full_name}</p>
+                  <p className="text-xs text-white/70 capitalize">{user?.role}</p>
+                </div>
+              </button>
 
             {showUserMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
