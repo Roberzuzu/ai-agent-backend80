@@ -3110,6 +3110,10 @@ async def create_notification_internal(
         
         await db.notifications.insert_one(doc)
         
+        # Send Telegram notification if enabled
+        if prefs.get('telegram_notifications', True):
+            await send_telegram_notification(title, message, link)
+        
         # TODO: Send email if email_notifications enabled
         # TODO: Send push notification if push_notifications enabled
         
