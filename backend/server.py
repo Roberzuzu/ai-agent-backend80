@@ -640,6 +640,20 @@ class CartRecovery(BaseModel):
     recovered_amount: float = 0.0
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+# Stripe Webhooks
+class WebhookLog(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    event_id: str  # Stripe event ID
+    event_type: str  # checkout.session.completed, etc
+    payload: Dict[str, Any]
+    status: str = "received"  # received, processed, failed, retrying
+    error_message: Optional[str] = None
+    retry_count: int = 0
+    processed_at: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
 # =========================
 # AI HELPER FUNCTIONS
 # =========================
