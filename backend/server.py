@@ -2055,6 +2055,248 @@ async def get_all_affiliates():
     return affiliates
 
 # =========================
+# ROUTES - Amazon Associates Integration
+# =========================
+
+@api_router.post("/amazon/products")
+async def create_amazon_product(data: AmazonProductCreate):
+    """Link a product to Amazon Associates"""
+    try:
+        # Verify product exists
+        product = await db.products.find_one({"id": data.product_id}, {"_id": 0})
+        if not product:
+            raise HTTPException(status_code=404, detail="Product not found")
+        
+        # Generate Amazon affiliate link
+        amazon_link = f"https://www.amazon.com/dp/{data.amazon_asin}?tag={data.amazon_associate_tag}"
+        
+        amazon_product = AmazonProduct(
+            product_id=data.product_id,
+            amazon_asin=data.amazon_asin,
+            amazon_associate_tag=data.amazon_associate_tag,
+            amazon_link=amazon_link
+        )
+        
+        doc = amazon_product.model_dump()
+        doc['created_at'] = doc['created_at'].isoformat()
+        
+        await db.amazon_products.insert_one(doc)
+        
+        return amazon_product
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Amazon product creation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/amazon/products")
+async def get_amazon_products():
+    """Get all Amazon-linked products"""
+    amazon_products = await db.amazon_products.find({}, {"_id": 0}).to_list(100)
+    
+    for item in amazon_products:
+        if isinstance(item.get('created_at'), str):
+            item['created_at'] = datetime.fromisoformat(item['created_at'])
+        
+        # Enrich with product info
+        product = await db.products.find_one({"id": item['product_id']}, {"_id": 0})
+        if product:
+            item['product_name'] = product['name']
+            item['product_price'] = product['price']
+    
+    return amazon_products
+
+@api_router.post("/amazon/track/{amazon_product_id}")
+async def track_amazon_click(amazon_product_id: str):
+    """Track click on Amazon affiliate link"""
+    try:
+        result = await db.amazon_products.update_one(
+            {"id": amazon_product_id},
+            {"$inc": {"clicks": 1}}
+        )
+        
+        if result.modified_count == 0:
+            raise HTTPException(status_code=404, detail="Amazon product not found")
+        
+        # Get the amazon link to redirect
+        amazon_product = await db.amazon_products.find_one({"id": amazon_product_id}, {"_id": 0})
+        
+        return {
+            "message": "Click tracked",
+            "redirect_url": amazon_product['amazon_link']
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Amazon click tracking error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/amazon/analytics")
+async def get_amazon_analytics():
+    """Get Amazon Associates analytics"""
+    amazon_products = await db.amazon_products.find({}, {"_id": 0}).to_list(1000)
+    
+    total_clicks = sum(p['clicks'] for p in amazon_products)
+    total_conversions = sum(p['estimated_conversions'] for p in amazon_products)
+    
+    # Estimated earnings (assuming 4% commission and $30 average order)
+    estimated_earnings = total_conversions * 30 * 0.04
+    
+    return {
+        "total_products": len(amazon_products),
+        "total_clicks": total_clicks,
+        "estimated_conversions": total_conversions,
+        "estimated_earnings": round(estimated_earnings, 2),
+        "click_through_rate": round((total_conversions / total_clicks * 100) if total_clicks > 0 else 0, 2),
+        "products": amazon_products
+    }
+
+# =========================
+# ROUTES - Dropshipping Automation
+# =========================
+
+@api_router.post("/dropshipping/providers")
+async def create_dropshipping_provider(provider: DropshippingProvider):
+    """Add a dropshipping provider"""
+    doc = provider.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    
+    await db.dropshipping_providers.insert_one(doc)
+    return provider
+
+@api_router.get("/dropshipping/providers")
+async def get_dropshipping_providers():
+    """Get all dropshipping providers"""
+    providers = await db.dropshipping_providers.find({}, {"_id": 0}).to_list(100)
+    
+    for provider in providers:
+        if isinstance(provider.get('created_at'), str):
+            provider['created_at'] = datetime.fromisoformat(provider['created_at'])
+    
+    return providers
+
+@api_router.post("/dropshipping/orders")
+async def create_dropshipping_order(order_data: DropshippingOrderCreate):
+    """Create a dropshipping order"""
+    try:
+        # Get product and provider
+        product = await db.products.find_one({"id": order_data.product_id}, {"_id": 0})
+        if not product:
+            raise HTTPException(status_code=404, detail="Product not found")
+        
+        provider = await db.dropshipping_providers.find_one({"id": order_data.provider_id}, {"_id": 0})
+        if not provider:
+            raise HTTPException(status_code=404, detail="Provider not found")
+        
+        # Calculate costs (simplified)
+        product_cost = product['price'] * 0.6  # Assume 40% margin
+        shipping_cost = 5.0
+        total_cost = product_cost + shipping_cost
+        
+        order = DropshippingOrder(
+            transaction_id=order_data.transaction_id,
+            product_id=order_data.product_id,
+            provider_id=order_data.provider_id,
+            customer_email=order_data.customer_email,
+            customer_name=order_data.customer_name,
+            shipping_address=order_data.shipping_address,
+            product_cost=product_cost,
+            shipping_cost=shipping_cost,
+            total_cost=total_cost,
+            status="pending"
+        )
+        
+        doc = order.model_dump()
+        doc['created_at'] = doc['created_at'].isoformat()
+        doc['updated_at'] = doc['updated_at'].isoformat()
+        
+        await db.dropshipping_orders.insert_one(doc)
+        
+        # Auto-fulfill if enabled
+        if provider.get('auto_fulfill'):
+            # Simulate fulfillment
+            await db.dropshipping_orders.update_one(
+                {"id": order.id},
+                {"$set": {
+                    "status": "processing",
+                    "provider_order_id": f"DS-{str(uuid.uuid4())[:8].upper()}"
+                }}
+            )
+        
+        return order
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Dropshipping order creation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/dropshipping/orders")
+async def get_dropshipping_orders(status: Optional[str] = None):
+    """Get dropshipping orders"""
+    query = {}
+    if status:
+        query["status"] = status
+    
+    orders = await db.dropshipping_orders.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    for order in orders:
+        if isinstance(order.get('created_at'), str):
+            order['created_at'] = datetime.fromisoformat(order['created_at'])
+        if isinstance(order.get('updated_at'), str):
+            order['updated_at'] = datetime.fromisoformat(order['updated_at'])
+        
+        # Enrich with product info
+        product = await db.products.find_one({"id": order['product_id']}, {"_id": 0})
+        if product:
+            order['product_name'] = product['name']
+    
+    return orders
+
+@api_router.patch("/dropshipping/orders/{order_id}/status")
+async def update_dropshipping_order_status(order_id: str, status: str, tracking_number: Optional[str] = None):
+    """Update dropshipping order status"""
+    update_data = {
+        "status": status,
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    if tracking_number:
+        update_data["tracking_number"] = tracking_number
+    
+    result = await db.dropshipping_orders.update_one(
+        {"id": order_id},
+        {"$set": update_data}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    return {"message": "Order updated", "order_id": order_id, "status": status}
+
+@api_router.get("/dropshipping/analytics")
+async def get_dropshipping_analytics():
+    """Get dropshipping analytics"""
+    orders = await db.dropshipping_orders.find({}, {"_id": 0}).to_list(1000)
+    
+    total_orders = len(orders)
+    total_revenue = sum(o.get('total_cost', 0) for o in orders)
+    
+    by_status = {}
+    for order in orders:
+        status = order['status']
+        by_status[status] = by_status.get(status, 0) + 1
+    
+    return {
+        "total_orders": total_orders,
+        "total_revenue": round(total_revenue, 2),
+        "orders_by_status": by_status,
+        "average_order_value": round(total_revenue / total_orders, 2) if total_orders > 0 else 0
+    }
+
+# =========================
 # ROOT ROUTE
 # =========================
 
