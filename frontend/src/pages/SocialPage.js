@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API } from '../App';
-import { Share2, Plus, Calendar, CheckCircle } from 'lucide-react';
+import { Share2, Plus, Calendar, CheckCircle, Send, Copy } from 'lucide-react';
 
 function SocialPage() {
   const [posts, setPosts] = useState([]);
