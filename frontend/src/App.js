@@ -162,6 +162,7 @@ function App() {
               <Route path="/payment-cancelled" element={<PaymentCancelledPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/notifications/preferences" element={<NotificationPreferencesPage />} />
+              <Route path="/recommendations" element={<RecommendationsPage />} />
             </Routes>
           </main>
         </BrowserRouter>
