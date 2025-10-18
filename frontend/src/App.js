@@ -7,7 +7,11 @@ import ContentPage from './pages/ContentPage';
 import ProductsPage from './pages/ProductsPage';
 import SocialPage from './pages/SocialPage';
 import CampaignsPage from './pages/CampaignsPage';
-import { TrendingUp, Sparkles, DollarSign, Share2, Megaphone, LayoutDashboard } from 'lucide-react';
+import SubscriptionsPage from './pages/SubscriptionsPage';
+import PaymentSuccessPage from './pages/PaymentSuccessPage';
+import PaymentCancelledPage from './pages/PaymentCancelledPage';
+import RevenueAnalyticsPage from './pages/RevenueAnalyticsPage';
+import { TrendingUp, Sparkles, DollarSign, Share2, Megaphone, LayoutDashboard, CreditCard, BarChart3 } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
