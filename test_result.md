@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Implementar sistema completo de pagos y procesamiento con Stripe, incluyendo suscripciones recurrentes, checkout integrado, y dashboard avanzado de ingresos con tracking de códigos de descuento, ROI por campaña y comisiones de afiliados"
+user_problem_statement: "Optimización de base de datos: Implementar sistema completo con índices, schema validation, migraciones automáticas y backups"
 
 backend:
   - task: "Sistema de Notificaciones - Backend"
