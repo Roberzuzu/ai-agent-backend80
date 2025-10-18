@@ -1,51 +1,79 @@
-import { useEffect } from "react";
-import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
+import React, { useState } from 'react';
+import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
+import '@/App.css';
+import Dashboard from './pages/Dashboard';
+import TrendsPage from './pages/TrendsPage';
+import ContentPage from './pages/ContentPage';
+import ProductsPage from './pages/ProductsPage';
+import SocialPage from './pages/SocialPage';
+import CampaignsPage from './pages/CampaignsPage';
+import { TrendingUp, Sparkles, DollarSign, Share2, Megaphone, LayoutDashboard } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+export const API = `${BACKEND_URL}/api`;
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
+function Navigation() {
+  const location = useLocation();
+  
+  const navItems = [
+    { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/trends', icon: TrendingUp, label: 'Growth Hacker' },
+    { path: '/content', icon: Sparkles, label: 'Content Creator' },
+    { path: '/products', icon: DollarSign, label: 'Monetization' },
+    { path: '/social', icon: Share2, label: 'Social Manager' },
+    { path: '/campaigns', icon: Megaphone, label: 'Ad Manager' }
+  ];
+  
   return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
+    <nav className="bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center space-x-2">
+            <DollarSign className="w-8 h-8" />
+            <span className="text-xl font-bold">Monetization Agent</span>
+          </div>
+          <div className="flex space-x-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${
+                    isActive
+                      ? 'bg-white text-blue-600 shadow-md'
+                      : 'hover:bg-white/10'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span className="text-sm font-medium">{item.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </nav>
   );
-};
+}
 
 function App() {
   return (
-    <div className="App">
+    <div className="App min-h-screen bg-gray-50">
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
+        <Navigation />
+        <main className="max-w-7xl mx-auto px-4 py-8">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/trends" element={<TrendsPage />} />
+            <Route path="/content" element={<ContentPage />} />
+            <Route path="/products" element={<ProductsPage />} />
+            <Route path="/social" element={<SocialPage />} />
+            <Route path="/campaigns" element={<CampaignsPage />} />
+          </Routes>
+        </main>
       </BrowserRouter>
     </div>
   );
