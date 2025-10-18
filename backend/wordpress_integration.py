@@ -114,7 +114,7 @@ class WordPressIntegration:
             
             response = requests.post(
                 f"{self.wc_api}/products",
-                headers=self.headers,
+                params=self.wc_auth,
                 json=wc_product,
                 timeout=30
             )
