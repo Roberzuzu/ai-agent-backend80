@@ -429,6 +429,62 @@ async def update_post_status(post_id: str, status: str, engagement: Optional[Dic
     
     return {"message": "Post updated", "post_id": post_id}
 
+@api_router.post("/social/posts/{post_id}/publish")
+async def publish_post_to_platform(post_id: str):
+    """Publish a post automatically to its platform"""
+    # Get the post
+    post = await db.social_posts.find_one({"id": post_id}, {"_id": 0})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    platform = post.get('platform')
+    content = post.get('content')
+    media_urls = post.get('media_urls', [])
+    
+    # Publish to platform
+    result = social_publisher.publish(
+        platform=platform,
+        content=content,
+        media_urls=media_urls
+    )
+    
+    if result['success']:
+        # Update post status to published
+        await db.social_posts.update_one(
+            {"id": post_id},
+            {"$set": {
+                "status": "published",
+                "platform_post_id": result.get('post_id'),
+                "published_at": datetime.now(timezone.utc).isoformat()
+            }}
+        )
+        
+        return {
+            "success": True,
+            "message": f"Post published to {platform}",
+            "post_id": post_id,
+            "platform_post_id": result.get('post_id')
+        }
+    else:
+        # Update status to failed
+        await db.social_posts.update_one(
+            {"id": post_id},
+            {"$set": {
+                "status": "failed",
+                "error_message": result.get('error')
+            }}
+        )
+        
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to publish: {result.get('error')}"
+        )
+
+@api_router.get("/social/platform-status")
+async def get_platform_status():
+    """Get status of all platform integrations"""
+    return social_publisher.get_platform_status()
+
 # =========================
 # ROUTES - Ad Manager
 # =========================
