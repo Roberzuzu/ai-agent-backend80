@@ -27,6 +27,8 @@ export const API = `${BACKEND_URL}/api`;
 
 function Navigation() {
   const location = useLocation();
+  const { user, logout } = useAuth();
+  const [showUserMenu, setShowUserMenu] = useState(false);
   
   const navItems = [
     { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -41,35 +43,72 @@ function Navigation() {
     { path: '/advanced', icon: Zap, label: 'Avanzado' },
     { path: '/conversion', icon: Target, label: 'Conversión' }
   ];
-  
+
   return (
     <nav className="bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-2">
-            <DollarSign className="w-8 h-8" />
-            <span className="text-xl font-bold">Monetization Agent</span>
+          <div className="flex items-center space-x-8">
+            <div className="flex items-center space-x-2">
+              <DollarSign className="w-8 h-8" />
+              <span className="text-xl font-bold">Monetization Agent</span>
+            </div>
+            
+            <div className="hidden md:flex space-x-1">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
+                    className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${
+                      isActive
+                        ? 'bg-white text-blue-600 shadow-md'
+                        : 'hover:bg-white/10'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span className="text-sm font-medium">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
-          <div className="flex space-x-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.path;
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${
-                    isActive
-                      ? 'bg-white text-blue-600 shadow-md'
-                      : 'hover:bg-white/10'
-                  }`}
+
+          {/* User Menu */}
+          <div className="relative">
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="flex items-center space-x-3 px-4 py-2 rounded-lg hover:bg-white/10 transition-colors"
+            >
+              <div className="bg-white/20 w-8 h-8 rounded-full flex items-center justify-center">
+                <User className="w-5 h-5 text-white" />
+              </div>
+              <div className="hidden md:block text-left">
+                <p className="text-sm font-medium text-white">{user?.full_name}</p>
+                <p className="text-xs text-white/70 capitalize">{user?.role}</p>
+              </div>
+            </button>
+
+            {showUserMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
+                <div className="px-4 py-2 border-b border-gray-200">
+                  <p className="text-sm font-medium text-gray-900">{user?.email}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    logout();
+                    setShowUserMenu(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"
                 >
-                  <Icon className="w-4 h-4" />
-                  <span className="text-sm font-medium">{item.label}</span>
-                </Link>
-              );
-            })}
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Cerrar Sesión
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
