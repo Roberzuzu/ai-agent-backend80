@@ -367,6 +367,70 @@ agent_communication:
       
       LISTO PARA TESTING COMPLETO
   
+  - agent: "main"
+    message: |
+      🎉 NUEVO: PROGRAMA DE AFILIADOS COMPLETO IMPLEMENTADO
+      
+      ✅ MODELOS DE AFILIADOS (Backend):
+      1. Affiliate - Perfil del afiliado con código único
+      2. AffiliateLink - Links únicos por producto
+      3. AffiliateCommission - Comisiones por venta
+      4. AffiliatePayout - Pagos realizados a afiliados
+      
+      ✅ ENDPOINTS DE AFILIADOS:
+      1. POST /api/affiliates/register - Registro de afiliado
+      2. GET /api/affiliates/by-email/{email} - Info del afiliado
+      3. POST /api/affiliates/links/generate - Generar link único
+      4. GET /api/affiliates/links/{email} - Ver mis links
+      5. GET /api/affiliates/track/{code} - Track click y redirect
+      6. GET /api/affiliates/dashboard/{email} - Dashboard completo
+      7. GET /api/affiliates/commissions/{email} - Ver comisiones
+      8. POST /api/affiliates/payouts/request - Solicitar pago
+      9. GET /api/affiliates/payouts/{email} - Historial de pagos
+      10. GET /api/affiliates/all - Todos los afiliados (admin)
+      
+      ✅ FRONTEND AFILIADOS:
+      1. AffiliatePage.js - Landing page + registro
+      2. AffiliateDashboardPage.js - Dashboard del afiliado
+      3. AffiliatePayoutsPage.js - Solicitud de pagos
+      
+      ✅ CARACTERÍSTICAS:
+      1. ✅ Registro gratuito de afiliados
+      2. ✅ Código único auto-generado
+      3. ✅ Generación de links por producto
+      4. ✅ Link general para todo el sitio
+      5. ✅ Tracking automático de clicks
+      6. ✅ Tracking automático de conversiones
+      7. ✅ Comisión configurable (default 10%)
+      8. ✅ Comisiones auto-aprobadas
+      9. ✅ Dashboard con stats en tiempo real
+      10. ✅ Solicitud de pago ($50 mínimo)
+      11. ✅ Historial de pagos
+      12. ✅ Links copiables con un click
+      13. ✅ Integración con checkout (affiliate_code)
+      14. ✅ Actualización automática de stats
+      
+      🎯 FLUJO COMPLETO:
+      1. Usuario se registra como afiliado
+      2. Recibe código único (ej: ABC12345)
+      3. Genera links para productos
+      4. Comparte links: /track/ABC12345?product_id=xxx
+      5. Se trackean clicks automáticamente
+      6. Cuando alguien compra, se crea comisión
+      7. Comisión auto-aprobada (configurable)
+      8. Afiliado ve comisión en dashboard
+      9. Puede solicitar pago cuando > $50
+      10. Admin procesa pago vía PayPal/Stripe
+      
+      💰 SISTEMA DE COMISIONES:
+      - Tasa default: 10%
+      - Auto-aprobación de comisiones
+      - Mínimo retiro: $50 USD
+      - Métodos: PayPal, Transferencia, Stripe
+      - Tracking de pagos pendientes/completados
+      
+      TODO LISTO PARA TESTING
+  
   - agent: "testing"
     message: |
       🎉 TESTING COMPLETO DEL SISTEMA DE PAGOS - 100% EXITOSO (9/9 tests passed)
