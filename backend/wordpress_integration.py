@@ -44,30 +44,32 @@ class WordPressIntegration:
         self.wc_api = f"{self.base_url}/wp-json/wc/v3"
     
     def test_connection(self) -> Dict[str, Any]:
-        """Test WordPress connection"""
+        """Test WordPress and WooCommerce connection"""
         try:
+            # Test WooCommerce connection
             response = requests.get(
-                f"{self.wp_api}/users/me",
-                headers=self.headers,
+                f"{self.wc_api}/system_status",
+                params=self.wc_auth,
                 timeout=10
             )
             
             if response.status_code == 200:
-                user_data = response.json()
+                data = response.json()
                 return {
                     'success': True,
-                    'message': 'Connected to WordPress',
-                    'user': user_data.get('name'),
-                    'url': self.base_url
+                    'message': 'Connected to WooCommerce',
+                    'store_name': data.get('settings', {}).get('general', {}).get('woocommerce_store_address'),
+                    'url': self.base_url,
+                    'wc_version': data.get('environment', {}).get('version')
                 }
             else:
                 return {
                     'success': False,
-                    'error': f"Connection failed: {response.status_code}",
+                    'error': f"WooCommerce connection failed: {response.status_code}",
                     'details': response.text
                 }
         except Exception as e:
-            logger.error(f"WordPress connection error: {str(e)}")
+            logger.error(f"WooCommerce connection error: {str(e)}")
             return {
                 'success': False,
                 'error': str(e)
