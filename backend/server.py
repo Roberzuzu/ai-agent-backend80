@@ -20,6 +20,7 @@ from social_integrations import SocialMediaPublisher
 from wordpress_integration import WordPressIntegration
 from passlib.context import CryptContext
 from jose import JWTError, jwt
+import stripe
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
