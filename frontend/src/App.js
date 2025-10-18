@@ -3,8 +3,11 @@ import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react
 import { Toaster } from 'sonner';
 import '@/App.css';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
+import OnboardingFlow from './components/OnboardingFlow';
+import ThemeToggle from './components/ThemeToggle';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import Dashboard from './pages/Dashboard';
