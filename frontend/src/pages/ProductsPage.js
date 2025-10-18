@@ -79,7 +79,12 @@ function ProductsPage() {
   const handleBuyProduct = async (product) => {
     try {
       const originUrl = window.location.origin;
-      const response = await axios.post(`${API}/payments/checkout/session`, {
+      
+      // Check if there's an affiliate code in URL or localStorage
+      const urlParams = new URLSearchParams(window.location.search);
+      const affiliateCode = urlParams.get('ref') || localStorage.getItem('affiliate_ref');
+      
+      const requestData = {
         payment_type: 'product',
         product_id: product.id,
         user_email: 'guest@example.com', // In production, get from auth
@@ -87,7 +92,14 @@ function ProductsPage() {
         metadata: {
           source: 'products_page'
         }
-      });
+      };
+      
+      // Add affiliate code if exists
+      if (affiliateCode) {
+        requestData.affiliate_code = affiliateCode;
+      }
+      
+      const response = await axios.post(`${API}/payments/checkout/session`, requestData);
 
       // Redirect to Stripe checkout
       if (response.data.url) {
