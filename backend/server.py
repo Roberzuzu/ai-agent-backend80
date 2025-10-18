@@ -5992,6 +5992,80 @@ async def get_security_dashboard():
     }
 
 # =========================
+# MONITORING & HEALTH CHECK ENDPOINTS
+# =========================
+
+@api_router.get("/health")
+async def health_check():
+    """Comprehensive health check"""
+    result = await health_checker.check_all()
+    status_code = 200 if result['status'] == 'healthy' else 503
+    return JSONResponse(content=result, status_code=status_code)
+
+
+@api_router.get("/health/liveness")
+async def liveness_check():
+    """Kubernetes liveness probe"""
+    is_alive = await health_checker.liveness_probe()
+    if is_alive:
+        return {"status": "alive"}
+    return JSONResponse(content={"status": "dead"}, status_code=503)
+
+
+@api_router.get("/health/readiness")
+async def readiness_check():
+    """Kubernetes readiness probe"""
+    is_ready = await health_checker.readiness_probe()
+    if is_ready:
+        return {"status": "ready"}
+    return JSONResponse(content={"status": "not_ready"}, status_code=503)
+
+
+@api_router.get("/metrics")
+async def metrics_endpoint():
+    """Prometheus metrics endpoint"""
+    from fastapi.responses import PlainTextResponse
+    metrics_text = metrics_collector.export_prometheus_format()
+    return PlainTextResponse(content=metrics_text, media_type="text/plain")
+
+
+@api_router.get("/metrics/summary")
+async def metrics_summary():
+    """Human-readable metrics summary"""
+    return {
+        "requests": metrics_collector.get_request_metrics(),
+        "system": metrics_collector.get_system_metrics(),
+        "custom": metrics_collector.get_custom_metrics()
+    }
+
+
+@api_router.get("/monitoring/dashboard")
+async def monitoring_dashboard():
+    """Complete monitoring dashboard"""
+    # Health status
+    health = await health_checker.check_all()
+    
+    # Metrics
+    metrics = {
+        "requests": metrics_collector.get_request_metrics(),
+        "system": metrics_collector.get_system_metrics()
+    }
+    
+    # Security stats
+    security_stats = rate_limiter.get_stats()
+    
+    # Audit logs stats
+    audit_stats = await audit_logger.get_stats(days=7)
+    
+    return {
+        "health": health,
+        "metrics": metrics,
+        "security": security_stats,
+        "audit": audit_stats,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
+# =========================
 # ROOT ROUTE
 # =========================
 
