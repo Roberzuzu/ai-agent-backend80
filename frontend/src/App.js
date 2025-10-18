@@ -123,30 +123,40 @@ function Navigation() {
 
 function App() {
   return (
-    <div className="App min-h-screen bg-gray-50">
-      <BrowserRouter>
-        <Navigation />
-        <main className="max-w-7xl mx-auto px-4 py-8">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/trends" element={<TrendsPage />} />
-            <Route path="/content" element={<ContentPage />} />
-            <Route path="/products" element={<ProductsPage />} />
-            <Route path="/social" element={<SocialPage />} />
-            <Route path="/campaigns" element={<CampaignsPage />} />
-            <Route path="/subscriptions" element={<SubscriptionsPage />} />
-            <Route path="/revenue" element={<RevenueAnalyticsPage />} />
-            <Route path="/affiliate" element={<AffiliatePage />} />
-            <Route path="/affiliate-dashboard" element={<AffiliateDashboardPage />} />
-            <Route path="/affiliate-payouts" element={<AffiliatePayoutsPage />} />
-            <Route path="/advanced" element={<AdvancedMonetizationPage />} />
-            <Route path="/conversion" element={<ConversionOptimizationPage />} />
-            <Route path="/payment-success" element={<PaymentSuccessPage />} />
-            <Route path="/payment-cancelled" element={<PaymentCancelledPage />} />
-          </Routes>
-        </main>
-      </BrowserRouter>
-    </div>
+    <ErrorBoundary>
+      <div className="App min-h-screen bg-gray-50">
+        <Toaster 
+          position="top-right" 
+          expand={false}
+          richColors
+          closeButton
+          duration={4000}
+        />
+        <BrowserRouter>
+          <Navigation />
+          <main className="max-w-7xl mx-auto px-4 py-8">
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/dashboard-enhanced" element={<DashboardEnhanced />} />
+              <Route path="/trends" element={<TrendsPage />} />
+              <Route path="/content" element={<ContentPage />} />
+              <Route path="/products" element={<ProductsPage />} />
+              <Route path="/social" element={<SocialPage />} />
+              <Route path="/campaigns" element={<CampaignsPage />} />
+              <Route path="/subscriptions" element={<SubscriptionsPage />} />
+              <Route path="/revenue" element={<RevenueAnalyticsPage />} />
+              <Route path="/affiliate" element={<AffiliatePage />} />
+              <Route path="/affiliate-dashboard" element={<AffiliateDashboardPage />} />
+              <Route path="/affiliate-payouts" element={<AffiliatePayoutsPage />} />
+              <Route path="/advanced" element={<AdvancedMonetizationPage />} />
+              <Route path="/conversion" element={<ConversionOptimizationPage />} />
+              <Route path="/payment-success" element={<PaymentSuccessPage />} />
+              <Route path="/payment-cancelled" element={<PaymentCancelledPage />} />
+            </Routes>
+          </main>
+        </BrowserRouter>
+      </div>
+    </ErrorBoundary>
   );
 }
 
