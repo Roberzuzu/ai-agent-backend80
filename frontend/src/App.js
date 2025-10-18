@@ -24,6 +24,9 @@ import AffiliatePayoutsPage from './pages/AffiliatePayoutsPage';
 import AdvancedMonetizationPage from './pages/AdvancedMonetizationPage';
 import ConversionOptimizationPage from './pages/ConversionOptimizationPage';
 import WebhookMonitorPage from './pages/WebhookMonitorPage';
+import NotificationsPage from './pages/NotificationsPage';
+import NotificationPreferencesPage from './pages/NotificationPreferencesPage';
+import NotificationBell from './components/NotificationBell';
 import { TrendingUp, Sparkles, DollarSign, Share2, Megaphone, LayoutDashboard, CreditCard, BarChart3, Users, Zap, Target, LogOut, User, Activity, Gauge } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
