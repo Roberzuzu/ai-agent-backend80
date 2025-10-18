@@ -54,6 +54,26 @@ function SocialPage() {
     }
   };
 
+  const publishToSocial = async (postId) => {
+    if (!window.confirm('¿Publicar este post automáticamente en la plataforma?')) {
+      return;
+    }
+    
+    try {
+      const response = await axios.post(`${API}/social/posts/${postId}/publish`);
+      alert(`✅ ${response.data.message}`);
+      loadPosts();
+    } catch (error) {
+      const errorMsg = error.response?.data?.detail || 'Error al publicar';
+      alert(`❌ ${errorMsg}`);
+    }
+  };
+
+  const copyContent = (content) => {
+    navigator.clipboard.writeText(content);
+    alert('✅ Contenido copiado al portapapeles. Pégalo en tu red social.');
+  };
+
   const platformColors = {
     instagram: 'bg-pink-500',
     tiktok: 'bg-black',
