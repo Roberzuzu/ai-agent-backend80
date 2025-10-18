@@ -82,7 +82,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             response.headers["X-Powered-By"] = "FastAPI"
         else:
             # Remove X-Powered-By in production
-            response.headers.pop("X-Powered-By", None)
+            if "X-Powered-By" in response.headers:
+                del response.headers["X-Powered-By"]
         
         return response
 
