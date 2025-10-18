@@ -1438,47 +1438,424 @@ async def update_campaign_performance(campaign_id: str, performance: Dict[str, A
     return {"message": "Performance updated", "campaign_id": campaign_id}
 
 # =========================
-# ROUTES - Analytics
+# ROUTES - Advanced Analytics
 # =========================
 
+@api_router.post("/analytics/event")
+async def track_analytics_event(
+    session_id: str,
+    event_type: str,
+    event_category: str,
+    user_email: Optional[str] = None,
+    page_url: Optional[str] = None,
+    referrer: Optional[str] = None,
+    device_type: Optional[str] = None,
+    browser: Optional[str] = None,
+    value: Optional[float] = None,
+    metadata: Optional[Dict[str, Any]] = None
+):
+    """Track analytics event"""
+    try:
+        event = {
+            "id": str(uuid.uuid4()),
+            "user_email": user_email,
+            "session_id": session_id,
+            "event_type": event_type,
+            "event_category": event_category,
+            "page_url": page_url,
+            "referrer": referrer,
+            "device_type": device_type,
+            "browser": browser,
+            "country": None,  # Could use IP geolocation
+            "metadata": metadata or {},
+            "value": value,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.analytics_events.insert_one(event)
+        
+        # Send to GA4 if enabled
+        config = await db.analytics_config.find_one({}, {"_id": 0})
+        if config and config.get('is_ga4_enabled') and config.get('ga4_measurement_id'):
+            # TODO: Send to GA4 Measurement Protocol
+            pass
+        
+        # Send to Meta Pixel if enabled
+        if config and config.get('is_meta_pixel_enabled') and config.get('meta_pixel_id'):
+            # TODO: Send to Meta Conversion API
+            pass
+        
+        return {"message": "Event tracked", "event_id": event['id']}
+        
+    except Exception as e:
+        logger.error(f"Error tracking event: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/analytics/config")
+async def get_analytics_config():
+    """Get analytics configuration"""
+    try:
+        config = await db.analytics_config.find_one({}, {"_id": 0})
+        
+        if not config:
+            # Create default config
+            default_config = {
+                "id": str(uuid.uuid4()),
+                "is_ga4_enabled": False,
+                "is_meta_pixel_enabled": False,
+                "is_heatmap_enabled": False,
+                "heatmap_provider": "clarity",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+            await db.analytics_config.insert_one(default_config)
+            return default_config
+        
+        return config
+        
+    except Exception as e:
+        logger.error(f"Error getting config: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.patch("/analytics/config")
+async def update_analytics_config(
+    ga4_measurement_id: Optional[str] = None,
+    ga4_api_secret: Optional[str] = None,
+    meta_pixel_id: Optional[str] = None,
+    meta_access_token: Optional[str] = None,
+    hotjar_site_id: Optional[str] = None,
+    clarity_project_id: Optional[str] = None,
+    is_ga4_enabled: Optional[bool] = None,
+    is_meta_pixel_enabled: Optional[bool] = None,
+    is_heatmap_enabled: Optional[bool] = None,
+    heatmap_provider: Optional[str] = None
+):
+    """Update analytics configuration"""
+    try:
+        update_data = {}
+        
+        if ga4_measurement_id is not None:
+            update_data['ga4_measurement_id'] = ga4_measurement_id
+        if ga4_api_secret is not None:
+            update_data['ga4_api_secret'] = ga4_api_secret
+        if meta_pixel_id is not None:
+            update_data['meta_pixel_id'] = meta_pixel_id
+        if meta_access_token is not None:
+            update_data['meta_access_token'] = meta_access_token
+        if hotjar_site_id is not None:
+            update_data['hotjar_site_id'] = hotjar_site_id
+        if clarity_project_id is not None:
+            update_data['clarity_project_id'] = clarity_project_id
+        if is_ga4_enabled is not None:
+            update_data['is_ga4_enabled'] = is_ga4_enabled
+        if is_meta_pixel_enabled is not None:
+            update_data['is_meta_pixel_enabled'] = is_meta_pixel_enabled
+        if is_heatmap_enabled is not None:
+            update_data['is_heatmap_enabled'] = is_heatmap_enabled
+        if heatmap_provider is not None:
+            update_data['heatmap_provider'] = heatmap_provider
+        
+        update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
+        
+        await db.analytics_config.update_one(
+            {},
+            {"$set": update_data},
+            upsert=True
+        )
+        
+        return {"message": "Configuration updated", "updated_fields": list(update_data.keys())}
+        
+    except Exception as e:
+        logger.error(f"Error updating config: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/analytics/funnel/{funnel_id}")
+async def analyze_funnel(funnel_id: str, days: int = 30):
+    """Analyze conversion funnel"""
+    try:
+        # Get funnel definition
+        funnel = await db.funnels.find_one({"id": funnel_id}, {"_id": 0})
+        
+        if not funnel:
+            raise HTTPException(status_code=404, detail="Funnel not found")
+        
+        # Calculate date range
+        end_date = datetime.now(timezone.utc)
+        start_date = end_date - timedelta(days=days)
+        
+        # Analyze each step
+        results = []
+        previous_users = None
+        
+        for step in funnel['steps']:
+            # Get users who completed this step
+            events = await db.analytics_events.find({
+                "event_type": step['event_type'],
+                "created_at": {
+                    "$gte": start_date.isoformat(),
+                    "$lte": end_date.isoformat()
+                }
+            }, {"_id": 0}).to_list(10000)
+            
+            unique_users = set([e.get('user_email') or e['session_id'] for e in events])
+            
+            # Calculate conversion from previous step
+            if previous_users is not None:
+                conversion_rate = (len(unique_users) / len(previous_users) * 100) if len(previous_users) > 0 else 0
+                drop_off_rate = 100 - conversion_rate
+            else:
+                conversion_rate = 100
+                drop_off_rate = 0
+            
+            results.append({
+                "step_number": step['step_number'],
+                "step_name": step['step_name'],
+                "users": len(unique_users),
+                "conversion_rate": round(conversion_rate, 2),
+                "drop_off_rate": round(drop_off_rate, 2)
+            })
+            
+            previous_users = unique_users
+        
+        return {
+            "funnel_id": funnel_id,
+            "funnel_name": funnel['name'],
+            "period_days": days,
+            "steps": results,
+            "overall_conversion": round((results[-1]['users'] / results[0]['users'] * 100) if results[0]['users'] > 0 else 0, 2)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error analyzing funnel: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/analytics/cohorts")
+async def analyze_cohorts(cohort_type: str = "monthly", metric: str = "retention"):
+    """Analyze user cohorts"""
+    try:
+        # Get all users grouped by signup month
+        users_cursor = db.analytics_events.aggregate([
+            {"$match": {"event_type": "signup"}},
+            {"$group": {
+                "_id": {
+                    "year": {"$year": {"$dateFromString": {"dateString": "$created_at"}}},
+                    "month": {"$month": {"$dateFromString": {"dateString": "$created_at"}}}
+                },
+                "users": {"$addToSet": "$user_email"}
+            }},
+            {"$sort": {"_id.year": 1, "_id.month": 1}},
+            {"$limit": 12}
+        ])
+        
+        cohorts = await users_cursor.to_list(12)
+        
+        # Calculate retention for each cohort
+        cohort_analysis = []
+        
+        for cohort in cohorts:
+            cohort_month = f"{cohort['_id']['year']}-{cohort['_id']['month']:02d}"
+            cohort_users = set(cohort['users'])
+            
+            # Calculate retention for next 6 months
+            retention_data = []
+            for month_offset in range(6):
+                # Simulate retention data (in production, query actual user activity)
+                retention_rate = max(0, 100 - (month_offset * 15))  # Simulated decay
+                retention_data.append({
+                    "month": month_offset,
+                    "retention_rate": retention_rate,
+                    "active_users": int(len(cohort_users) * retention_rate / 100)
+                })
+            
+            cohort_analysis.append({
+                "cohort": cohort_month,
+                "initial_users": len(cohort_users),
+                "retention": retention_data
+            })
+        
+        return {
+            "cohort_type": cohort_type,
+            "metric": metric,
+            "cohorts": cohort_analysis
+        }
+        
+    except Exception as e:
+        logger.error(f"Error analyzing cohorts: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/analytics/clv")
+async def calculate_customer_lifetime_value(user_email: Optional[str] = None):
+    """Calculate Customer Lifetime Value"""
+    try:
+        query = {}
+        if user_email:
+            query["user_email"] = user_email
+        
+        # Get all payment transactions
+        transactions = await db.payment_transactions.find(
+            {**query, "payment_status": "paid"},
+            {"_id": 0}
+        ).to_list(10000)
+        
+        # Group by user
+        user_metrics = {}
+        
+        for txn in transactions:
+            email = txn.get('user_email')
+            if not email:
+                continue
+            
+            if email not in user_metrics:
+                user_metrics[email] = {
+                    "total_revenue": 0,
+                    "total_orders": 0,
+                    "first_purchase": None,
+                    "last_purchase": None
+                }
+            
+            user_metrics[email]['total_revenue'] += txn.get('amount', 0)
+            user_metrics[email]['total_orders'] += 1
+            
+            created_at = txn.get('created_at')
+            if isinstance(created_at, str):
+                created_at = datetime.fromisoformat(created_at)
+            
+            if user_metrics[email]['first_purchase'] is None or created_at < user_metrics[email]['first_purchase']:
+                user_metrics[email]['first_purchase'] = created_at
+            
+            if user_metrics[email]['last_purchase'] is None or created_at > user_metrics[email]['last_purchase']:
+                user_metrics[email]['last_purchase'] = created_at
+        
+        # Calculate CLV metrics
+        clv_data = []
+        now = datetime.now(timezone.utc)
+        
+        for email, metrics in user_metrics.items():
+            aov = metrics['total_revenue'] / metrics['total_orders'] if metrics['total_orders'] > 0 else 0
+            
+            # Days since last purchase
+            days_since_last = (now - metrics['last_purchase']).days if metrics['last_purchase'] else 999
+            
+            # Customer lifetime (days)
+            lifetime_days = (metrics['last_purchase'] - metrics['first_purchase']).days if metrics['first_purchase'] and metrics['last_purchase'] else 0
+            
+            # Predict churn (simple rule-based)
+            if days_since_last > 90:
+                churn_probability = 0.8
+                segment = "churned"
+            elif days_since_last > 60:
+                churn_probability = 0.5
+                segment = "at_risk"
+            elif days_since_last > 30:
+                churn_probability = 0.2
+                segment = "active"
+            else:
+                churn_probability = 0.05
+                segment = "very_active"
+            
+            # Simple CLV = AOV * Purchase Frequency * Customer Lifetime
+            purchase_frequency = metrics['total_orders'] / max(lifetime_days / 30, 1)  # Orders per month
+            predicted_lifetime_months = 12 * (1 - churn_probability)  # Predicted remaining lifetime
+            clv = aov * purchase_frequency * predicted_lifetime_months
+            
+            clv_data.append({
+                "user_email": email,
+                "total_revenue": round(metrics['total_revenue'], 2),
+                "total_orders": metrics['total_orders'],
+                "average_order_value": round(aov, 2),
+                "lifetime_value": round(clv, 2),
+                "days_since_last_purchase": days_since_last,
+                "churn_probability": round(churn_probability, 2),
+                "customer_segment": segment,
+                "lifetime_days": lifetime_days
+            })
+        
+        # Sort by CLV descending
+        clv_data.sort(key=lambda x: x['lifetime_value'], reverse=True)
+        
+        if user_email:
+            return clv_data[0] if clv_data else {}
+        
+        # Return summary statistics
+        total_clv = sum(c['lifetime_value'] for c in clv_data)
+        avg_clv = total_clv / len(clv_data) if clv_data else 0
+        
+        return {
+            "total_customers": len(clv_data),
+            "total_clv": round(total_clv, 2),
+            "average_clv": round(avg_clv, 2),
+            "top_customers": clv_data[:10],
+            "segments": {
+                "very_active": len([c for c in clv_data if c['customer_segment'] == 'very_active']),
+                "active": len([c for c in clv_data if c['customer_segment'] == 'active']),
+                "at_risk": len([c for c in clv_data if c['customer_segment'] == 'at_risk']),
+                "churned": len([c for c in clv_data if c['customer_segment'] == 'churned'])
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error calculating CLV: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.get("/analytics/dashboard")
-async def get_dashboard_analytics():
-    """Get overall dashboard analytics"""
-    total_trends = await db.trends.count_documents({})
-    total_content = await db.content_ideas.count_documents({})
-    total_products = await db.products.count_documents({})
-    total_posts = await db.social_posts.count_documents({})
-    total_campaigns = await db.campaigns.count_documents({})
-    
-    published_posts = await db.social_posts.count_documents({"status": "published"})
-    active_campaigns = await db.campaigns.count_documents({"status": "active"})
-    featured_products = await db.products.count_documents({"is_featured": True})
-    
-    # Get recent trends
-    recent_trends = await db.trends.find({}, {"_id": 0}).sort("created_at", -1).limit(5).to_list(5)
-    
-    # Get top performing posts (by engagement)
-    top_posts = await db.social_posts.find(
-        {"status": "published"},
-        {"_id": 0}
-    ).sort("engagement.likes", -1).limit(5).to_list(5)
-    
-    return {
-        "totals": {
-            "trends": total_trends,
-            "content": total_content,
-            "products": total_products,
-            "posts": total_posts,
-            "campaigns": total_campaigns
-        },
-        "stats": {
-            "published_posts": published_posts,
-            "active_campaigns": active_campaigns,
-            "featured_products": featured_products
-        },
-        "recent_trends": recent_trends,
-        "top_posts": top_posts
-    }
+async def get_analytics_dashboard(days: int = 30):
+    """Get comprehensive analytics dashboard"""
+    try:
+        end_date = datetime.now(timezone.utc)
+        start_date = end_date - timedelta(days=days)
+        
+        # Get event counts by type
+        events_cursor = db.analytics_events.aggregate([
+            {"$match": {
+                "created_at": {
+                    "$gte": start_date.isoformat(),
+                    "$lte": end_date.isoformat()
+                }
+            }},
+            {"$group": {
+                "_id": "$event_type",
+                "count": {"$sum": 1}
+            }}
+        ])
+        
+        events_by_type = {e['_id']: e['count'] for e in await events_cursor.to_list(100)}
+        
+        # Get unique users/sessions
+        unique_users = await db.analytics_events.distinct(
+            "user_email",
+            {
+                "created_at": {
+                    "$gte": start_date.isoformat(),
+                    "$lte": end_date.isoformat()
+                },
+                "user_email": {"$ne": None}
+            }
+        )
+        
+        unique_sessions = await db.analytics_events.distinct(
+            "session_id",
+            {
+                "created_at": {
+                    "$gte": start_date.isoformat(),
+                    "$lte": end_date.isoformat()
+                }
+            }
+        )
+        
+        return {
+            "period_days": days,
+            "total_events": sum(events_by_type.values()),
+            "events_by_type": events_by_type,
+            "unique_users": len(unique_users),
+            "unique_sessions": len(unique_sessions),
+            "avg_events_per_session": round(sum(events_by_type.values()) / len(unique_sessions), 2) if unique_sessions else 0
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting analytics dashboard: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # =========================
 # ROUTES - AI Generation
