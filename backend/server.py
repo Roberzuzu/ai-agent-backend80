@@ -31,6 +31,9 @@ api_router = APIRouter(prefix="/api")
 # Initialize social media publisher
 social_publisher = SocialMediaPublisher()
 
+# Initialize WordPress integration
+wordpress_client = WordPressIntegration()
+
 # =========================
 # MODELS
 # =========================
