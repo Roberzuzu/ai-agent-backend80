@@ -5609,6 +5609,18 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+@app.on_event("startup")
+async def startup_db():
+    """Initialize database with migrations on startup"""
+    try:
+        from database.migrations import run_all_migrations
+        logger.info("🚀 Running database migrations...")
+        await run_all_migrations(mongo_url, os.environ['DB_NAME'])
+        logger.info("✅ Database migrations complete")
+    except Exception as e:
+        logger.error(f"❌ Database migration error: {e}")
+        # Don't fail startup, just log the error
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
