@@ -398,6 +398,7 @@ class NotificationPreferences(BaseModel):
     user_email: str
     email_notifications: bool = True
     push_notifications: bool = True
+    telegram_notifications: bool = True  # NEW
     # Specific notification types
     notify_payments: bool = True
     notify_affiliates: bool = True
@@ -413,6 +414,7 @@ class NotificationPreferences(BaseModel):
 class NotificationPreferencesUpdate(BaseModel):
     email_notifications: Optional[bool] = None
     push_notifications: Optional[bool] = None
+    telegram_notifications: Optional[bool] = None  # NEW
     notify_payments: Optional[bool] = None
     notify_affiliates: Optional[bool] = None
     notify_campaigns: Optional[bool] = None
