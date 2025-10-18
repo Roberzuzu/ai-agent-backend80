@@ -22,6 +22,10 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 import stripe
 
+# Load Telegram configuration
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
+TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID')
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
