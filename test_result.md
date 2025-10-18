@@ -250,6 +250,42 @@ backend:
         comment: "✅ TESTED: Stripe API keys working correctly. Backend logs show successful Stripe API calls with HTTP 200 responses. Test checkout sessions created successfully for both products and subscriptions."
 
 frontend:
+  - task: "Sistema de Notificaciones - Bell Icon"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/components/NotificationBell.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Componente NotificationBell con badge de contador, dropdown panel, polling cada 30s, mark as read, delete, navegación, formateo de fechas"
+
+  - task: "Centro de Notificaciones Completo"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/NotificationsPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Página completa con filtros (all/unread/read), búsqueda, mark all as read, delete all, navegación a recursos relacionados"
+
+  - task: "Página de Preferencias de Notificaciones"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/NotificationPreferencesPage.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Configuración de email/push notifications, preferencias por tipo, email digest (daily/weekly/monthly), toggle switches"
+
   - task: "Error Boundary Component"
     implemented: true
     working: "NA"
