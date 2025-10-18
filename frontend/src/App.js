@@ -89,6 +89,7 @@ function App() {
             <Route path="/affiliate" element={<AffiliatePage />} />
             <Route path="/affiliate-dashboard" element={<AffiliateDashboardPage />} />
             <Route path="/affiliate-payouts" element={<AffiliatePayoutsPage />} />
+            <Route path="/advanced" element={<AdvancedMonetizationPage />} />
             <Route path="/payment-success" element={<PaymentSuccessPage />} />
             <Route path="/payment-cancelled" element={<PaymentCancelledPage />} />
           </Routes>
