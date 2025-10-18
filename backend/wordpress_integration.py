@@ -21,14 +21,25 @@ class WordPressIntegration:
         self.username = os.environ.get('WORDPRESS_USER')
         self.password = os.environ.get('WORDPRESS_PASSWORD')
         
-        # Create basic auth header
+        # WooCommerce API credentials
+        self.wc_key = os.environ.get('WC_CONSUMER_KEY')
+        self.wc_secret = os.environ.get('WC_CONSUMER_SECRET')
+        
+        # Create basic auth header for WordPress
         credentials = f"{self.username}:{self.password}"
         encoded = base64.b64encode(credentials.encode()).decode()
-        self.headers = {
+        self.wp_headers = {
             'Authorization': f'Basic {encoded}',
             'Content-Type': 'application/json'
         }
         
+        # WooCommerce uses query params for auth
+        self.wc_auth = {
+            'consumer_key': self.wc_key,
+            'consumer_secret': self.wc_secret
+        }
+        
+        self.headers = self.wp_headers  # For backward compatibility
         self.wp_api = f"{self.base_url}/wp-json/wp/v2"
         self.wc_api = f"{self.base_url}/wp-json/wc/v3"
     
