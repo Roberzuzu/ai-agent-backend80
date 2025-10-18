@@ -469,3 +469,140 @@
     display: none !important;
   }
 }
+
+/* ============================================
+   DARK MODE STYLES
+   ============================================ */
+
+:root {
+  /* Light mode variables */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-tertiary: #f3f4f6;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-tertiary: #9ca3af;
+  --border-color: #e5e7eb;
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.dark {
+  /* Dark mode variables */
+  --bg-primary: #1f2937;
+  --bg-secondary: #111827;
+  --bg-tertiary: #374151;
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --text-tertiary: #9ca3af;
+  --border-color: #374151;
+  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+}
+
+/* Apply dark mode styles */
+.dark {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.dark .card,
+.dark .stat-card {
+  background-color: var(--bg-primary);
+  border-color: var(--border-color);
+  box-shadow: var(--shadow);
+}
+
+.dark .input-field {
+  background-color: var(--bg-tertiary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+.dark .input-field::placeholder {
+  color: var(--text-tertiary);
+}
+
+.dark .trend-item:hover {
+  background-color: var(--bg-tertiary);
+}
+
+/* Dark mode utilities */
+.dark .bg-white {
+  background-color: var(--bg-primary) !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: var(--bg-secondary) !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: var(--bg-tertiary) !important;
+}
+
+.dark .text-gray-900 {
+  color: var(--text-primary) !important;
+}
+
+.dark .text-gray-600 {
+  color: var(--text-secondary) !important;
+}
+
+.dark .text-gray-500 {
+  color: var(--text-tertiary) !important;
+}
+
+.dark .border-gray-200 {
+  border-color: var(--border-color) !important;
+}
+
+.dark .divide-gray-100 > * + * {
+  border-color: var(--border-color) !important;
+}
+
+/* Dark mode shadows */
+.dark .shadow-sm {
+  box-shadow: var(--shadow) !important;
+}
+
+.dark .shadow-md,
+.dark .shadow-lg {
+  box-shadow: var(--shadow-lg) !important;
+}
+
+/* Keep certain colors in dark mode */
+.dark .text-blue-600,
+.dark .text-green-600,
+.dark .text-purple-600,
+.dark .text-orange-600,
+.dark .text-red-600 {
+  /* These stay the same for consistency */
+}
+
+/* Dark mode specific components */
+.dark .skeleton {
+  background: linear-gradient(
+    90deg,
+    #374151 25%,
+    #4b5563 50%,
+    #374151 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.dark .glass {
+  background: rgba(31, 41, 55, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(55, 65, 81, 0.5);
+}
+
+/* Smooth transition between themes */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Disable transitions on theme switch to prevent flashing */
+.theme-transitioning * {
+  transition: none !important;
+}
