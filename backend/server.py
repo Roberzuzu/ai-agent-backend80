@@ -152,6 +152,74 @@ class AIGenerationRequest(BaseModel):
     max_tokens: int = 1000
 
 # =========================
+# PAYMENT & SUBSCRIPTION MODELS
+# =========================
+
+class SubscriptionPlan(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: str
+    price: float
+    currency: str = "usd"
+    interval: str = "month"  # month, year
+    features: List[str] = []
+    stripe_price_id: Optional[str] = None
+    is_active: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class SubscriptionPlanCreate(BaseModel):
+    name: str
+    description: str
+    price: float
+    currency: str = "usd"
+    interval: str = "month"
+    features: List[str] = []
+    stripe_price_id: Optional[str] = None
+
+class Subscription(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_email: str
+    plan_id: str
+    stripe_subscription_id: Optional[str] = None
+    status: str = "active"  # active, cancelled, expired, past_due
+    current_period_start: datetime
+    current_period_end: datetime
+    cancel_at_period_end: bool = False
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class SubscriptionCreate(BaseModel):
+    user_email: str
+    plan_id: str
+
+class PaymentTransaction(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    session_id: str
+    payment_id: Optional[str] = None
+    user_email: Optional[str] = None
+    amount: float
+    currency: str = "usd"
+    payment_type: str  # subscription, product, custom
+    product_id: Optional[str] = None
+    plan_id: Optional[str] = None
+    payment_status: str = "pending"  # pending, paid, failed, cancelled
+    status: str = "initiated"  # initiated, completed, failed
+    metadata: Dict[str, Any] = {}
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class CheckoutRequest(BaseModel):
+    payment_type: str  # product, subscription
+    product_id: Optional[str] = None
+    plan_id: Optional[str] = None
+    user_email: Optional[str] = None
+    origin_url: str
+    metadata: Optional[Dict[str, Any]] = {}
+
+# =========================
 # AI HELPER FUNCTIONS
 # =========================
 
