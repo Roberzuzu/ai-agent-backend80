@@ -1,6 +1,5 @@
 from fastapi import FastAPI, APIRouter, HTTPException, BackgroundTasks, Request, Depends, status
-from fastapi.responses import JSONResponse
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
