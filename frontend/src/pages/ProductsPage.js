@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { API } from '../App';
-import { DollarSign, Plus, Star, Trash2, Edit } from 'lucide-react';
+import { DollarSign, Plus, Star, Trash2, Edit, Upload, RefreshCw } from 'lucide-react';
 
 function ProductsPage() {
   const [products, setProducts] = useState([]);
