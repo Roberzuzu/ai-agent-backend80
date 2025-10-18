@@ -1444,14 +1444,19 @@ async def get_advanced_dashboard():
 async def root():
     return {
         "message": "Social Media Monetization Agent API",
-        "version": "1.0.0",
+        "version": "2.0.0",
         "modules": [
             "Growth Hacker",
             "Content Creator",
             "Monetization Manager",
             "Social Manager",
             "Ad Manager",
-            "WordPress Integration"
+            "WordPress Integration",
+            "💳 Payments & Checkout (Stripe)",
+            "📊 Revenue Analytics",
+            "💰 Subscription Management",
+            "📈 Campaign ROI Tracking",
+            "🤝 Affiliate Commissions"
         ]
     }
 
