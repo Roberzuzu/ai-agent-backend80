@@ -42,6 +42,9 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+# Configure logging
+logger = logging.getLogger(__name__)
+
 # Create the main app without a prefix
 app = FastAPI(title="Social Media Monetization Agent")
 
