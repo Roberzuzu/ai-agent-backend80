@@ -36,6 +36,7 @@ function Navigation() {
   
   const navItems = [
     { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/dashboard-enhanced', icon: Gauge, label: 'Analytics' },
     { path: '/trends', icon: TrendingUp, label: 'Growth Hacker' },
     { path: '/content', icon: Sparkles, label: 'Content Creator' },
     { path: '/products', icon: DollarSign, label: 'Monetization' },
