@@ -27,6 +27,9 @@ app = FastAPI(title="Social Media Monetization Agent")
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
+# Initialize social media publisher
+social_publisher = SocialMediaPublisher()
+
 # =========================
 # MODELS
 # =========================
