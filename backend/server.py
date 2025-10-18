@@ -474,6 +474,86 @@ class RecommendationResponse(BaseModel):
     algorithm_used: str
 
 # =========================
+# ADVANCED ANALYTICS MODELS
+# =========================
+
+class AnalyticsEvent(BaseModel):
+    """Track all user events for analytics"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_email: Optional[str] = None
+    session_id: str
+    event_type: str  # page_view, click, purchase, signup, etc.
+    event_category: str  # engagement, conversion, revenue
+    page_url: Optional[str] = None
+    referrer: Optional[str] = None
+    device_type: Optional[str] = None  # mobile, desktop, tablet
+    browser: Optional[str] = None
+    country: Optional[str] = None
+    metadata: Dict[str, Any] = {}
+    value: Optional[float] = None  # For revenue events
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class FunnelStep(BaseModel):
+    """Define steps in a conversion funnel"""
+    step_number: int
+    step_name: str
+    event_type: str  # What event triggers this step
+    required: bool = True
+
+class Funnel(BaseModel):
+    """Conversion funnel definition"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: str
+    steps: List[FunnelStep]
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class CohortDefinition(BaseModel):
+    """Define a user cohort"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    criteria: Dict[str, Any]  # Criteria to include users
+    start_date: datetime
+    end_date: datetime
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class CustomerMetrics(BaseModel):
+    """Customer lifetime value and metrics"""
+    model_config = ConfigDict(extra="ignore")
+    user_email: str
+    total_revenue: float = 0.0
+    total_orders: int = 0
+    average_order_value: float = 0.0
+    lifetime_value: float = 0.0
+    churn_probability: float = 0.0
+    last_purchase_date: Optional[datetime] = None
+    days_since_last_purchase: int = 0
+    predicted_next_purchase_days: Optional[int] = None
+    customer_segment: str = "new"  # new, active, at_risk, churned
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class AnalyticsConfig(BaseModel):
+    """Store analytics integration configs"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    ga4_measurement_id: Optional[str] = None
+    ga4_api_secret: Optional[str] = None
+    meta_pixel_id: Optional[str] = None
+    meta_access_token: Optional[str] = None
+    hotjar_site_id: Optional[str] = None
+    clarity_project_id: Optional[str] = None
+    is_ga4_enabled: bool = False
+    is_meta_pixel_enabled: bool = False
+    is_heatmap_enabled: bool = False
+    heatmap_provider: str = "clarity"  # clarity or hotjar
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+# =========================
 # ADVANCED MONETIZATION MODELS
 # =========================
 
