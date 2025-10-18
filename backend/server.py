@@ -1840,6 +1840,16 @@ async def get_checkout_status(session_id: str):
                             
                             await db.affiliate_commissions.insert_one(comm_doc)
                             
+                            # Send notification to affiliate
+                            await create_notification_internal(
+                                user_email=affiliate['email'],
+                                notification_type="affiliate",
+                                title="🤝 ¡Nueva Comisión Ganada!",
+                                message=f"Has ganado ${commission_amount:.2f} en comisiones por una nueva venta.",
+                                link="/affiliate-dashboard",
+                                icon="affiliate"
+                            )
+                            
                             # Update affiliate stats
                             await db.affiliates.update_one(
                                 {"id": affiliate['id']},
