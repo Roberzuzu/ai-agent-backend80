@@ -2297,6 +2297,353 @@ async def get_dropshipping_analytics():
     }
 
 # =========================
+# ROUTES - Memberships & Premium Content
+# =========================
+
+# Membership levels configuration
+MEMBERSHIP_LEVELS = {
+    "free": {"price": 0, "features": ["Acceso básico", "Contenido público"]},
+    "basic": {"price": 9.99, "features": ["Todo de Free", "Contenido exclusivo básico", "Descuentos 10%"]},
+    "pro": {"price": 29.99, "features": ["Todo de Basic", "Contenido premium", "Descuentos 20%", "Soporte prioritario"]},
+    "vip": {"price": 99.99, "features": ["Todo de Pro", "Acceso total", "Descuentos 30%", "Consultas 1-on-1"]}
+}
+
+@api_router.get("/memberships/levels")
+async def get_membership_levels():
+    """Get available membership levels"""
+    return MEMBERSHIP_LEVELS
+
+@api_router.post("/memberships")
+async def create_membership(data: MembershipCreate):
+    """Create or upgrade membership"""
+    try:
+        if data.level not in MEMBERSHIP_LEVELS:
+            raise HTTPException(status_code=400, detail="Invalid membership level")
+        
+        # Check if user already has membership
+        existing = await db.memberships.find_one(
+            {"user_email": data.user_email, "status": "active"},
+            {"_id": 0}
+        )
+        
+        if existing:
+            # Upgrade membership
+            await db.memberships.update_one(
+                {"id": existing['id']},
+                {"$set": {
+                    "status": "expired",
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+        
+        # Create new membership
+        level_info = MEMBERSHIP_LEVELS[data.level]
+        membership = Membership(
+            user_email=data.user_email,
+            level=data.level,
+            price=level_info['price'],
+            features=level_info['features'],
+            expires_at=datetime.now(timezone.utc) + timedelta(days=data.duration_days)
+        )
+        
+        doc = membership.model_dump()
+        doc['started_at'] = doc['started_at'].isoformat()
+        doc['expires_at'] = doc['expires_at'].isoformat()
+        doc['created_at'] = doc['created_at'].isoformat()
+        
+        await db.memberships.insert_one(doc)
+        
+        return membership
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Membership creation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/memberships/{user_email}")
+async def get_user_membership(user_email: str):
+    """Get user's active membership"""
+    membership = await db.memberships.find_one(
+        {"user_email": user_email, "status": "active"},
+        {"_id": 0}
+    )
+    
+    if not membership:
+        # Return free membership
+        return {
+            "level": "free",
+            "price": 0,
+            "features": MEMBERSHIP_LEVELS["free"]["features"],
+            "status": "active"
+        }
+    
+    if isinstance(membership.get('started_at'), str):
+        membership['started_at'] = datetime.fromisoformat(membership['started_at'])
+    if isinstance(membership.get('expires_at'), str):
+        membership['expires_at'] = datetime.fromisoformat(membership['expires_at'])
+    if isinstance(membership.get('created_at'), str):
+        membership['created_at'] = datetime.fromisoformat(membership['created_at'])
+    
+    return membership
+
+@api_router.post("/premium-content")
+async def create_premium_content(content: PremiumContentCreate):
+    """Create premium content"""
+    premium_content = PremiumContent(**content.model_dump())
+    
+    doc = premium_content.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    
+    await db.premium_content.insert_one(doc)
+    return premium_content
+
+@api_router.get("/premium-content")
+async def get_premium_content(level: Optional[str] = None, user_email: Optional[str] = None):
+    """Get premium content (filtered by user's membership level)"""
+    query = {"is_published": True}
+    
+    # Get user's membership level if email provided
+    user_level = "free"
+    if user_email:
+        membership = await db.memberships.find_one(
+            {"user_email": user_email, "status": "active"},
+            {"_id": 0}
+        )
+        if membership:
+            user_level = membership['level']
+    
+    # Filter by level if specified
+    if level:
+        query["required_level"] = level
+    
+    content_list = await db.premium_content.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    # Hierarchy: free < basic < pro < vip
+    level_hierarchy = ["free", "basic", "pro", "vip"]
+    user_level_index = level_hierarchy.index(user_level) if user_level in level_hierarchy else 0
+    
+    # Filter content based on user's level
+    accessible_content = []
+    for content in content_list:
+        content_level_index = level_hierarchy.index(content['required_level'])
+        
+        # Add access flag
+        content['has_access'] = user_level_index >= content_level_index
+        
+        # Hide full content if no access
+        if not content['has_access']:
+            content['content'] = content['content'][:200] + "... [Contenido Premium - Actualiza tu membresía]"
+        
+        if isinstance(content.get('created_at'), str):
+            content['created_at'] = datetime.fromisoformat(content['created_at'])
+        
+        accessible_content.append(content)
+    
+    return accessible_content
+
+@api_router.get("/premium-content/{content_id}")
+async def get_premium_content_detail(content_id: str, user_email: Optional[str] = None):
+    """Get premium content detail"""
+    content = await db.premium_content.find_one({"id": content_id}, {"_id": 0})
+    if not content:
+        raise HTTPException(status_code=404, detail="Content not found")
+    
+    # Check access
+    user_level = "free"
+    if user_email:
+        membership = await db.memberships.find_one(
+            {"user_email": user_email, "status": "active"},
+            {"_id": 0}
+        )
+        if membership:
+            user_level = membership['level']
+    
+    level_hierarchy = ["free", "basic", "pro", "vip"]
+    user_level_index = level_hierarchy.index(user_level)
+    content_level_index = level_hierarchy.index(content['required_level'])
+    
+    has_access = user_level_index >= content_level_index
+    
+    if not has_access:
+        content['content'] = "🔒 Contenido Premium - Actualiza tu membresía para acceder"
+    
+    # Increment views
+    await db.premium_content.update_one(
+        {"id": content_id},
+        {"$inc": {"views": 1}}
+    )
+    
+    if isinstance(content.get('created_at'), str):
+        content['created_at'] = datetime.fromisoformat(content['created_at'])
+    
+    content['has_access'] = has_access
+    return content
+
+# =========================
+# ROUTES - Donations & Tips
+# =========================
+
+@api_router.post("/donations")
+async def create_donation(donation: DonationCreate):
+    """Create a donation"""
+    donation_obj = Donation(**donation.model_dump())
+    
+    doc = donation_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    
+    await db.donations.insert_one(doc)
+    return donation_obj
+
+@api_router.get("/donations")
+async def get_donations(limit: int = 50):
+    """Get recent donations"""
+    donations = await db.donations.find({}, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    
+    for donation in donations:
+        if isinstance(donation.get('created_at'), str):
+            donation['created_at'] = datetime.fromisoformat(donation['created_at'])
+        
+        # Hide email if anonymous
+        if donation.get('is_anonymous'):
+            donation['donor_name'] = "Anónimo"
+            donation['donor_email'] = "***"
+    
+    return donations
+
+@api_router.get("/donations/leaderboard")
+async def get_donations_leaderboard(limit: int = 10):
+    """Get top donors leaderboard"""
+    # Aggregate donations by donor
+    donations = await db.donations.find(
+        {"is_anonymous": False},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    # Group by donor
+    donor_totals = {}
+    for donation in donations:
+        email = donation['donor_email']
+        if email not in donor_totals:
+            donor_totals[email] = {
+                "donor_name": donation['donor_name'],
+                "donor_email": email,
+                "total_amount": 0,
+                "donation_count": 0
+            }
+        donor_totals[email]['total_amount'] += donation['amount']
+        donor_totals[email]['donation_count'] += 1
+    
+    # Sort by total amount
+    leaderboard = sorted(
+        donor_totals.values(),
+        key=lambda x: x['total_amount'],
+        reverse=True
+    )[:limit]
+    
+    return leaderboard
+
+@api_router.get("/donations/stats")
+async def get_donation_stats():
+    """Get donation statistics"""
+    donations = await db.donations.find({}, {"_id": 0}).to_list(1000)
+    
+    total_amount = sum(d['amount'] for d in donations)
+    total_count = len(donations)
+    average_amount = total_amount / total_count if total_count > 0 else 0
+    
+    return {
+        "total_donations": total_count,
+        "total_amount": round(total_amount, 2),
+        "average_donation": round(average_amount, 2),
+        "currency": "usd"
+    }
+
+@api_router.post("/tips")
+async def create_tip(tip: TipCreate):
+    """Create a tip for content"""
+    tip_obj = Tip(**tip.model_dump())
+    
+    doc = tip_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    
+    await db.tips.insert_one(doc)
+    return tip_obj
+
+@api_router.get("/tips/content/{content_id}")
+async def get_content_tips(content_id: str):
+    """Get tips for specific content"""
+    tips = await db.tips.find({"content_id": content_id}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    for tip in tips:
+        if isinstance(tip.get('created_at'), str):
+            tip['created_at'] = datetime.fromisoformat(tip['created_at'])
+    
+    total_tips = sum(t['amount'] for t in tips)
+    
+    return {
+        "content_id": content_id,
+        "total_tips": round(total_tips, 2),
+        "tip_count": len(tips),
+        "tips": tips
+    }
+
+@api_router.post("/donation-goals")
+async def create_donation_goal(goal: DonationGoalCreate):
+    """Create a donation goal"""
+    goal_obj = DonationGoal(**goal.model_dump())
+    
+    doc = goal_obj.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    if doc.get('deadline'):
+        doc['deadline'] = doc['deadline'].isoformat()
+    
+    await db.donation_goals.insert_one(doc)
+    return goal_obj
+
+@api_router.get("/donation-goals")
+async def get_donation_goals(is_active: Optional[bool] = None):
+    """Get donation goals"""
+    query = {}
+    if is_active is not None:
+        query["is_active"] = is_active
+    
+    goals = await db.donation_goals.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    for goal in goals:
+        if isinstance(goal.get('created_at'), str):
+            goal['created_at'] = datetime.fromisoformat(goal['created_at'])
+        if goal.get('deadline') and isinstance(goal['deadline'], str):
+            goal['deadline'] = datetime.fromisoformat(goal['deadline'])
+        
+        # Calculate progress
+        goal['progress_percentage'] = round((goal['current_amount'] / goal['target_amount'] * 100), 2) if goal['target_amount'] > 0 else 0
+    
+    return goals
+
+@api_router.patch("/donation-goals/{goal_id}/contribute")
+async def contribute_to_goal(goal_id: str, amount: float):
+    """Contribute to a donation goal"""
+    result = await db.donation_goals.update_one(
+        {"id": goal_id, "is_active": True},
+        {"$inc": {"current_amount": amount}}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Goal not found or inactive")
+    
+    # Check if goal reached
+    goal = await db.donation_goals.find_one({"id": goal_id}, {"_id": 0})
+    if goal and goal['current_amount'] >= goal['target_amount']:
+        await db.donation_goals.update_one(
+            {"id": goal_id},
+            {"$set": {"is_active": False}}
+        )
+        return {"message": "Goal reached! 🎉", "goal": goal}
+    
+    return {"message": "Contribution added", "current_amount": goal['current_amount']}
+
+# =========================
 # ROOT ROUTE
 # =========================
 
