@@ -445,6 +445,118 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
+      🔔 SISTEMA DE NOTIFICACIONES COMPLETO IMPLEMENTADO:
+      
+      ✅ BACKEND - Modelos y Endpoints:
+      1. Modelos:
+         - Notification: id, user_email, type, title, message, link, icon, is_read, metadata
+         - NotificationPreferences: Preferencias por usuario y por tipo
+      
+      2. Endpoints Implementados:
+         - POST /api/notifications - Crear notificación (admin/system)
+         - GET /api/notifications?user_email=X&unread_only=true - Listar
+         - GET /api/notifications/count?user_email=X - Contador de no leídas
+         - PATCH /api/notifications/{id}/read - Marcar como leída
+         - PATCH /api/notifications/read-all?user_email=X - Marcar todas
+         - DELETE /api/notifications/{id} - Eliminar (archivar)
+         - GET /api/notifications/preferences?user_email=X - Obtener preferencias
+         - PATCH /api/notifications/preferences?user_email=X - Actualizar preferencias
+      
+      3. Helper Function:
+         - create_notification_internal() - Crear notificaciones con validación de preferencias
+         - Respeta configuración de usuario (tipos deshabilitados no se crean)
+         - TODO: Integración con email (SendGrid/AWS SES)
+         - TODO: Push notifications
+      
+      4. Notificaciones Automáticas:
+         ✅ Pagos exitosos → Notificación al comprador
+         ✅ Comisiones de afiliados → Notificación al afiliado
+         - Próximamente: Suscripciones, campañas, productos
+      
+      ✅ FRONTEND - Componentes:
+      1. NotificationBell.js:
+         - Bell icon con badge de contador animado
+         - Dropdown panel de últimas 10 notificaciones
+         - Polling automático cada 30 segundos
+         - Mark as read individual
+         - Mark all as read
+         - Delete individual
+         - Navegación a recursos relacionados
+         - Formato de fecha relativo (Hace 2h, Hace 1d)
+         - Iconos por tipo de notificación
+      
+      2. NotificationsPage.js:
+         - Centro completo de notificaciones
+         - Filtros: Todas / Sin leer / Leídas
+         - Búsqueda en título y mensaje
+         - Mark all as read
+         - Delete all
+         - Cards con colores por tipo
+         - Navegación a preferencias
+         - Empty state cuando no hay notificaciones
+      
+      3. NotificationPreferencesPage.js:
+         - Toggle para email notifications
+         - Toggle para push notifications (próximamente)
+         - Preferencias por tipo:
+           * Pagos y transacciones
+           * Programa de afiliados
+           * Campañas publicitarias
+           * Productos y ventas
+           * Suscripciones
+           * Sistema y actualizaciones
+         - Email digest: None / Daily / Weekly / Monthly
+         - Botón de guardar cambios
+      
+      ✅ INTEGRACIÓN:
+      - Bell icon agregado en navegación principal
+      - Rutas: /notifications y /notifications/preferences
+      - Sistema de polling cada 30s para actualizar contador
+      - Toast notifications en operaciones
+      - Axios interceptor ya configurado
+      
+      ✅ TIPOS DE NOTIFICACIONES SOPORTADOS:
+      1. payment - Pagos y transacciones 💰
+      2. affiliate - Programa de afiliados 🤝
+      3. campaign - Campañas publicitarias 📢
+      4. product - Productos y ventas 🛍️
+      5. subscription - Suscripciones ⭐
+      6. system - Sistema y actualizaciones 🔔
+      7. success - Operaciones exitosas ✅
+      8. warning - Advertencias ⚠️
+      9. error - Errores ❌
+      10. info - Información ℹ️
+      
+      📋 CARACTERÍSTICAS:
+      - ✅ Notificaciones in-app con bell icon
+      - ✅ Centro de notificaciones completo
+      - ✅ Preferencias personalizables por usuario
+      - ✅ Polling automático (30s)
+      - ✅ Filtros y búsqueda
+      - ✅ Mark as read/unread
+      - ✅ Delete individual y bulk
+      - ✅ Navegación a recursos relacionados
+      - ✅ Email digest configuration
+      - ⏳ Email notifications (integración pendiente)
+      - ⏳ Push notifications (próximamente)
+      
+      🎯 EVENTOS QUE DISPARAN NOTIFICACIONES:
+      - Pago recibido exitosamente
+      - Comisión de afiliado ganada
+      - Nueva suscripción (próximamente)
+      - Campaña completada (próximamente)
+      - Producto destacado (próximamente)
+      - Actualizaciones del sistema (manual)
+      
+      📊 SCRIPT DE PRUEBA:
+      - create_test_notifications.py - Crea 8 notificaciones de ejemplo
+      - Incluye todos los tipos de notificaciones
+      - Mezcla de leídas y no leídas
+      
+      LISTO PARA TESTING COMPLETO
+  
+  - agent: "main"
+    message: |
       🎨 OPCIÓN B - EXPERIENCIA DE USUARIO IMPLEMENTADA:
       
       ✅ ERROR BOUNDARIES:
