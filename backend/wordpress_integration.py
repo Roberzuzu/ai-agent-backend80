@@ -310,6 +310,149 @@ class WordPressIntegration:
             'synced': len(results),
             'results': results
         }
+    
+    def create_page(self, page_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a WordPress page"""
+        try:
+            response = requests.post(
+                f"{self.wp_api}/pages",
+                headers=self.wp_headers,
+                json=page_data,
+                timeout=30
+            )
+            
+            if response.status_code in [200, 201]:
+                page = response.json()
+                return {
+                    'success': True,
+                    'page_id': page.get('id'),
+                    'permalink': page.get('link'),
+                    'message': f"Page created: {page.get('title', {}).get('rendered')}"
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': f"Failed to create page: {response.status_code}",
+                    'details': response.text
+                }
+        except Exception as e:
+            logger.error(f"Error creating page: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def create_widget_code(self, product_ids: List[str]) -> str:
+        """Generate HTML/JS code for featured products widget"""
+        widget_html = """
+        <div id="featured-products-widget" class="featured-products">
+            <h3>Productos Destacados</h3>
+            <div class="products-slider">
+        """
+        
+        # Note: In real implementation, would fetch product details
+        # For now, return template
+        widget_html += """
+                <!-- Products will be loaded here -->
+            </div>
+        </div>
+        
+        <style>
+        .featured-products {
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .products-slider {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+        .product-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .product-card h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .product-card .price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #27ae60;
+            margin: 10px 0;
+        }
+        .product-card .discount {
+            background: #e74c3c;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: inline-block;
+        }
+        .product-card .btn {
+            display: block;
+            background: #3498db;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-top: 10px;
+        }
+        .product-card .btn:hover {
+            background: #2980b9;
+        }
+        </style>
+        """
+        
+        return widget_html
+    
+    def auto_publish_content_as_post(self, content_data: Dict[str, Any], product_ids: List[str] = None) -> Dict[str, Any]:
+        """Automatically publish content as blog post with product links"""
+        try:
+            # Build content with product mentions
+            post_content = content_data.get('generated_content', '')
+            
+            # Add products section if product_ids provided
+            if product_ids:
+                post_content += "\n\n<h3>Productos Recomendados</h3>\n"
+                post_content += "<p>Para este proyecto/tutorial, recomendamos:</p>\n<ul>"
+                
+                # Would fetch actual product details here
+                for pid in product_ids[:5]:
+                    post_content += f"\n<li>Producto {pid} - <a href='#'>Ver detalles</a></li>"
+                
+                post_content += "\n</ul>"
+            
+            # Add call to action
+            post_content += "\n\n<p><strong>¿Necesitas estas herramientas?</strong> "
+            post_content += "Visita nuestra tienda y usa nuestros códigos de descuento exclusivos.</p>"
+            
+            post_data = {
+                'title': content_data.get('title'),
+                'content': post_content,
+                'status': 'publish',
+                'categories': [],
+                'tags': content_data.get('keywords', []),
+                'meta': {
+                    '_agent_content_id': content_data.get('id'),
+                    '_seo_description': content_data.get('description', '')[:160]
+                }
+            }
+            
+            return self.create_blog_post(post_data)
+            
+        except Exception as e:
+            logger.error(f"Error auto-publishing content: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
 
 
 def create_wordpress_client() -> WordPressIntegration:
