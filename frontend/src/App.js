@@ -32,7 +32,8 @@ function Navigation() {
     { path: '/campaigns', icon: Megaphone, label: 'Ad Manager' },
     { path: '/subscriptions', icon: CreditCard, label: 'Suscripciones' },
     { path: '/revenue', icon: BarChart3, label: 'Ingresos' },
-    { path: '/affiliate', icon: Users, label: 'Afiliados' }
+    { path: '/affiliate', icon: Users, label: 'Afiliados' },
+    { path: '/advanced', icon: Zap, label: 'Avanzado' }
   ];
   
   return (
