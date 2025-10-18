@@ -91,6 +91,9 @@ function Navigation() {
 
           {/* User Menu */}
           <div className="flex items-center gap-3">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+            
             {/* Notification Bell */}
             <NotificationBell />
             
