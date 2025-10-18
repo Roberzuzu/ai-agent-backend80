@@ -1512,6 +1512,331 @@ async def get_advanced_dashboard():
     }
 
 # =========================
+# ROUTES - Affiliate Program
+# =========================
+
+def generate_unique_code(length: int = 8) -> str:
+    """Generate a unique affiliate code"""
+    chars = string.ascii_uppercase + string.digits
+    return ''.join(secrets.choice(chars) for _ in range(length))
+
+@api_router.post("/affiliates/register")
+async def register_affiliate(data: AffiliateCreate):
+    """Register as an affiliate"""
+    try:
+        # Check if email already registered
+        existing = await db.affiliates.find_one({"email": data.email}, {"_id": 0})
+        if existing:
+            raise HTTPException(status_code=400, detail="Email already registered as affiliate")
+        
+        # Generate unique code
+        unique_code = generate_unique_code()
+        
+        # Ensure uniqueness
+        while await db.affiliates.find_one({"unique_code": unique_code}):
+            unique_code = generate_unique_code()
+        
+        # Create affiliate
+        affiliate = Affiliate(
+            name=data.name,
+            email=data.email,
+            unique_code=unique_code,
+            payment_email=data.payment_email or data.email,
+            payment_method=data.payment_method,
+            status="active"
+        )
+        
+        doc = affiliate.model_dump()
+        doc['created_at'] = doc['created_at'].isoformat()
+        doc['updated_at'] = doc['updated_at'].isoformat()
+        
+        await db.affiliates.insert_one(doc)
+        
+        return {
+            "message": "Affiliate registered successfully",
+            "affiliate": affiliate
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Affiliate registration error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/affiliates/by-email/{email}")
+async def get_affiliate_by_email(email: str):
+    """Get affiliate info by email"""
+    affiliate = await db.affiliates.find_one({"email": email}, {"_id": 0})
+    if not affiliate:
+        raise HTTPException(status_code=404, detail="Affiliate not found")
+    
+    if isinstance(affiliate.get('created_at'), str):
+        affiliate['created_at'] = datetime.fromisoformat(affiliate['created_at'])
+    if isinstance(affiliate.get('updated_at'), str):
+        affiliate['updated_at'] = datetime.fromisoformat(affiliate['updated_at'])
+    
+    return affiliate
+
+@api_router.post("/affiliates/links/generate")
+async def generate_affiliate_link(data: AffiliateLinkCreate, affiliate_email: str):
+    """Generate a unique affiliate link for a product"""
+    try:
+        # Get affiliate
+        affiliate = await db.affiliates.find_one({"email": affiliate_email}, {"_id": 0})
+        if not affiliate:
+            raise HTTPException(status_code=404, detail="Affiliate not found")
+        
+        # If product_id provided, verify it exists
+        if data.product_id:
+            product = await db.products.find_one({"id": data.product_id}, {"_id": 0})
+            if not product:
+                raise HTTPException(status_code=404, detail="Product not found")
+        
+        # Check if link already exists
+        existing_link = await db.affiliate_links.find_one({
+            "affiliate_id": affiliate['id'],
+            "product_id": data.product_id
+        }, {"_id": 0})
+        
+        if existing_link:
+            if isinstance(existing_link.get('created_at'), str):
+                existing_link['created_at'] = datetime.fromisoformat(existing_link['created_at'])
+            return existing_link
+        
+        # Create new link
+        link = AffiliateLink(
+            affiliate_id=affiliate['id'],
+            product_id=data.product_id,
+            unique_code=affiliate['unique_code']
+        )
+        
+        doc = link.model_dump()
+        doc['created_at'] = doc['created_at'].isoformat()
+        
+        await db.affiliate_links.insert_one(doc)
+        
+        return link
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Link generation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/affiliates/links/{affiliate_email}")
+async def get_affiliate_links(affiliate_email: str):
+    """Get all links for an affiliate"""
+    affiliate = await db.affiliates.find_one({"email": affiliate_email}, {"_id": 0})
+    if not affiliate:
+        raise HTTPException(status_code=404, detail="Affiliate not found")
+    
+    links = await db.affiliate_links.find(
+        {"affiliate_id": affiliate['id']},
+        {"_id": 0}
+    ).to_list(100)
+    
+    # Enrich with product info
+    for link in links:
+        if isinstance(link.get('created_at'), str):
+            link['created_at'] = datetime.fromisoformat(link['created_at'])
+        
+        if link.get('product_id'):
+            product = await db.products.find_one({"id": link['product_id']}, {"_id": 0})
+            if product:
+                link['product_name'] = product['name']
+                link['product_price'] = product['price']
+    
+    return links
+
+@api_router.get("/affiliates/track/{affiliate_code}")
+async def track_affiliate_click(affiliate_code: str, product_id: Optional[str] = None, redirect_url: Optional[str] = None):
+    """Track affiliate click and redirect"""
+    try:
+        # Find affiliate by code
+        affiliate = await db.affiliates.find_one({"unique_code": affiliate_code}, {"_id": 0})
+        if not affiliate:
+            raise HTTPException(status_code=404, detail="Invalid affiliate code")
+        
+        # Update affiliate total clicks
+        await db.affiliates.update_one(
+            {"unique_code": affiliate_code},
+            {"$inc": {"total_clicks": 1}}
+        )
+        
+        # Update link clicks if product specified
+        if product_id:
+            await db.affiliate_links.update_one(
+                {"affiliate_id": affiliate['id'], "product_id": product_id},
+                {"$inc": {"clicks": 1}}
+            )
+        
+        # Redirect to product or home
+        if redirect_url:
+            return RedirectResponse(url=redirect_url)
+        elif product_id:
+            return RedirectResponse(url=f"/products?highlight={product_id}")
+        else:
+            return RedirectResponse(url="/")
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Tracking error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/affiliates/dashboard/{affiliate_email}")
+async def get_affiliate_dashboard(affiliate_email: str):
+    """Get affiliate dashboard with stats"""
+    affiliate = await db.affiliates.find_one({"email": affiliate_email}, {"_id": 0})
+    if not affiliate:
+        raise HTTPException(status_code=404, detail="Affiliate not found")
+    
+    # Get commissions
+    commissions = await db.affiliate_commissions.find(
+        {"affiliate_id": affiliate['id']},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    # Calculate stats
+    total_pending = sum(c['commission_amount'] for c in commissions if c['status'] == 'pending')
+    total_approved = sum(c['commission_amount'] for c in commissions if c['status'] == 'approved')
+    total_paid = sum(c['commission_amount'] for c in commissions if c['status'] == 'paid')
+    
+    # Get recent payouts
+    payouts = await db.affiliate_payouts.find(
+        {"affiliate_id": affiliate['id']},
+        {"_id": 0}
+    ).sort("requested_at", -1).limit(10).to_list(10)
+    
+    return {
+        "affiliate": affiliate,
+        "stats": {
+            "total_clicks": affiliate['total_clicks'],
+            "total_conversions": affiliate['total_conversions'],
+            "conversion_rate": (affiliate['total_conversions'] / affiliate['total_clicks'] * 100) if affiliate['total_clicks'] > 0 else 0,
+            "total_earnings": affiliate['total_earnings'],
+            "pending_commissions": total_pending,
+            "approved_commissions": total_approved,
+            "paid_commissions": total_paid
+        },
+        "recent_payouts": payouts
+    }
+
+@api_router.get("/affiliates/commissions/{affiliate_email}")
+async def get_affiliate_commissions_list(affiliate_email: str, status: Optional[str] = None):
+    """Get commissions for an affiliate"""
+    affiliate = await db.affiliates.find_one({"email": affiliate_email}, {"_id": 0})
+    if not affiliate:
+        raise HTTPException(status_code=404, detail="Affiliate not found")
+    
+    query = {"affiliate_id": affiliate['id']}
+    if status:
+        query["status"] = status
+    
+    commissions = await db.affiliate_commissions.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    # Enrich with product/transaction info
+    for commission in commissions:
+        if isinstance(commission.get('created_at'), str):
+            commission['created_at'] = datetime.fromisoformat(commission['created_at'])
+        if isinstance(commission.get('approved_at'), str):
+            commission['approved_at'] = datetime.fromisoformat(commission['approved_at'])
+        if isinstance(commission.get('paid_at'), str):
+            commission['paid_at'] = datetime.fromisoformat(commission['paid_at'])
+        
+        if commission.get('product_id'):
+            product = await db.products.find_one({"id": commission['product_id']}, {"_id": 0})
+            if product:
+                commission['product_name'] = product['name']
+    
+    return commissions
+
+@api_router.post("/affiliates/payouts/request")
+async def request_affiliate_payout(data: AffiliatePayoutRequest, affiliate_email: str):
+    """Request a payout"""
+    try:
+        affiliate = await db.affiliates.find_one({"email": affiliate_email}, {"_id": 0})
+        if not affiliate:
+            raise HTTPException(status_code=404, detail="Affiliate not found")
+        
+        # Check approved balance
+        commissions = await db.affiliate_commissions.find(
+            {"affiliate_id": affiliate['id'], "status": "approved"},
+            {"_id": 0}
+        ).to_list(1000)
+        
+        approved_balance = sum(c['commission_amount'] for c in commissions)
+        
+        if data.amount > approved_balance:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Insufficient approved balance. Available: ${approved_balance:.2f}"
+            )
+        
+        if data.amount < 50:
+            raise HTTPException(status_code=400, detail="Minimum payout amount is $50")
+        
+        # Create payout request
+        payout = AffiliatePayout(
+            affiliate_id=affiliate['id'],
+            amount=data.amount,
+            method=data.payment_method,
+            payment_email=data.payment_email,
+            status="pending"
+        )
+        
+        doc = payout.model_dump()
+        doc['requested_at'] = doc['requested_at'].isoformat()
+        if doc.get('processed_at'):
+            doc['processed_at'] = doc['processed_at'].isoformat()
+        
+        await db.affiliate_payouts.insert_one(doc)
+        
+        return {
+            "message": "Payout requested successfully",
+            "payout": payout
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Payout request error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/affiliates/payouts/{affiliate_email}")
+async def get_affiliate_payouts(affiliate_email: str):
+    """Get payout history for an affiliate"""
+    affiliate = await db.affiliates.find_one({"email": affiliate_email}, {"_id": 0})
+    if not affiliate:
+        raise HTTPException(status_code=404, detail="Affiliate not found")
+    
+    payouts = await db.affiliate_payouts.find(
+        {"affiliate_id": affiliate['id']},
+        {"_id": 0}
+    ).sort("requested_at", -1).to_list(100)
+    
+    for payout in payouts:
+        if isinstance(payout.get('requested_at'), str):
+            payout['requested_at'] = datetime.fromisoformat(payout['requested_at'])
+        if isinstance(payout.get('processed_at'), str):
+            payout['processed_at'] = datetime.fromisoformat(payout['processed_at'])
+    
+    return payouts
+
+@api_router.get("/affiliates/all")
+async def get_all_affiliates():
+    """Get all affiliates (admin endpoint)"""
+    affiliates = await db.affiliates.find({}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    for affiliate in affiliates:
+        if isinstance(affiliate.get('created_at'), str):
+            affiliate['created_at'] = datetime.fromisoformat(affiliate['created_at'])
+        if isinstance(affiliate.get('updated_at'), str):
+            affiliate['updated_at'] = datetime.fromisoformat(affiliate['updated_at'])
+    
+    return affiliates
+
+# =========================
 # ROOT ROUTE
 # =========================
 
