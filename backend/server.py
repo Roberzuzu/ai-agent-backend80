@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 import asyncio
 from social_integrations import SocialMediaPublisher
+from wordpress_integration import WordPressIntegration
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
