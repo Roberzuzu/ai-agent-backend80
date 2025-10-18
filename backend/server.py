@@ -424,6 +424,49 @@ class NotificationPreferencesUpdate(BaseModel):
     email_digest: Optional[str] = None
 
 # =========================
+# AI RECOMMENDATIONS MODELS
+# =========================
+
+class UserInteraction(BaseModel):
+    """Track user interactions for collaborative filtering"""
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_email: str
+    product_id: str
+    interaction_type: str  # view, click, purchase, add_to_cart, wishlist
+    interaction_score: float = 1.0  # Different weights for different interactions
+    session_id: Optional[str] = None
+    metadata: Dict[str, Any] = {}
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ProductEmbedding(BaseModel):
+    """Store OpenAI embeddings for products"""
+    model_config = ConfigDict(extra="ignore")
+    product_id: str
+    embedding: List[float]  # 1536 dimensions for text-embedding-ada-002
+    text_used: str  # The text that was embedded
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class RecommendationRequest(BaseModel):
+    user_email: str
+    limit: int = 10
+    algorithm: str = "hybrid"  # similarity, collaborative, hybrid
+    exclude_purchased: bool = True
+    category: Optional[str] = None
+
+class RecommendationResponse(BaseModel):
+    product_id: str
+    product_name: str
+    product_description: str
+    product_price: float
+    product_image: Optional[str] = None
+    product_category: str
+    score: float
+    reason: str  # Why this was recommended
+    algorithm_used: str
+
+# =========================
 # ADVANCED MONETIZATION MODELS
 # =========================
 
