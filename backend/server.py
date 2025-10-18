@@ -21,6 +21,7 @@ from wordpress_integration import WordPressIntegration
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 import stripe
+import requests
 
 # Load Telegram configuration
 TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
