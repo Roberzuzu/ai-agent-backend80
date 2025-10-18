@@ -105,6 +105,18 @@
 user_problem_statement: "Implementar sistema completo de pagos y procesamiento con Stripe, incluyendo suscripciones recurrentes, checkout integrado, y dashboard avanzado de ingresos con tracking de códigos de descuento, ROI por campaña y comisiones de afiliados"
 
 backend:
+  - task: "Endpoint Analytics Dashboard Enhanced"
+    implemented: true
+    working: "NA"
+    file: "backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Endpoint /api/analytics/dashboard-enhanced con filtros de fecha, comparación de periodos, time-series data, métricas de afiliados/carritos/AB tests/email"
+
   - task: "Integración de Stripe Checkout API"
     implemented: true
     working: true
