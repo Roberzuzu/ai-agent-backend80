@@ -22,6 +22,9 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 import stripe
 import requests
+from openai import OpenAI
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
 
 # Load Telegram configuration
 TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN')
