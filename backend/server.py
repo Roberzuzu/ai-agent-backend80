@@ -360,6 +360,63 @@ class AffiliatePayoutRequest(BaseModel):
     payment_email: str
 
 # =========================
+# NOTIFICATION MODELS
+# =========================
+
+class Notification(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_email: str
+    type: str  # info, success, warning, error, payment, affiliate, campaign, product
+    title: str
+    message: str
+    link: Optional[str] = None  # Link to related resource
+    icon: Optional[str] = None  # Icon name for frontend
+    is_read: bool = False
+    is_archived: bool = False
+    metadata: Dict[str, Any] = {}  # Additional data
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    read_at: Optional[datetime] = None
+
+class NotificationCreate(BaseModel):
+    user_email: str
+    type: str
+    title: str
+    message: str
+    link: Optional[str] = None
+    icon: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = {}
+
+class NotificationPreferences(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_email: str
+    email_notifications: bool = True
+    push_notifications: bool = True
+    # Specific notification types
+    notify_payments: bool = True
+    notify_affiliates: bool = True
+    notify_campaigns: bool = True
+    notify_products: bool = True
+    notify_subscriptions: bool = True
+    notify_system: bool = True
+    # Email digest
+    email_digest: str = "daily"  # none, daily, weekly, monthly
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class NotificationPreferencesUpdate(BaseModel):
+    email_notifications: Optional[bool] = None
+    push_notifications: Optional[bool] = None
+    notify_payments: Optional[bool] = None
+    notify_affiliates: Optional[bool] = None
+    notify_campaigns: Optional[bool] = None
+    notify_products: Optional[bool] = None
+    notify_subscriptions: Optional[bool] = None
+    notify_system: Optional[bool] = None
+    email_digest: Optional[str] = None
+
+# =========================
 # ADVANCED MONETIZATION MODELS
 # =========================
 
