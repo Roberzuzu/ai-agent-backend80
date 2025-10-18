@@ -5727,12 +5727,67 @@ async def root():
 # Include the router in the main app
 app.include_router(api_router)
 
+# =========================
+# SECURITY MIDDLEWARES
+# =========================
+
+# 1. Security Headers Middleware (Helmet equivalent)
+app.add_middleware(
+    SecurityHeadersMiddleware,
+    config={
+        'development': os.environ.get('ENVIRONMENT') == 'development'
+    }
+)
+
+# 2. IP Whitelist for Admin Endpoints
+if admin_whitelist:
+    app.add_middleware(
+        IPWhitelistMiddleware,
+        whitelist=admin_whitelist,
+        admin_paths=[
+            "/api/admin",
+            "/api/database",
+            "/api/audit-logs",
+            "/api/api-keys"
+        ]
+    )
+    logger.info(f"🔒 Admin IP whitelist enabled with {len(admin_whitelist)} IPs")
+
+# 3. CSRF Protection
+app.add_middleware(
+    CSRFProtectionMiddleware,
+    exempt_paths=[
+        "/api/auth/login",
+        "/api/auth/register",
+        "/api/webhook"
+    ]
+)
+
+# 4. CORS Middleware (more restrictive in production)
+allowed_origins = os.environ.get('CORS_ORIGINS', '*').split(',')
+if '*' in allowed_origins and os.environ.get('ENVIRONMENT') == 'production':
+    logger.warning("⚠️  CORS set to allow all origins in production - consider restricting")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=allowed_origins,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=[
+        "Content-Type",
+        "Authorization",
+        "X-Requested-With",
+        "X-CSRF-Token",
+        "X-API-Key",
+        "X-2FA-Code"
+    ],
+    expose_headers=[
+        "X-RateLimit-Limit",
+        "X-RateLimit-Remaining",
+        "X-RateLimit-Reset",
+        "Retry-After"
+    ],
+    max_age=3600
 )
 
 # Configure logging
