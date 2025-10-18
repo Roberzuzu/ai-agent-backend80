@@ -240,88 +240,52 @@ const ABTestingTab = () => {
 
 // Recommendations Tab
 const RecommendationsTab = () => {
+  const navigate = useNavigate();
+  
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Recomendaciones de Productos con IA</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">Recomendaciones de Productos con IA</h2>
+        <button 
+          onClick={() => navigate('/recommendations')}
+          className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center"
+        >
+          <Sparkles className="w-5 h-5 mr-2" />
+          Ver Panel Completo
+        </button>
+      </div>
       
       <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-6 mb-6">
         <h3 className="font-semibold text-purple-900 mb-2">🤖 Personalización Inteligente</h3>
         <p className="text-purple-800 mb-4">
-          Utiliza IA para recomendar productos personalizados a cada usuario basándose en su historial y preferencias.
+          Sistema avanzado con OpenAI Embeddings y Collaborative Filtering para recomendaciones personalizadas en tiempo real.
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-purple-700">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm text-purple-700">
           <div className="flex items-start">
             <span className="mr-2">✓</span>
-            <span>Recomendaciones por categoría</span>
+            <span>OpenAI Embeddings</span>
           </div>
           <div className="flex items-start">
             <span className="mr-2">✓</span>
-            <span>Productos similares automáticos</span>
+            <span>Collaborative Filtering</span>
           </div>
           <div className="flex items-start">
             <span className="mr-2">✓</span>
-            <span>Análisis de comportamiento de compra</span>
+            <span>Click Tracking</span>
+          </div>
+          <div className="flex items-start">
+            <span className="mr-2">✓</span>
+            <span>Feedback Loop en Tiempo Real</span>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h3 className="font-semibold text-gray-900 mb-4">Tipos de Recomendación</h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-              <span className="font-medium">Por Historial</span>
-              <span className="text-sm text-gray-600">Basado en compras previas</span>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-              <span className="font-medium">Productos Similares</span>
-              <span className="text-sm text-gray-600">Misma categoría</span>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-              <span className="font-medium">Trending</span>
-              <span className="text-sm text-gray-600">Más populares</span>
-            </div>
-            <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-              <span className="font-medium">IA Personalizada</span>
-              <span className="text-sm text-gray-600">Machine Learning</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h3 className="font-semibold text-gray-900 mb-4">Performance</h3>
-          <div className="space-y-4">
-            <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-gray-600">Tasa de Acierto</span>
-                <span className="font-semibold">0%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-purple-600 h-2 rounded-full" style={{ width: '0%' }}></div>
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-gray-600">Click-Through Rate</span>
-                <span className="font-semibold">0%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-purple-600 h-2 rounded-full" style={{ width: '0%' }}></div>
-              </div>
-            </div>
-            <div className="pt-4 border-t border-gray-200">
-              <p className="text-sm text-gray-600">Total Recomendaciones Generadas</p>
-              <p className="text-3xl font-bold text-purple-600">0</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="text-center">
-        <button className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors">
-          Generar Recomendaciones
-        </button>
-      </div>
+      {/* Widget de Recomendaciones */}
+      <RecommendationsWidget 
+        algorithm="hybrid"
+        limit={6}
+        title="Productos Recomendados para Ti"
+      />
     </div>
   );
 };
