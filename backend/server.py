@@ -1511,6 +1511,164 @@ async def update_campaign_performance(campaign_id: str, performance: Dict[str, A
     return {"message": "Performance updated", "campaign_id": campaign_id}
 
 # =========================
+# MEMBERSHIP LIMITS HELPERS
+# =========================
+
+async def get_user_tier(user_email: str) -> str:
+    """Get user's membership tier"""
+    # Check if user has active subscription
+    subscription = await db.subscriptions.find_one(
+        {"user_email": user_email, "status": "active"},
+        {"_id": 0}
+    )
+    
+    if subscription:
+        plan = subscription.get('plan', 'basic').lower()
+        if 'vip' in plan or 'enterprise' in plan:
+            return 'vip'
+        elif 'pro' in plan:
+            return 'pro'
+    
+    return 'basic'
+
+async def get_current_usage(user_email: str, resource_type: str) -> int:
+    """Get current usage for a resource type"""
+    now = datetime.now(timezone.utc)
+    
+    # Calculate period based on resource type
+    if 'per_month' in resource_type:
+        # Monthly limit - check this month
+        period_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    elif 'per_day' in resource_type:
+        # Daily limit - check today
+        period_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    else:
+        # Total limit - no period
+        period_start = None
+    
+    # Get usage tracking
+    if period_start:
+        usage = await db.usage_tracking.find_one({
+            "user_email": user_email,
+            "resource_type": resource_type,
+            "period_start": {"$gte": period_start.isoformat()}
+        }, {"_id": 0})
+    else:
+        usage = await db.usage_tracking.find_one({
+            "user_email": user_email,
+            "resource_type": resource_type
+        }, {"_id": 0})
+    
+    if usage:
+        return usage.get('count', 0)
+    
+    # Fallback: count directly from collections
+    if resource_type == 'products':
+        return await db.products.count_documents({"user_email": user_email})
+    elif resource_type == 'posts_per_month':
+        return await db.social_posts.count_documents({
+            "user_email": user_email,
+            "created_at": {"$gte": period_start.isoformat()}
+        })
+    elif resource_type == 'campaigns':
+        return await db.campaigns.count_documents({"user_email": user_email})
+    elif resource_type == 'affiliates':
+        return await db.affiliates.count_documents({"email": user_email})
+    
+    return 0
+
+async def check_limit(user_email: str, resource_type: str) -> LimitCheckResponse:
+    """Check if user has reached limit for a resource"""
+    tier = await get_user_tier(user_email)
+    limits = MEMBERSHIP_LIMITS[tier]
+    
+    # Get limit for this resource
+    limit_key = f"{resource_type}_limit" if not resource_type.endswith('_limit') and not 'per_' in resource_type else resource_type
+    if limit_key not in limits:
+        limit_key = resource_type
+    
+    limit = limits.get(limit_key, -1)
+    
+    # -1 means unlimited
+    if limit == -1:
+        return LimitCheckResponse(
+            allowed=True,
+            current_usage=0,
+            limit=-1,
+            percentage=0,
+            remaining=-1,
+            tier=tier,
+            message="Ilimitado",
+            needs_upgrade=False
+        )
+    
+    # Get current usage
+    current_usage = await get_current_usage(user_email, resource_type)
+    
+    # Check if limit reached
+    allowed = current_usage < limit
+    percentage = (current_usage / limit * 100) if limit > 0 else 0
+    remaining = max(0, limit - current_usage)
+    
+    # Generate message
+    if not allowed:
+        message = f"Has alcanzado el límite de {limit} para tu plan {limits['name']}"
+    elif percentage >= 80:
+        message = f"Estás cerca del límite ({current_usage}/{limit})"
+    else:
+        message = f"Uso actual: {current_usage}/{limit}"
+    
+    return LimitCheckResponse(
+        allowed=allowed,
+        current_usage=current_usage,
+        limit=limit,
+        percentage=round(percentage, 1),
+        remaining=remaining,
+        tier=tier,
+        message=message,
+        needs_upgrade=not allowed
+    )
+
+async def increment_usage(user_email: str, resource_type: str) -> bool:
+    """Increment usage counter for a resource"""
+    now = datetime.now(timezone.utc)
+    
+    # Calculate period
+    if 'per_month' in resource_type:
+        period_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        period_end = (period_start + timedelta(days=32)).replace(day=1) - timedelta(seconds=1)
+    elif 'per_day' in resource_type:
+        period_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        period_end = period_start + timedelta(days=1) - timedelta(seconds=1)
+    else:
+        period_start = now
+        period_end = now + timedelta(days=365)  # Far future
+    
+    # Update or create usage tracking
+    result = await db.usage_tracking.update_one(
+        {
+            "user_email": user_email,
+            "resource_type": resource_type,
+            "period_start": {"$gte": period_start.isoformat(), "$lte": period_end.isoformat()}
+        },
+        {
+            "$inc": {"count": 1},
+            "$set": {"updated_at": now.isoformat()},
+            "$setOnInsert": {
+                "id": str(uuid.uuid4()),
+                "user_email": user_email,
+                "resource_type": resource_type,
+                "period_start": period_start.isoformat(),
+                "period_end": period_end.isoformat(),
+                "created_at": now.isoformat()
+            }
+        },
+        upsert=True
+    )
+    
+    return True
+
+# =========================
 # ROUTES - Advanced Analytics
 # =========================
 
