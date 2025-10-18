@@ -2987,6 +2987,278 @@ async def get_all_affiliates():
     return affiliates
 
 # =========================
+# ROUTES - Notifications System
+# =========================
+
+async def create_notification_internal(
+    user_email: str,
+    notification_type: str,
+    title: str,
+    message: str,
+    link: Optional[str] = None,
+    icon: Optional[str] = None,
+    metadata: Optional[Dict[str, Any]] = None
+):
+    """Internal helper to create notifications"""
+    try:
+        # Check user preferences
+        prefs = await db.notification_preferences.find_one({"user_email": user_email}, {"_id": 0})
+        
+        if not prefs:
+            # Create default preferences
+            default_prefs = NotificationPreferences(user_email=user_email)
+            prefs_doc = default_prefs.model_dump()
+            prefs_doc['created_at'] = prefs_doc['created_at'].isoformat()
+            prefs_doc['updated_at'] = prefs_doc['updated_at'].isoformat()
+            await db.notification_preferences.insert_one(prefs_doc)
+            prefs = default_prefs.model_dump()
+        
+        # Check if user wants this type of notification
+        type_map = {
+            "payment": prefs.get('notify_payments', True),
+            "affiliate": prefs.get('notify_affiliates', True),
+            "campaign": prefs.get('notify_campaigns', True),
+            "product": prefs.get('notify_products', True),
+            "subscription": prefs.get('notify_subscriptions', True),
+            "system": prefs.get('notify_system', True)
+        }
+        
+        if notification_type in type_map and not type_map[notification_type]:
+            logger.info(f"Notification type {notification_type} disabled for {user_email}")
+            return None
+        
+        # Create notification
+        notification = Notification(
+            user_email=user_email,
+            type=notification_type,
+            title=title,
+            message=message,
+            link=link,
+            icon=icon,
+            metadata=metadata or {}
+        )
+        
+        doc = notification.model_dump()
+        doc['created_at'] = doc['created_at'].isoformat()
+        if doc.get('read_at'):
+            doc['read_at'] = doc['read_at'].isoformat()
+        
+        await db.notifications.insert_one(doc)
+        
+        # TODO: Send email if email_notifications enabled
+        # TODO: Send push notification if push_notifications enabled
+        
+        logger.info(f"Created notification for {user_email}: {title}")
+        return notification
+        
+    except Exception as e:
+        logger.error(f"Error creating notification: {str(e)}")
+        return None
+
+@api_router.post("/notifications", response_model=Notification)
+async def create_notification(data: NotificationCreate):
+    """Create a new notification (admin/system endpoint)"""
+    try:
+        notification = await create_notification_internal(
+            user_email=data.user_email,
+            notification_type=data.type,
+            title=data.title,
+            message=data.message,
+            link=data.link,
+            icon=data.icon,
+            metadata=data.metadata
+        )
+        
+        if not notification:
+            raise HTTPException(status_code=400, detail="Notification could not be created")
+        
+        return notification
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Notification creation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/notifications")
+async def get_notifications(
+    user_email: str,
+    unread_only: bool = False,
+    limit: int = 50,
+    skip: int = 0
+):
+    """Get user notifications"""
+    try:
+        query = {"user_email": user_email, "is_archived": False}
+        
+        if unread_only:
+            query["is_read"] = False
+        
+        notifications = await db.notifications.find(
+            query,
+            {"_id": 0}
+        ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+        
+        # Parse dates
+        for notif in notifications:
+            if isinstance(notif.get('created_at'), str):
+                notif['created_at'] = datetime.fromisoformat(notif['created_at'])
+            if notif.get('read_at') and isinstance(notif['read_at'], str):
+                notif['read_at'] = datetime.fromisoformat(notif['read_at'])
+        
+        return notifications
+        
+    except Exception as e:
+        logger.error(f"Get notifications error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/notifications/count")
+async def get_unread_count(user_email: str):
+    """Get count of unread notifications"""
+    try:
+        count = await db.notifications.count_documents({
+            "user_email": user_email,
+            "is_read": False,
+            "is_archived": False
+        })
+        
+        return {"unread_count": count}
+        
+    except Exception as e:
+        logger.error(f"Get unread count error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.patch("/notifications/{notification_id}/read")
+async def mark_as_read(notification_id: str):
+    """Mark notification as read"""
+    try:
+        result = await db.notifications.update_one(
+            {"id": notification_id},
+            {
+                "$set": {
+                    "is_read": True,
+                    "read_at": datetime.now(timezone.utc).isoformat()
+                }
+            }
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Notification not found")
+        
+        return {"message": "Notification marked as read"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Mark as read error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.patch("/notifications/read-all")
+async def mark_all_as_read(user_email: str):
+    """Mark all notifications as read"""
+    try:
+        result = await db.notifications.update_many(
+            {"user_email": user_email, "is_read": False},
+            {
+                "$set": {
+                    "is_read": True,
+                    "read_at": datetime.now(timezone.utc).isoformat()
+                }
+            }
+        )
+        
+        return {
+            "message": f"Marked {result.modified_count} notifications as read",
+            "count": result.modified_count
+        }
+        
+    except Exception as e:
+        logger.error(f"Mark all as read error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/notifications/{notification_id}")
+async def delete_notification(notification_id: str):
+    """Delete (archive) a notification"""
+    try:
+        result = await db.notifications.update_one(
+            {"id": notification_id},
+            {"$set": {"is_archived": True}}
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Notification not found")
+        
+        return {"message": "Notification archived"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Delete notification error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/notifications/preferences")
+async def get_notification_preferences(user_email: str):
+    """Get user notification preferences"""
+    try:
+        prefs = await db.notification_preferences.find_one({"user_email": user_email}, {"_id": 0})
+        
+        if not prefs:
+            # Create default preferences
+            default_prefs = NotificationPreferences(user_email=user_email)
+            prefs_doc = default_prefs.model_dump()
+            prefs_doc['created_at'] = prefs_doc['created_at'].isoformat()
+            prefs_doc['updated_at'] = prefs_doc['updated_at'].isoformat()
+            await db.notification_preferences.insert_one(prefs_doc)
+            return default_prefs
+        
+        # Parse dates
+        if isinstance(prefs.get('created_at'), str):
+            prefs['created_at'] = datetime.fromisoformat(prefs['created_at'])
+        if isinstance(prefs.get('updated_at'), str):
+            prefs['updated_at'] = datetime.fromisoformat(prefs['updated_at'])
+        
+        return prefs
+        
+    except Exception as e:
+        logger.error(f"Get preferences error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.patch("/notifications/preferences")
+async def update_notification_preferences(
+    user_email: str,
+    preferences: NotificationPreferencesUpdate
+):
+    """Update user notification preferences"""
+    try:
+        # Get existing preferences
+        existing = await db.notification_preferences.find_one({"user_email": user_email}, {"_id": 0})
+        
+        if not existing:
+            # Create new preferences
+            new_prefs = NotificationPreferences(user_email=user_email)
+            prefs_dict = new_prefs.model_dump()
+        else:
+            prefs_dict = existing
+        
+        # Update with provided values
+        update_data = preferences.model_dump(exclude_unset=True)
+        prefs_dict.update(update_data)
+        prefs_dict['updated_at'] = datetime.now(timezone.utc).isoformat()
+        
+        # Upsert
+        await db.notification_preferences.update_one(
+            {"user_email": user_email},
+            {"$set": prefs_dict},
+            upsert=True
+        )
+        
+        return {"message": "Preferences updated successfully", "preferences": prefs_dict}
+        
+    except Exception as e:
+        logger.error(f"Update preferences error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# =========================
 # ROUTES - Amazon Associates Integration
 # =========================
 
