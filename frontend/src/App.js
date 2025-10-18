@@ -34,7 +34,8 @@ function Navigation() {
     { path: '/subscriptions', icon: CreditCard, label: 'Suscripciones' },
     { path: '/revenue', icon: BarChart3, label: 'Ingresos' },
     { path: '/affiliate', icon: Users, label: 'Afiliados' },
-    { path: '/advanced', icon: Zap, label: 'Avanzado' }
+    { path: '/advanced', icon: Zap, label: 'Avanzado' },
+    { path: '/conversion', icon: Target, label: 'Conversión' }
   ];
   
   return (
