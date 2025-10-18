@@ -295,6 +295,160 @@ class AffiliatePayoutRequest(BaseModel):
     payment_email: str
 
 # =========================
+# ADVANCED MONETIZATION MODELS
+# =========================
+
+# Amazon Associates
+class AmazonProduct(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    product_id: str  # Reference to Product
+    amazon_asin: str
+    amazon_associate_tag: str = "yourtag-20"  # Default tag
+    amazon_link: Optional[str] = None
+    clicks: int = 0
+    estimated_conversions: int = 0
+    commission_rate: float = 4.0  # Default Amazon rate
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class AmazonProductCreate(BaseModel):
+    product_id: str
+    amazon_asin: str
+    amazon_associate_tag: Optional[str] = "yourtag-20"
+
+# Dropshipping
+class DropshippingProvider(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str  # AliExpress, CJ Dropshipping, Spocket, etc
+    api_key: Optional[str] = None
+    is_active: bool = True
+    auto_fulfill: bool = False
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class DropshippingOrder(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    transaction_id: str
+    product_id: str
+    provider_id: str
+    provider_order_id: Optional[str] = None
+    customer_email: str
+    customer_name: str
+    shipping_address: Dict[str, Any]
+    product_cost: float
+    shipping_cost: float
+    total_cost: float
+    status: str = "pending"  # pending, processing, shipped, delivered, cancelled
+    tracking_number: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class DropshippingOrderCreate(BaseModel):
+    transaction_id: str
+    product_id: str
+    provider_id: str
+    customer_email: str
+    customer_name: str
+    shipping_address: Dict[str, Any]
+
+# Memberships & Premium Content
+class Membership(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_email: str
+    level: str  # free, basic, pro, vip
+    price: float = 0.0
+    features: List[str] = []
+    status: str = "active"  # active, expired, cancelled
+    started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    expires_at: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class MembershipCreate(BaseModel):
+    user_email: str
+    level: str
+    duration_days: int = 30
+
+class PremiumContent(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    description: str
+    content: str  # The actual premium content
+    content_type: str  # article, video, course, template, ebook
+    required_level: str  # basic, pro, vip
+    thumbnail_url: Optional[str] = None
+    price: Optional[float] = None  # One-time purchase option
+    views: int = 0
+    likes: int = 0
+    is_published: bool = True
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class PremiumContentCreate(BaseModel):
+    title: str
+    description: str
+    content: str
+    content_type: str
+    required_level: str
+    thumbnail_url: Optional[str] = None
+    price: Optional[float] = None
+
+# Donations & Tips
+class Donation(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    donor_name: str
+    donor_email: str
+    amount: float
+    message: Optional[str] = None
+    is_anonymous: bool = False
+    payment_status: str = "completed"
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class DonationCreate(BaseModel):
+    donor_name: str
+    donor_email: str
+    amount: float
+    message: Optional[str] = None
+    is_anonymous: bool = False
+
+class Tip(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    content_id: str  # Reference to content that received tip
+    tipper_name: str
+    tipper_email: str
+    amount: float
+    message: Optional[str] = None
+    payment_status: str = "completed"
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class TipCreate(BaseModel):
+    content_id: str
+    tipper_name: str
+    tipper_email: str
+    amount: float
+    message: Optional[str] = None
+
+class DonationGoal(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    title: str
+    description: str
+    target_amount: float
+    current_amount: float = 0.0
+    is_active: bool = True
+    deadline: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class DonationGoalCreate(BaseModel):
+    title: str
+    description: str
+    target_amount: float
+    deadline: Optional[datetime] = None
+
+# =========================
 # AI HELPER FUNCTIONS
 # =========================
 
