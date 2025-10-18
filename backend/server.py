@@ -449,6 +449,134 @@ class DonationGoalCreate(BaseModel):
     deadline: Optional[datetime] = None
 
 # =========================
+# CONVERSION OPTIMIZATION MODELS
+# =========================
+
+# A/B Testing
+class ABTestVariant(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    variant_name: str  # A, B, C
+    discount_code: str
+    discount_percentage: float
+    impressions: int = 0
+    conversions: int = 0
+    revenue: float = 0.0
+
+class ABTest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    test_name: str
+    description: str
+    metric: str = "conversion_rate"  # conversion_rate, revenue, average_order
+    variants: List[ABTestVariant] = []
+    status: str = "running"  # running, paused, completed
+    winner: Optional[str] = None
+    started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    ended_at: Optional[datetime] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ABTestCreate(BaseModel):
+    test_name: str
+    description: str
+    variants: List[ABTestVariant]
+    metric: str = "conversion_rate"
+
+# Product Recommendations
+class ProductRecommendation(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_email: Optional[str] = None
+    recommended_products: List[str] = []  # Product IDs
+    recommendation_type: str  # similar, popular, personalized, ai_generated
+    source_product_id: Optional[str] = None
+    confidence_score: float = 0.0
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+# Email Marketing
+class EmailTemplate(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    subject: str
+    html_body: str
+    text_body: Optional[str] = None
+    template_type: str  # promotional, abandoned_cart, newsletter, transactional
+    variables: List[str] = []  # List of variable names used in template
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class EmailTemplateCreate(BaseModel):
+    name: str
+    subject: str
+    html_body: str
+    text_body: Optional[str] = None
+    template_type: str
+    variables: List[str] = []
+
+class EmailCampaign(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    template_id: str
+    segment: str  # all, customers, subscribers, cart_abandoners
+    status: str = "draft"  # draft, scheduled, sending, sent, paused
+    scheduled_at: Optional[datetime] = None
+    sent_at: Optional[datetime] = None
+    recipients_count: int = 0
+    opened_count: int = 0
+    clicked_count: int = 0
+    converted_count: int = 0
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class EmailCampaignCreate(BaseModel):
+    name: str
+    template_id: str
+    segment: str
+    scheduled_at: Optional[datetime] = None
+
+class EmailRecipient(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    campaign_id: str
+    email: str
+    status: str = "pending"  # pending, sent, opened, clicked, bounced
+    opened_at: Optional[datetime] = None
+    clicked_at: Optional[datetime] = None
+    converted: bool = False
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+# Cart Abandonment
+class AbandonedCart(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_email: str
+    user_name: Optional[str] = None
+    cart_items: List[Dict[str, Any]] = []
+    total_amount: float
+    abandoned_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    recovery_email_sent: bool = False
+    recovery_email_sent_at: Optional[datetime] = None
+    recovered: bool = False
+    recovered_at: Optional[datetime] = None
+    recovery_discount_code: Optional[str] = None
+
+class AbandonedCartCreate(BaseModel):
+    user_email: str
+    user_name: Optional[str] = None
+    cart_items: List[Dict[str, Any]]
+    total_amount: float
+
+class CartRecovery(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    abandoned_cart_id: str
+    discount_code: str
+    discount_percentage: float = 10.0
+    email_sent: bool = False
+    recovered: bool = False
+    recovered_amount: float = 0.0
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+# =========================
 # AI HELPER FUNCTIONS
 # =========================
 
