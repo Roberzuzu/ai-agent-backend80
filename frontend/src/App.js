@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import '@/App.css';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import Dashboard from './pages/Dashboard';
 import TrendsPage from './pages/TrendsPage';
 import ContentPage from './pages/ContentPage';
@@ -16,7 +20,7 @@ import AffiliateDashboardPage from './pages/AffiliateDashboardPage';
 import AffiliatePayoutsPage from './pages/AffiliatePayoutsPage';
 import AdvancedMonetizationPage from './pages/AdvancedMonetizationPage';
 import ConversionOptimizationPage from './pages/ConversionOptimizationPage';
-import { TrendingUp, Sparkles, DollarSign, Share2, Megaphone, LayoutDashboard, CreditCard, BarChart3, Users, Zap, Target } from 'lucide-react';
+import { TrendingUp, Sparkles, DollarSign, Share2, Megaphone, LayoutDashboard, CreditCard, BarChart3, Users, Zap, Target, LogOut, User } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
