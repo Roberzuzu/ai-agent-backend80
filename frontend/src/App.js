@@ -30,7 +30,8 @@ function Navigation() {
     { path: '/social', icon: Share2, label: 'Social Manager' },
     { path: '/campaigns', icon: Megaphone, label: 'Ad Manager' },
     { path: '/subscriptions', icon: CreditCard, label: 'Suscripciones' },
-    { path: '/revenue', icon: BarChart3, label: 'Ingresos' }
+    { path: '/revenue', icon: BarChart3, label: 'Ingresos' },
+    { path: '/affiliate', icon: Users, label: 'Afiliados' }
   ];
   
   return (
