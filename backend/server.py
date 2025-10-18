@@ -922,6 +922,521 @@ async def create_category_landing_pages():
     }
 
 # =========================
+# ROUTES - Payments & Subscriptions
+# =========================
+
+# Initialize Stripe
+stripe_api_key = os.environ.get('STRIPE_API_KEY')
+if not stripe_api_key:
+    logger.warning("STRIPE_API_KEY not found in environment variables")
+
+# Predefined subscription packages (server-side only for security)
+SUBSCRIPTION_PACKAGES = {
+    "basic": {
+        "name": "Plan Básico",
+        "price": 9.99,
+        "features": ["10 productos", "20 posts/mes", "Análisis básico", "Soporte por email"]
+    },
+    "pro": {
+        "name": "Plan Pro", 
+        "price": 29.99,
+        "features": ["Productos ilimitados", "100 posts/mes", "Análisis avanzado", "Generación IA ilimitada", "Soporte prioritario"]
+    },
+    "enterprise": {
+        "name": "Plan Empresa",
+        "price": 99.99,
+        "features": ["Todo ilimitado", "API access", "Soporte 24/7", "Manager dedicado", "Custom features"]
+    }
+}
+
+@api_router.post("/payments/checkout/session")
+async def create_checkout_session(request: CheckoutRequest, http_request: Request):
+    """Create a Stripe checkout session for product or subscription"""
+    try:
+        # Get base URL for webhooks
+        host_url = str(http_request.base_url).rstrip('/')
+        webhook_url = f"{host_url}/api/webhook/stripe"
+        
+        # Initialize Stripe checkout
+        stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
+        
+        # Determine amount based on payment type (server-side only!)
+        if request.payment_type == "product":
+            if not request.product_id:
+                raise HTTPException(status_code=400, detail="product_id required for product payment")
+            
+            product = await db.products.find_one({"id": request.product_id}, {"_id": 0})
+            if not product:
+                raise HTTPException(status_code=404, detail="Product not found")
+            
+            amount = float(product['price'])
+            currency = "usd"
+            metadata = {
+                "payment_type": "product",
+                "product_id": request.product_id,
+                "product_name": product['name'],
+                "user_email": request.user_email or "guest"
+            }
+            
+        elif request.payment_type == "subscription":
+            if not request.plan_id:
+                raise HTTPException(status_code=400, detail="plan_id required for subscription payment")
+            
+            if request.plan_id not in SUBSCRIPTION_PACKAGES:
+                raise HTTPException(status_code=400, detail="Invalid subscription plan")
+            
+            package = SUBSCRIPTION_PACKAGES[request.plan_id]
+            amount = package['price']
+            currency = "usd"
+            metadata = {
+                "payment_type": "subscription",
+                "plan_id": request.plan_id,
+                "plan_name": package['name'],
+                "user_email": request.user_email or "guest"
+            }
+        else:
+            raise HTTPException(status_code=400, detail="Invalid payment_type. Must be 'product' or 'subscription'")
+        
+        # Add custom metadata
+        if request.metadata:
+            metadata.update(request.metadata)
+        
+        # Build success and cancel URLs from frontend origin
+        success_url = f"{request.origin_url}/payment-success?session_id={{CHECKOUT_SESSION_ID}}"
+        cancel_url = f"{request.origin_url}/payment-cancelled"
+        
+        # Create checkout session request
+        checkout_request = CheckoutSessionRequest(
+            amount=amount,
+            currency=currency,
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata=metadata
+        )
+        
+        # Create session with Stripe
+        session: CheckoutSessionResponse = await stripe_checkout.create_checkout_session(checkout_request)
+        
+        # Create payment transaction record in DB
+        transaction = PaymentTransaction(
+            session_id=session.session_id,
+            user_email=request.user_email,
+            amount=amount,
+            currency=currency,
+            payment_type=request.payment_type,
+            product_id=request.product_id,
+            plan_id=request.plan_id,
+            payment_status="pending",
+            status="initiated",
+            metadata=metadata
+        )
+        
+        doc = transaction.model_dump()
+        doc['created_at'] = doc['created_at'].isoformat()
+        doc['updated_at'] = doc['updated_at'].isoformat()
+        
+        await db.payment_transactions.insert_one(doc)
+        
+        return {
+            "url": session.url,
+            "session_id": session.session_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Checkout session creation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create checkout session: {str(e)}")
+
+@api_router.get("/payments/checkout/status/{session_id}")
+async def get_checkout_status(session_id: str):
+    """Get the status of a checkout session"""
+    try:
+        # Initialize Stripe checkout
+        stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url="")
+        
+        # Get status from Stripe
+        status: CheckoutStatusResponse = await stripe_checkout.get_checkout_status(session_id)
+        
+        # Update transaction in database
+        transaction = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0})
+        
+        if not transaction:
+            raise HTTPException(status_code=404, detail="Transaction not found")
+        
+        # Only update if status changed to avoid duplicate processing
+        if transaction['payment_status'] != status.payment_status:
+            update_data = {
+                "payment_status": status.payment_status,
+                "status": "completed" if status.payment_status == "paid" else "failed",
+                "payment_id": session_id,
+                "updated_at": datetime.now(timezone.utc).isoformat()
+            }
+            
+            await db.payment_transactions.update_one(
+                {"session_id": session_id},
+                {"$set": update_data}
+            )
+            
+            # If payment successful and it's a subscription, create subscription record
+            if status.payment_status == "paid" and transaction['payment_type'] == "subscription":
+                existing_subscription = await db.subscriptions.find_one({
+                    "user_email": transaction['user_email'],
+                    "plan_id": transaction['plan_id'],
+                    "status": "active"
+                })
+                
+                if not existing_subscription:
+                    subscription = Subscription(
+                        user_email=transaction['user_email'],
+                        plan_id=transaction['plan_id'],
+                        stripe_subscription_id=session_id,
+                        status="active",
+                        current_period_start=datetime.now(timezone.utc),
+                        current_period_end=datetime.now(timezone.utc) + timedelta(days=30)
+                    )
+                    
+                    sub_doc = subscription.model_dump()
+                    sub_doc['current_period_start'] = sub_doc['current_period_start'].isoformat()
+                    sub_doc['current_period_end'] = sub_doc['current_period_end'].isoformat()
+                    sub_doc['created_at'] = sub_doc['created_at'].isoformat()
+                    sub_doc['updated_at'] = sub_doc['updated_at'].isoformat()
+                    
+                    await db.subscriptions.insert_one(sub_doc)
+        
+        return {
+            "status": status.status,
+            "payment_status": status.payment_status,
+            "amount_total": status.amount_total,
+            "currency": status.currency,
+            "metadata": status.metadata
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Checkout status error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get checkout status: {str(e)}")
+
+@api_router.post("/webhook/stripe")
+async def stripe_webhook(request: Request):
+    """Handle Stripe webhooks"""
+    try:
+        body = await request.body()
+        signature = request.headers.get("Stripe-Signature")
+        
+        if not signature:
+            raise HTTPException(status_code=400, detail="Missing Stripe signature")
+        
+        # Initialize Stripe checkout
+        host_url = str(request.base_url).rstrip('/')
+        webhook_url = f"{host_url}/api/webhook/stripe"
+        stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
+        
+        # Handle webhook
+        webhook_response = await stripe_checkout.handle_webhook(body, signature)
+        
+        # Update transaction based on webhook
+        if webhook_response.session_id:
+            await db.payment_transactions.update_one(
+                {"session_id": webhook_response.session_id},
+                {"$set": {
+                    "payment_status": webhook_response.payment_status,
+                    "status": "completed" if webhook_response.payment_status == "paid" else "failed",
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+        
+        return {"status": "success", "event_type": webhook_response.event_type}
+        
+    except Exception as e:
+        logger.error(f"Webhook error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/payments/history")
+async def get_payment_history(user_email: Optional[str] = None, limit: int = 50):
+    """Get payment transaction history"""
+    query = {}
+    if user_email:
+        query["user_email"] = user_email
+    
+    transactions = await db.payment_transactions.find(query, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    
+    for tx in transactions:
+        if isinstance(tx.get('created_at'), str):
+            tx['created_at'] = datetime.fromisoformat(tx['created_at'])
+        if isinstance(tx.get('updated_at'), str):
+            tx['updated_at'] = datetime.fromisoformat(tx['updated_at'])
+    
+    return transactions
+
+# =========================
+# ROUTES - Subscription Management
+# =========================
+
+@api_router.get("/subscriptions/plans")
+async def get_subscription_plans():
+    """Get available subscription plans"""
+    plans = []
+    for plan_id, plan_data in SUBSCRIPTION_PACKAGES.items():
+        plans.append({
+            "id": plan_id,
+            "name": plan_data["name"],
+            "price": plan_data["price"],
+            "currency": "usd",
+            "interval": "month",
+            "features": plan_data["features"]
+        })
+    return plans
+
+@api_router.get("/subscriptions")
+async def get_subscriptions(user_email: Optional[str] = None, status: Optional[str] = None):
+    """Get user subscriptions"""
+    query = {}
+    if user_email:
+        query["user_email"] = user_email
+    if status:
+        query["status"] = status
+    
+    subscriptions = await db.subscriptions.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    for sub in subscriptions:
+        if isinstance(sub.get('current_period_start'), str):
+            sub['current_period_start'] = datetime.fromisoformat(sub['current_period_start'])
+        if isinstance(sub.get('current_period_end'), str):
+            sub['current_period_end'] = datetime.fromisoformat(sub['current_period_end'])
+        if isinstance(sub.get('created_at'), str):
+            sub['created_at'] = datetime.fromisoformat(sub['created_at'])
+        if isinstance(sub.get('updated_at'), str):
+            sub['updated_at'] = datetime.fromisoformat(sub['updated_at'])
+    
+    return subscriptions
+
+@api_router.post("/subscriptions/{subscription_id}/cancel")
+async def cancel_subscription(subscription_id: str):
+    """Cancel a subscription"""
+    subscription = await db.subscriptions.find_one({"id": subscription_id}, {"_id": 0})
+    if not subscription:
+        raise HTTPException(status_code=404, detail="Subscription not found")
+    
+    await db.subscriptions.update_one(
+        {"id": subscription_id},
+        {"$set": {
+            "cancel_at_period_end": True,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {"message": "Subscription will be cancelled at period end", "subscription_id": subscription_id}
+
+# =========================
+# ROUTES - Revenue Analytics
+# =========================
+
+@api_router.get("/analytics/revenue")
+async def get_revenue_analytics(start_date: Optional[str] = None, end_date: Optional[str] = None):
+    """Get comprehensive revenue analytics"""
+    
+    # Build date filter
+    date_filter = {}
+    if start_date:
+        date_filter["$gte"] = start_date
+    if end_date:
+        date_filter["$lte"] = end_date
+    
+    query = {"payment_status": "paid"}
+    if date_filter:
+        query["created_at"] = date_filter
+    
+    # Get all paid transactions
+    transactions = await db.payment_transactions.find(query, {"_id": 0}).to_list(1000)
+    
+    # Calculate total revenue
+    total_revenue = sum(tx['amount'] for tx in transactions)
+    
+    # Revenue by type
+    product_revenue = sum(tx['amount'] for tx in transactions if tx['payment_type'] == 'product')
+    subscription_revenue = sum(tx['amount'] for tx in transactions if tx['payment_type'] == 'subscription')
+    
+    # Count transactions
+    total_transactions = len(transactions)
+    product_sales = len([tx for tx in transactions if tx['payment_type'] == 'product'])
+    subscription_sales = len([tx for tx in transactions if tx['payment_type'] == 'subscription'])
+    
+    # Track sales by discount code
+    products = await db.products.find({}, {"_id": 0}).to_list(1000)
+    discount_tracking = {}
+    
+    for product in products:
+        if product.get('discount_code'):
+            code = product['discount_code']
+            product_sales_count = len([tx for tx in transactions if tx.get('product_id') == product['id']])
+            if product_sales_count > 0:
+                discount_tracking[code] = {
+                    "product_name": product['name'],
+                    "discount_code": code,
+                    "discount_percentage": product.get('discount_percentage', 0),
+                    "sales_count": product_sales_count,
+                    "revenue": sum(tx['amount'] for tx in transactions if tx.get('product_id') == product['id'])
+                }
+    
+    # Active subscriptions
+    active_subscriptions = await db.subscriptions.count_documents({"status": "active"})
+    
+    # MRR (Monthly Recurring Revenue)
+    mrr = subscription_revenue / max(len(set(tx.get('user_email') for tx in transactions if tx['payment_type'] == 'subscription')), 1)
+    
+    return {
+        "total_revenue": round(total_revenue, 2),
+        "product_revenue": round(product_revenue, 2),
+        "subscription_revenue": round(subscription_revenue, 2),
+        "total_transactions": total_transactions,
+        "product_sales": product_sales,
+        "subscription_sales": subscription_sales,
+        "active_subscriptions": active_subscriptions,
+        "mrr": round(mrr, 2),
+        "discount_code_tracking": discount_tracking,
+        "currency": "usd"
+    }
+
+@api_router.get("/analytics/campaign-roi")
+async def get_campaign_roi():
+    """Calculate ROI for advertising campaigns"""
+    
+    # Get all campaigns
+    campaigns = await db.campaigns.find({}, {"_id": 0}).to_list(1000)
+    
+    # Get all paid transactions
+    transactions = await db.payment_transactions.find(
+        {"payment_status": "paid"},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    total_revenue = sum(tx['amount'] for tx in transactions)
+    
+    campaign_roi = []
+    for campaign in campaigns:
+        budget = campaign['budget']
+        
+        # Calculate revenue during campaign period
+        campaign_start = campaign['start_date']
+        campaign_end = campaign['end_date']
+        
+        if isinstance(campaign_start, str):
+            campaign_start = datetime.fromisoformat(campaign_start)
+        if isinstance(campaign_end, str):
+            campaign_end = datetime.fromisoformat(campaign_end)
+        
+        campaign_revenue = 0
+        for tx in transactions:
+            tx_date = tx['created_at']
+            if isinstance(tx_date, str):
+                tx_date = datetime.fromisoformat(tx_date)
+            
+            if campaign_start <= tx_date <= campaign_end:
+                campaign_revenue += tx['amount']
+        
+        roi = ((campaign_revenue - budget) / budget * 100) if budget > 0 else 0
+        
+        campaign_roi.append({
+            "campaign_id": campaign['id'],
+            "campaign_name": campaign['name'],
+            "platform": campaign['platform'],
+            "budget": budget,
+            "revenue": round(campaign_revenue, 2),
+            "roi": round(roi, 2),
+            "roi_formatted": f"{roi:.1f}%",
+            "status": campaign['status']
+        })
+    
+    return {
+        "campaigns": campaign_roi,
+        "total_ad_spend": sum(c['budget'] for c in campaigns),
+        "total_revenue": round(total_revenue, 2),
+        "average_roi": round(sum(c['roi'] for c in campaign_roi) / len(campaign_roi), 2) if campaign_roi else 0
+    }
+
+@api_router.get("/analytics/affiliate-commissions")
+async def get_affiliate_commissions(commission_rate: float = 10.0):
+    """Calculate affiliate commissions"""
+    
+    # Get all products with affiliate links
+    products = await db.products.find(
+        {"affiliate_link": {"$exists": True, "$ne": None}},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    # Get paid transactions for affiliate products
+    transactions = await db.payment_transactions.find(
+        {"payment_status": "paid"},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    affiliate_commissions = []
+    total_commissions = 0
+    
+    for product in products:
+        product_sales = [tx for tx in transactions if tx.get('product_id') == product['id']]
+        
+        if product_sales:
+            revenue = sum(tx['amount'] for tx in product_sales)
+            commission = revenue * (commission_rate / 100)
+            total_commissions += commission
+            
+            affiliate_commissions.append({
+                "product_id": product['id'],
+                "product_name": product['name'],
+                "affiliate_link": product['affiliate_link'],
+                "sales_count": len(product_sales),
+                "revenue": round(revenue, 2),
+                "commission_rate": commission_rate,
+                "commission_earned": round(commission, 2),
+                "category": product.get('category', 'Uncategorized')
+            })
+    
+    return {
+        "total_commissions": round(total_commissions, 2),
+        "commission_rate": commission_rate,
+        "affiliate_products": len(affiliate_commissions),
+        "commissions": sorted(affiliate_commissions, key=lambda x: x['commission_earned'], reverse=True),
+        "currency": "usd"
+    }
+
+@api_router.get("/analytics/dashboard-advanced")
+async def get_advanced_dashboard():
+    """Get comprehensive analytics dashboard"""
+    
+    # Get revenue analytics
+    revenue_data = await get_revenue_analytics()
+    
+    # Get campaign ROI
+    campaign_data = await get_campaign_roi()
+    
+    # Get affiliate commissions
+    affiliate_data = await get_affiliate_commissions()
+    
+    # Get basic stats
+    products_count = await db.products.count_documents({})
+    trends_count = await db.trends.count_documents({})
+    content_count = await db.content_ideas.count_documents({})
+    posts_count = await db.social_posts.count_documents({})
+    campaigns_count = await db.campaigns.count_documents({})
+    
+    return {
+        "overview": {
+            "products": products_count,
+            "trends": trends_count,
+            "content": content_count,
+            "social_posts": posts_count,
+            "campaigns": campaigns_count
+        },
+        "revenue": revenue_data,
+        "campaign_roi": campaign_data,
+        "affiliate_commissions": affiliate_data,
+        "generated_at": datetime.now(timezone.utc).isoformat()
+    }
+
+# =========================
 # ROOT ROUTE
 # =========================
 
