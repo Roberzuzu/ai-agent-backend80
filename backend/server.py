@@ -71,6 +71,26 @@ for ip in trusted_ips:
 admin_whitelist_ips = os.environ.get('ADMIN_WHITELIST_IPS', '').split(',')
 admin_whitelist = [ip.strip() for ip in admin_whitelist_ips if ip.strip()]
 
+# =========================
+# MONITORING SYSTEMS
+# =========================
+from monitoring.health_checks import HealthChecker
+from monitoring.metrics import MetricsCollector, metrics_collector
+from monitoring.sentry_integration import initialize_sentry
+
+# Initialize monitoring
+health_checker = HealthChecker(
+    db=db,
+    stripe_enabled=bool(os.environ.get('STRIPE_API_KEY')),
+    openai_enabled=bool(os.environ.get('OPENAI_API_KEY'))
+)
+
+# Initialize Sentry (if DSN is configured)
+sentry = initialize_sentry(
+    dsn=os.environ.get('SENTRY_DSN'),
+    environment=os.environ.get('ENVIRONMENT', 'development')
+)
+
 # Configure logging
 logger = logging.getLogger(__name__)
 
