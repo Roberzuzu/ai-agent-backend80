@@ -1,0 +1,145 @@
+{
+  "summary": {
+    "passed": 7,
+    "total": 9,
+    "success_rate": "77.8%",
+    "timestamp": "2025-10-18T15:28:13.034114"
+  },
+  "detailed_results": [
+    {
+      "test": "Subscription Plans",
+      "success": true,
+      "details": "All 3 plans verified with correct prices and names",
+      "timestamp": "2025-10-18T15:28:11.484020",
+      "response_data": [
+        {
+          "id": "basic",
+          "name": "Plan B\u00e1sico",
+          "price": 9.99,
+          "currency": "usd",
+          "interval": "month",
+          "features": [
+            "10 productos",
+            "20 posts/mes",
+            "An\u00e1lisis b\u00e1sico",
+            "Soporte por email"
+          ]
+        },
+        {
+          "id": "pro",
+          "name": "Plan Pro",
+          "price": 29.99,
+          "currency": "usd",
+          "interval": "month",
+          "features": [
+            "Productos ilimitados",
+            "100 posts/mes",
+            "An\u00e1lisis avanzado",
+            "Generaci\u00f3n IA ilimitada",
+            "Soporte prioritario"
+          ]
+        },
+        {
+          "id": "enterprise",
+          "name": "Plan Empresa",
+          "price": 99.99,
+          "currency": "usd",
+          "interval": "month",
+          "features": [
+            "Todo ilimitado",
+            "API access",
+            "Soporte 24/7",
+            "Manager dedicado",
+            "Custom features"
+          ]
+        }
+      ]
+    },
+    {
+      "test": "Get Products",
+      "success": false,
+      "details": "No products found for testing",
+      "timestamp": "2025-10-18T15:28:11.500831",
+      "response_data": null
+    },
+    {
+      "test": "Product Checkout",
+      "success": false,
+      "details": "No products available for testing",
+      "timestamp": "2025-10-18T15:28:11.500867",
+      "response_data": null
+    },
+    {
+      "test": "Subscription Checkout",
+      "success": true,
+      "details": "Checkout session created for basic plan ($9.99/month)",
+      "timestamp": "2025-10-18T15:28:12.926660",
+      "response_data": {
+        "session_id": "cs_test_a1Mt6YUoqzIXm6sdZ6XqL5FaBB2mZ5JClXVWmsjQYGJ6tyfONeSPVwZBVh",
+        "has_stripe_url": true
+      }
+    },
+    {
+      "test": "Revenue Analytics",
+      "success": true,
+      "details": "Total Revenue: $0, MRR: $0.0",
+      "timestamp": "2025-10-18T15:28:12.939165",
+      "response_data": {
+        "total_revenue": 0,
+        "product_revenue": 0,
+        "subscription_revenue": 0,
+        "total_transactions": 0,
+        "product_sales": 0,
+        "subscription_sales": 0,
+        "active_subscriptions": 0,
+        "mrr": 0.0,
+        "currency": "usd"
+      }
+    },
+    {
+      "test": "Campaign ROI",
+      "success": true,
+      "details": "Found 0 campaigns, Average ROI: 0%",
+      "timestamp": "2025-10-18T15:28:12.951523",
+      "response_data": {
+        "total_ad_spend": 0,
+        "total_revenue": 0,
+        "average_roi": 0
+      }
+    },
+    {
+      "test": "Affiliate Commissions",
+      "success": true,
+      "details": "Total Commissions: $0, Rate: 10.0%",
+      "timestamp": "2025-10-18T15:28:12.960982",
+      "response_data": {
+        "total_commissions": 0,
+        "commission_rate": 10.0,
+        "affiliate_products": 0,
+        "currency": "usd"
+      }
+    },
+    {
+      "test": "Advanced Dashboard",
+      "success": true,
+      "details": "Complete dashboard with all sections: ['overview', 'revenue', 'campaign_roi', 'affiliate_commissions', 'generated_at']",
+      "timestamp": "2025-10-18T15:28:13.015010",
+      "response_data": {
+        "products": 0,
+        "trends": 0,
+        "content": 0,
+        "social_posts": 0,
+        "campaigns": 0
+      }
+    },
+    {
+      "test": "Payment History",
+      "success": true,
+      "details": "Retrieved 1 payment transactions",
+      "timestamp": "2025-10-18T15:28:13.033976",
+      "response_data": {
+        "transaction_count": 1
+      }
+    }
+  ]
+}
