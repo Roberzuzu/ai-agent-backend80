@@ -226,6 +226,78 @@ backend:
         comment: "✅ TESTED: Stripe API keys working correctly. Backend logs show successful Stripe API calls with HTTP 200 responses. Test checkout sessions created successfully for both products and subscriptions."
 
 frontend:
+  - task: "Error Boundary Component"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/components/ErrorBoundary.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Componente ErrorBoundary creado con manejo amigable de errores, botones de recuperación y diferentes vistas para dev/prod"
+
+  - task: "Axios Interceptor con Retry Logic"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/lib/axiosConfig.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Interceptor configurado con retry automático (3 intentos), exponential backoff, manejo de errores HTTP y toast notifications"
+
+  - task: "Componentes UI Reutilizables"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/components/StatCard.js, ChartCard.js, DateRangeFilter.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "StatCard con comparación de periodos, ChartCard para gráficos, DateRangeFilter con 7/30/90/365 días"
+
+  - task: "Widgets de Métricas"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/components/widgets/"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "4 widgets creados: AffiliateWidget, CartWidget, ABTestWidget, EmailWidget con estadísticas y comparaciones"
+
+  - task: "Dashboard Mejorado con Gráficos Chart.js"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/pages/DashboardEnhanced.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Dashboard completo con 3 gráficos Chart.js (Line, Pie, Bar), filtros de fecha, refresh, export. Incluye 4 secciones de widgets"
+
+  - task: "Integración de Toast Notifications"
+    implemented: true
+    working: "NA"
+    file: "frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Sonner toast configurado globalmente en App.js, integrado con axios interceptor para notificaciones automáticas"
+
   - task: "Página de Suscripciones"
     implemented: true
     working: true
