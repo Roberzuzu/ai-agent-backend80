@@ -20,7 +20,8 @@ import AffiliateDashboardPage from './pages/AffiliateDashboardPage';
 import AffiliatePayoutsPage from './pages/AffiliatePayoutsPage';
 import AdvancedMonetizationPage from './pages/AdvancedMonetizationPage';
 import ConversionOptimizationPage from './pages/ConversionOptimizationPage';
-import { TrendingUp, Sparkles, DollarSign, Share2, Megaphone, LayoutDashboard, CreditCard, BarChart3, Users, Zap, Target, LogOut, User } from 'lucide-react';
+import WebhookMonitorPage from './pages/WebhookMonitorPage';
+import { TrendingUp, Sparkles, DollarSign, Share2, Megaphone, LayoutDashboard, CreditCard, BarChart3, Users, Zap, Target, LogOut, User, Activity } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
