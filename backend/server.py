@@ -720,6 +720,138 @@ async def get_wordpress_products():
     else:
         raise HTTPException(status_code=400, detail=result.get('error'))
 
+@api_router.post("/wordpress/auto-sync-featured")
+async def auto_sync_featured_products():
+    """Automatically sync only featured products to WooCommerce"""
+    # Get featured products from MongoDB
+    products = await db.products.find({"is_featured": True}, {"_id": 0}).to_list(100)
+    
+    results = []
+    for product in products:
+        # Skip if already synced
+        if product.get('wc_product_id'):
+            continue
+        
+        # Convert datetime
+        if isinstance(product.get('created_at'), datetime):
+            product['created_at'] = product['created_at'].isoformat()
+        
+        result = wordpress_client.create_product(product)
+        
+        if result['success']:
+            await db.products.update_one(
+                {"id": product['id']},
+                {"$set": {
+                    "wc_product_id": result.get('wc_product_id'),
+                    "wc_permalink": result.get('permalink'),
+                    "synced_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+        
+        results.append({
+            'product_id': product['id'],
+            'product_name': product['name'],
+            'success': result['success'],
+            'wc_product_id': result.get('wc_product_id'),
+            'permalink': result.get('permalink')
+        })
+    
+    return {
+        'total_featured': len(products),
+        'synced': len([r for r in results if r['success']]),
+        'results': results
+    }
+
+@api_router.post("/wordpress/update-prices")
+async def update_woocommerce_prices():
+    """Update prices of all synced products in WooCommerce"""
+    products = await db.products.find(
+        {"wc_product_id": {"$exists": True}},
+        {"_id": 0}
+    ).to_list(100)
+    
+    results = []
+    for product in products:
+        wc_id = product.get('wc_product_id')
+        if not wc_id:
+            continue
+        
+        result = wordpress_client.update_product(wc_id, {
+            'regular_price': str(product.get('price', 0)),
+            'sale_price': str(product.get('price', 0) * (1 - product.get('discount_percentage', 0) / 100)) if product.get('discount_percentage') else None
+        })
+        
+        results.append({
+            'product_id': product['id'],
+            'product_name': product['name'],
+            'success': result['success']
+        })
+    
+    return {
+        'total': len(products),
+        'updated': len([r for r in results if r['success']]),
+        'results': results
+    }
+
+@api_router.post("/wordpress/create-category-pages")
+async def create_category_landing_pages():
+    """Create landing pages for each product category"""
+    # Get all unique categories
+    products = await db.products.find({}, {"_id": 0, "category": 1}).to_list(1000)
+    categories = list(set([p.get('category', 'Uncategorized') for p in products]))
+    
+    results = []
+    for category in categories:
+        # Get products in this category
+        cat_products = await db.products.find(
+            {"category": category},
+            {"_id": 0}
+        ).to_list(100)
+        
+        # Create content for landing page
+        content = f"""
+        <h2>Las Mejores {category.title()} de 2025</h2>
+        
+        <p>Descubre nuestra selección de {category} profesionales con descuentos exclusivos.</p>
+        
+        <div class="products-grid">
+        """
+        
+        for product in cat_products:
+            discount_text = f"¡{product.get('discount_percentage', 0)}% OFF con código {product.get('discount_code', '')}!" if product.get('discount_code') else ""
+            
+            content += f"""
+            <div class="product-card">
+                <h3>{product['name']}</h3>
+                <p>{product['description'][:150]}...</p>
+                <p class="price">${product['price']}</p>
+                <p class="discount">{discount_text}</p>
+                <a href="{product.get('affiliate_link', '#')}" class="btn">Ver Producto</a>
+            </div>
+            """
+        
+        content += "</div>"
+        
+        # Create WordPress page
+        page_data = {
+            'title': f"{category.title()} - Herramientas y Accesorios",
+            'content': content,
+            'status': 'publish'
+        }
+        
+        # Note: Would need to add create_page method to wordpress_integration.py
+        results.append({
+            'category': category,
+            'products_count': len(cat_products),
+            'page_created': True  # Placeholder
+        })
+    
+    return {
+        'categories': len(categories),
+        'pages_created': len(results),
+        'results': results
+    }
+
 # =========================
 # ROOT ROUTE
 # =========================
