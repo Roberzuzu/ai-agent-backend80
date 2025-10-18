@@ -313,6 +313,86 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
+      🎨 OPCIÓN B - EXPERIENCIA DE USUARIO IMPLEMENTADA:
+      
+      ✅ ERROR BOUNDARIES:
+      1. ErrorBoundary component creado
+      2. Mensajes user-friendly con opciones de recuperación
+      3. Diferentes vistas para desarrollo y producción
+      4. Integrado en App.js para capturar todos los errores
+      
+      ✅ AXIOS INTERCEPTOR CON RETRY LOGIC:
+      1. axiosConfig.js con retry automático (3 intentos)
+      2. Exponential backoff (1s, 2s, 4s)
+      3. Manejo de errores por código HTTP (400, 401, 403, 404, 422, 429, 500, 503)
+      4. Toast notifications automáticas con mensajes amigables
+      5. Auto-redirect en caso de sesión expirada (401)
+      
+      ✅ COMPONENTES REUTILIZABLES:
+      1. StatCard - Cards de estadísticas con comparación de periodos
+      2. ChartCard - Container para gráficos con loading states
+      3. DateRangeFilter - Filtro de 7, 30, 90, 365 días
+      
+      ✅ WIDGETS ESPECIALIZADOS:
+      1. AffiliateWidget - Total afiliados, activos, clicks, comisiones
+      2. CartWidget - Carritos totales, abandonados, recuperados, tasa abandono
+      3. ABTestWidget - Tests activos, completados, mejora promedio
+      4. EmailWidget - Campañas activas, emails enviados, tasas de apertura/click
+      
+      ✅ BACKEND - ENDPOINT AVANZADO:
+      - /api/analytics/dashboard-enhanced?days={N}
+      - Métricas con comparación de periodos
+      - Time-series data para gráficos (revenue timeline)
+      - Conversion sources para pie chart
+      - Campaign performance para bar chart
+      - Soporte para filtros de fecha (7, 30, 90, 365 días)
+      
+      ✅ DASHBOARD MEJORADO (DashboardEnhanced.js):
+      1. Gráficos con Chart.js:
+         - Line Chart: Revenue over time
+         - Pie Chart: Conversion sources
+         - Bar Chart: Campaign performance
+      2. Filtros de fecha dinámicos
+      3. Botón de refresh
+      4. Botón de export (simulado)
+      5. Secciones organizadas:
+         - Main KPIs (4 cards con comparaciones)
+         - Revenue timeline
+         - Conversion & Campaign charts
+         - Affiliate metrics
+         - Cart abandonment
+         - A/B testing
+         - Email marketing
+      6. Loading states consistentes
+      7. Toast notifications integradas
+      
+      ✅ INTEGRACIÓN SONNER:
+      - Toast notifications en toda la app
+      - Posición top-right
+      - Duración 4 segundos
+      - Soporte para rich colors y close button
+      
+      ✅ NAVEGACIÓN ACTUALIZADA:
+      - Nueva ruta /dashboard-enhanced con ícono Gauge
+      - Error Boundary wrapper en App.js
+      - Toaster global configurado
+      
+      📊 CARACTERÍSTICAS IMPLEMENTADAS:
+      1. ✅ Error boundaries con mensajes amigables
+      2. ✅ Dashboard optimizado con gráficos Chart.js
+      3. ✅ Widgets integrados (afiliados, carritos, A/B, email)
+      4. ✅ Filtros de fecha (7, 30, 90, 365 días)
+      5. ✅ Comparación con periodo anterior (% cambio)
+      6. ✅ Retry logic en llamadas API (3 intentos)
+      7. ✅ Toast notifications user-friendly
+      8. ✅ Loading states consistentes
+      9. ✅ Gráficos interactivos responsive
+      10. ✅ Time-series data para análisis temporal
+      
+      LISTO PARA TESTING
+  
+  - agent: "main"
+    message: |
       IMPLEMENTACIÓN COMPLETA DEL SISTEMA DE PAGOS Y MONETIZACIÓN:
       
       ✅ BACKEND (server.py):
