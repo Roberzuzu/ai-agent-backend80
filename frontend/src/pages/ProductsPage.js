@@ -281,6 +281,16 @@ function ProductsPage() {
                   View Affiliate Link →
                 </a>
               )}
+              
+              {/* Buy Button */}
+              <button
+                onClick={() => handleBuyProduct(product)}
+                className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2 mb-3"
+              >
+                <ShoppingCart className="w-5 h-5" />
+                <span>Comprar ${product.price}</span>
+              </button>
+              
               <div className="flex space-x-2 mt-4">
                 <button
                   onClick={() => toggleFeatured(product.id, product.is_featured)}
