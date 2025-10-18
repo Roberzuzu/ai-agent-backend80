@@ -1669,6 +1669,74 @@ async def increment_usage(user_email: str, resource_type: str) -> bool:
     return True
 
 # =========================
+# ROUTES - Membership Limits
+# =========================
+
+@api_router.get("/limits/check/{resource_type}")
+async def check_resource_limit(resource_type: str, user_email: str):
+    """Check if user can create more of a resource"""
+    try:
+        result = await check_limit(user_email, resource_type)
+        return result
+    except Exception as e:
+        logger.error(f"Error checking limit: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/limits/usage")
+async def get_all_usage(user_email: str):
+    """Get usage stats for all resources"""
+    try:
+        tier = await get_user_tier(user_email)
+        limits = MEMBERSHIP_LIMITS[tier]
+        
+        usage_data = {}
+        
+        for resource_type in ['products', 'posts_per_month', 'campaigns', 'affiliates']:
+            limit_check = await check_limit(user_email, resource_type)
+            usage_data[resource_type] = {
+                "current": limit_check.current_usage,
+                "limit": limit_check.limit,
+                "percentage": limit_check.percentage,
+                "remaining": limit_check.remaining
+            }
+        
+        return {
+            "tier": tier,
+            "tier_name": limits['name'],
+            "usage": usage_data,
+            "limits": limits
+        }
+    except Exception as e:
+        logger.error(f"Error getting usage: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/limits/tiers")
+async def get_membership_tiers():
+    """Get all membership tiers and their limits"""
+    return {
+        "tiers": [
+            {
+                "tier": "basic",
+                "name": MEMBERSHIP_LIMITS["basic"]["name"],
+                "price": 0,
+                "limits": MEMBERSHIP_LIMITS["basic"]
+            },
+            {
+                "tier": "pro",
+                "name": MEMBERSHIP_LIMITS["pro"]["name"],
+                "price": 29.99,
+                "limits": MEMBERSHIP_LIMITS["pro"]
+            },
+            {
+                "tier": "vip",
+                "name": MEMBERSHIP_LIMITS["vip"]["name"],
+                "price": 99.99,
+                "limits": MEMBERSHIP_LIMITS["vip"]
+            }
+        ]
+    }
+
+# =========================
 # ROUTES - Advanced Analytics
 # =========================
 
