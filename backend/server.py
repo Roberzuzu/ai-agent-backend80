@@ -3222,7 +3222,7 @@ async def get_cart_analytics():
 async def root():
     return {
         "message": "Social Media Monetization Agent API",
-        "version": "3.0.0",
+        "version": "4.0.0",
         "modules": [
             "Growth Hacker",
             "Content Creator",
@@ -3238,7 +3238,11 @@ async def root():
             "🛒 Amazon Associates Integration",
             "📦 Dropshipping Automation",
             "👑 Memberships & Premium Content",
-            "💝 Donations & Tips"
+            "💝 Donations & Tips",
+            "🧪 A/B Testing",
+            "🤖 AI Product Recommendations",
+            "📧 Email Marketing Automation",
+            "🛒 Cart Abandonment Recovery"
         ]
     }
 
