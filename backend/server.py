@@ -2651,7 +2651,7 @@ async def contribute_to_goal(goal_id: str, amount: float):
 async def root():
     return {
         "message": "Social Media Monetization Agent API",
-        "version": "2.0.0",
+        "version": "3.0.0",
         "modules": [
             "Growth Hacker",
             "Content Creator",
@@ -2663,7 +2663,11 @@ async def root():
             "📊 Revenue Analytics",
             "💰 Subscription Management",
             "📈 Campaign ROI Tracking",
-            "🤝 Affiliate Commissions"
+            "🤝 Affiliate Program",
+            "🛒 Amazon Associates Integration",
+            "📦 Dropshipping Automation",
+            "👑 Memberships & Premium Content",
+            "💝 Donations & Tips"
         ]
     }
 
