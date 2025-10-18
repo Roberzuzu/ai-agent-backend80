@@ -76,6 +76,29 @@ function ProductsPage() {
     }
   };
 
+  const handleBuyProduct = async (product) => {
+    try {
+      const originUrl = window.location.origin;
+      const response = await axios.post(`${API}/payments/checkout/session`, {
+        payment_type: 'product',
+        product_id: product.id,
+        user_email: 'guest@example.com', // In production, get from auth
+        origin_url: originUrl,
+        metadata: {
+          source: 'products_page'
+        }
+      });
+
+      // Redirect to Stripe checkout
+      if (response.data.url) {
+        window.location.href = response.data.url;
+      }
+    } catch (error) {
+      console.error('Error creating checkout:', error);
+      alert('Error al crear la sesión de pago. Intenta de nuevo.');
+    }
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center h-64"><div className="loading-spinner"></div></div>;
   }
