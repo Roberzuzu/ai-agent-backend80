@@ -5581,15 +5581,25 @@ async def get_database_info():
                 }
         
         # Get migration info
-        migrations_cursor = db["_migrations"].find({})
+        migrations_cursor = db["_migrations"].find({}, {'_id': 0})  # Exclude ObjectId
         migrations = await migrations_cursor.to_list(length=None)
+        
+        # Convert datetime to string for JSON serialization
+        last_migration = None
+        if migrations:
+            last = migrations[-1]
+            last_migration = {
+                'migration_id': last.get('migration_id'),
+                'description': last.get('description'),
+                'applied_at': last.get('applied_at').isoformat() if last.get('applied_at') else None
+            }
         
         return {
             "database_name": os.environ['DB_NAME'],
             "collections_count": len(collections),
             "collections": collection_stats,
             "migrations_applied": len(migrations),
-            "last_migration": migrations[-1] if migrations else None
+            "last_migration": last_migration
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database info error: {str(e)}")
