@@ -264,10 +264,12 @@ class WordPressIntegration:
     def get_products(self, per_page: int = 10) -> Dict[str, Any]:
         """Get WooCommerce products"""
         try:
+            params = self.wc_auth.copy()
+            params['per_page'] = per_page
+            
             response = requests.get(
                 f"{self.wc_api}/products",
-                headers=self.headers,
-                params={'per_page': per_page},
+                params=params,
                 timeout=30
             )
             
