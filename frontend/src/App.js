@@ -78,6 +78,10 @@ function App() {
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/social" element={<SocialPage />} />
             <Route path="/campaigns" element={<CampaignsPage />} />
+            <Route path="/subscriptions" element={<SubscriptionsPage />} />
+            <Route path="/revenue" element={<RevenueAnalyticsPage />} />
+            <Route path="/payment-success" element={<PaymentSuccessPage />} />
+            <Route path="/payment-cancelled" element={<PaymentCancelledPage />} />
           </Routes>
         </main>
       </BrowserRouter>
