@@ -157,6 +157,7 @@ function App() {
               <main className="max-w-7xl mx-auto px-4 py-8">
                 <Routes>
                   <Route path="/" element={<Dashboard />} />
+                  <Route path="/woocommerce" element={<WooCommercePage />} />
                   <Route path="/dashboard-enhanced" element={<DashboardEnhanced />} />
                   <Route path="/trends" element={<TrendsPage />} />
                   <Route path="/content" element={<ContentPage />} />
