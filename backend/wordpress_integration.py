@@ -453,6 +453,466 @@ class WordPressIntegration:
                 'success': False,
                 'error': str(e)
             }
+    
+    def get_pages(self, per_page: int = 20, status: str = 'publish') -> Dict[str, Any]:
+        """Get WordPress pages"""
+        try:
+            params = {
+                'per_page': per_page,
+                'status': status
+            }
+            
+            response = requests.get(
+                f"{self.wp_api}/pages",
+                headers=self.wp_headers,
+                params=params,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                pages = response.json()
+                return {
+                    'success': True,
+                    'pages': pages,
+                    'count': len(pages)
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': f"Failed to get pages: {response.status_code}",
+                    'details': response.text
+                }
+        except Exception as e:
+            logger.error(f"Error getting pages: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def get_posts(self, per_page: int = 20, status: str = 'publish') -> Dict[str, Any]:
+        """Get WordPress posts"""
+        try:
+            params = {
+                'per_page': per_page,
+                'status': status
+            }
+            
+            response = requests.get(
+                f"{self.wp_api}/posts",
+                headers=self.wp_headers,
+                params=params,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                posts = response.json()
+                return {
+                    'success': True,
+                    'posts': posts,
+                    'count': len(posts)
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': f"Failed to get posts: {response.status_code}",
+                    'details': response.text
+                }
+        except Exception as e:
+            logger.error(f"Error getting posts: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def update_page(self, page_id: int, page_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Update an existing WordPress page"""
+        try:
+            response = requests.post(
+                f"{self.wp_api}/pages/{page_id}",
+                headers=self.wp_headers,
+                json=page_data,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                page = response.json()
+                return {
+                    'success': True,
+                    'page_id': page.get('id'),
+                    'message': f"Page updated: {page.get('title', {}).get('rendered')}"
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': f"Failed to update page: {response.status_code}",
+                    'details': response.text
+                }
+        except Exception as e:
+            logger.error(f"Error updating page: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def update_post(self, post_id: int, post_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Update an existing WordPress post"""
+        try:
+            response = requests.post(
+                f"{self.wp_api}/posts/{post_id}",
+                headers=self.wp_headers,
+                json=post_data,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                post = response.json()
+                return {
+                    'success': True,
+                    'post_id': post.get('id'),
+                    'message': f"Post updated: {post.get('title', {}).get('rendered')}"
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': f"Failed to update post: {response.status_code}",
+                    'details': response.text
+                }
+        except Exception as e:
+            logger.error(f"Error updating post: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def create_page_bulk(self, pages_config: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Create multiple common pages at once"""
+        results = []
+        errors = []
+        
+        for page_config in pages_config:
+            result = self.create_page(page_config)
+            if result.get('success'):
+                results.append({
+                    'title': page_config.get('title'),
+                    'page_id': result.get('page_id'),
+                    'permalink': result.get('permalink')
+                })
+            else:
+                errors.append({
+                    'title': page_config.get('title'),
+                    'error': result.get('error')
+                })
+        
+        return {
+            'success': len(errors) == 0,
+            'created': len(results),
+            'failed': len(errors),
+            'results': results,
+            'errors': errors
+        }
+    
+    def get_plugins(self) -> Dict[str, Any]:
+        """Get installed plugins"""
+        try:
+            response = requests.get(
+                f"{self.base_url}/wp-json/wp/v2/plugins",
+                headers=self.wp_headers,
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                plugins = response.json()
+                return {
+                    'success': True,
+                    'plugins': plugins,
+                    'count': len(plugins)
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': f"Failed to get plugins: {response.status_code}",
+                    'details': response.text
+                }
+        except Exception as e:
+            logger.error(f"Error getting plugins: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def install_plugin(self, plugin_slug: str) -> Dict[str, Any]:
+        """Install a plugin from WordPress.org repository"""
+        try:
+            response = requests.post(
+                f"{self.base_url}/wp-json/wp/v2/plugins",
+                headers=self.wp_headers,
+                json={'slug': plugin_slug, 'status': 'inactive'},
+                timeout=60
+            )
+            
+            if response.status_code in [200, 201]:
+                plugin = response.json()
+                return {
+                    'success': True,
+                    'plugin': plugin_slug,
+                    'message': f"Plugin {plugin_slug} installed successfully"
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': f"Failed to install plugin: {response.status_code}",
+                    'details': response.text
+                }
+        except Exception as e:
+            logger.error(f"Error installing plugin: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def activate_plugin(self, plugin_path: str) -> Dict[str, Any]:
+        """Activate a plugin"""
+        try:
+            response = requests.post(
+                f"{self.base_url}/wp-json/wp/v2/plugins/{plugin_path}",
+                headers=self.wp_headers,
+                json={'status': 'active'},
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                return {
+                    'success': True,
+                    'message': f"Plugin {plugin_path} activated"
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': f"Failed to activate plugin: {response.status_code}",
+                    'details': response.text
+                }
+        except Exception as e:
+            logger.error(f"Error activating plugin: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def add_google_analytics(self, ga_tracking_id: str, method: str = 'header') -> Dict[str, Any]:
+        """
+        Add Google Analytics tracking code to WordPress
+        Methods: 'header' (add to theme header), 'plugin' (use plugin)
+        """
+        try:
+            # Google Analytics 4 tracking code
+            ga_code = f"""
+<!-- Google Analytics (GA4) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id={ga_tracking_id}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){{dataLayer.push(arguments);}}
+  gtag('js', new Date());
+  gtag('config', '{ga_tracking_id}');
+</script>
+<!-- End Google Analytics -->
+"""
+            
+            if method == 'header':
+                # For header injection, we would typically use a plugin like Insert Headers and Footers
+                # or modify the theme's header.php
+                # Since direct file modification via API is limited, we'll create instructions
+                return {
+                    'success': True,
+                    'method': 'manual',
+                    'code': ga_code,
+                    'instructions': [
+                        "1. Go to Appearance > Theme Editor in WordPress",
+                        "2. Select header.php file",
+                        "3. Paste the tracking code before </head> tag",
+                        "Or install 'Insert Headers and Footers' plugin and paste code there"
+                    ],
+                    'message': "Google Analytics code generated. Manual installation required."
+                }
+            else:
+                return {
+                    'success': True,
+                    'method': 'plugin',
+                    'code': ga_code,
+                    'recommendation': "Install 'Site Kit by Google' plugin for official GA integration",
+                    'message': "For automated GA setup, install Site Kit by Google plugin"
+                }
+        except Exception as e:
+            logger.error(f"Error adding Google Analytics: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    def get_common_pages_template(self) -> List[Dict[str, Any]]:
+        """Get templates for common website pages"""
+        return [
+            {
+                'title': 'Sobre Nosotros',
+                'content': '''
+                    <h2>Quiénes Somos</h2>
+                    <p>Somos tu tienda de confianza especializada en herramientas y accesorios de alta calidad.</p>
+                    
+                    <h3>Nuestra Misión</h3>
+                    <p>Proporcionar las mejores herramientas al mejor precio, con atención personalizada y envíos rápidos.</p>
+                    
+                    <h3>¿Por Qué Elegirnos?</h3>
+                    <ul>
+                        <li>Productos de marcas reconocidas</li>
+                        <li>Precios competitivos y ofertas exclusivas</li>
+                        <li>Envío rápido y seguro</li>
+                        <li>Atención al cliente excepcional</li>
+                        <li>Garantía en todos nuestros productos</li>
+                    </ul>
+                ''',
+                'status': 'publish'
+            },
+            {
+                'title': 'Contacto',
+                'content': '''
+                    <h2>Contáctanos</h2>
+                    <p>¿Tienes alguna pregunta? Estamos aquí para ayudarte.</p>
+                    
+                    <h3>Formas de Contacto</h3>
+                    <ul>
+                        <li><strong>Email:</strong> contacto@herramientasyaccesorios.store</li>
+                        <li><strong>Horario:</strong> Lunes a Viernes, 9:00 - 18:00</li>
+                    </ul>
+                    
+                    <p>También puedes usar el formulario de contacto a continuación:</p>
+                    [contact-form-7]
+                ''',
+                'status': 'publish'
+            },
+            {
+                'title': 'Política de Envíos',
+                'content': '''
+                    <h2>Información de Envíos</h2>
+                    
+                    <h3>Tiempos de Entrega</h3>
+                    <ul>
+                        <li>Envío estándar: 3-5 días hábiles</li>
+                        <li>Envío express: 1-2 días hábiles</li>
+                    </ul>
+                    
+                    <h3>Costos de Envío</h3>
+                    <p>Envío gratis en compras superiores a $50 USD</p>
+                    <p>Envío estándar: $5.99 USD</p>
+                    
+                    <h3>Seguimiento</h3>
+                    <p>Recibirás un número de seguimiento una vez que tu pedido sea enviado.</p>
+                ''',
+                'status': 'publish'
+            },
+            {
+                'title': 'Política de Devoluciones',
+                'content': '''
+                    <h2>Devoluciones y Reembolsos</h2>
+                    
+                    <h3>30 Días de Garantía</h3>
+                    <p>Si no estás satisfecho con tu compra, puedes devolverla dentro de los 30 días.</p>
+                    
+                    <h3>Proceso de Devolución</h3>
+                    <ol>
+                        <li>Contacta con nuestro servicio de atención al cliente</li>
+                        <li>Recibe tu etiqueta de devolución</li>
+                        <li>Envía el producto en su embalaje original</li>
+                        <li>Recibe tu reembolso en 5-7 días hábiles</li>
+                    </ol>
+                    
+                    <h3>Condiciones</h3>
+                    <ul>
+                        <li>El producto debe estar sin usar</li>
+                        <li>Embalaje original intacto</li>
+                        <li>Incluir todos los accesorios</li>
+                    </ul>
+                ''',
+                'status': 'publish'
+            },
+            {
+                'title': 'Términos y Condiciones',
+                'content': '''
+                    <h2>Términos y Condiciones de Uso</h2>
+                    
+                    <h3>1. Aceptación de Términos</h3>
+                    <p>Al utilizar este sitio web, aceptas estos términos y condiciones en su totalidad.</p>
+                    
+                    <h3>2. Uso del Sitio</h3>
+                    <p>Este sitio es solo para uso personal y no comercial.</p>
+                    
+                    <h3>3. Precios y Disponibilidad</h3>
+                    <p>Los precios están sujetos a cambios sin previo aviso. La disponibilidad de productos no está garantizada.</p>
+                    
+                    <h3>4. Propiedad Intelectual</h3>
+                    <p>Todo el contenido de este sitio es propiedad de Herramientas y Accesorios Store.</p>
+                    
+                    <h3>5. Limitación de Responsabilidad</h3>
+                    <p>No nos hacemos responsables de daños indirectos o consecuentes derivados del uso del sitio.</p>
+                ''',
+                'status': 'publish'
+            },
+            {
+                'title': 'Política de Privacidad',
+                'content': '''
+                    <h2>Política de Privacidad</h2>
+                    
+                    <h3>Información que Recopilamos</h3>
+                    <ul>
+                        <li>Nombre y datos de contacto</li>
+                        <li>Dirección de envío</li>
+                        <li>Información de pago (procesada de forma segura)</li>
+                        <li>Historial de pedidos</li>
+                    </ul>
+                    
+                    <h3>Uso de la Información</h3>
+                    <p>Utilizamos tu información para:</p>
+                    <ul>
+                        <li>Procesar tus pedidos</li>
+                        <li>Mejorar nuestros servicios</li>
+                        <li>Enviarte ofertas y novedades (con tu consentimiento)</li>
+                    </ul>
+                    
+                    <h3>Seguridad</h3>
+                    <p>Utilizamos medidas de seguridad estándar de la industria para proteger tu información.</p>
+                    
+                    <h3>Cookies</h3>
+                    <p>Utilizamos cookies para mejorar tu experiencia de navegación.</p>
+                    
+                    <h3>Tus Derechos</h3>
+                    <p>Puedes solicitar acceso, corrección o eliminación de tus datos personales en cualquier momento.</p>
+                ''',
+                'status': 'publish'
+            },
+            {
+                'title': 'Preguntas Frecuentes (FAQ)',
+                'content': '''
+                    <h2>Preguntas Frecuentes</h2>
+                    
+                    <h3>¿Cómo puedo hacer un pedido?</h3>
+                    <p>Simplemente navega por nuestros productos, añade los artículos a tu carrito y procede al checkout.</p>
+                    
+                    <h3>¿Qué métodos de pago aceptan?</h3>
+                    <p>Aceptamos tarjetas de crédito/débito (Visa, MasterCard, American Express) y PayPal.</p>
+                    
+                    <h3>¿Puedo cancelar mi pedido?</h3>
+                    <p>Puedes cancelar tu pedido dentro de las primeras 24 horas. Contacta con nosotros lo antes posible.</p>
+                    
+                    <h3>¿Ofrecen garantía en los productos?</h3>
+                    <p>Todos nuestros productos tienen garantía del fabricante. El período varía según el producto.</p>
+                    
+                    <h3>¿Envían internacionalmente?</h3>
+                    <p>Actualmente solo enviamos dentro de Estados Unidos.</p>
+                    
+                    <h3>¿Cómo puedo rastrear mi pedido?</h3>
+                    <p>Recibirás un email con el número de seguimiento una vez que tu pedido sea enviado.</p>
+                ''',
+                'status': 'publish'
+            }
+        ]
 
 
 def create_wordpress_client() -> WordPressIntegration:
