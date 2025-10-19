@@ -290,6 +290,303 @@ class AI_Dropshipping_Manager {
     }
     
     public function ajax_get_stats() {
+
+    
+    // ==========================================
+    // NUEVOS AJAX HANDLERS - AI SUPER POWERS
+    // ==========================================
+    
+    public function ajax_complete_process() {
+        check_ajax_referer('ai_dropship_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error('Unauthorized');
+        }
+        
+        $product_id = intval($_POST['product_id']);
+        $product = wc_get_product($product_id);
+        
+        if (!$product) {
+            wp_send_json_error('Producto no encontrado');
+        }
+        
+        try {
+            $ai_client = new AI_SuperPowered_Client();
+            
+            // Obtener datos del producto
+            $product_name = $product->get_name();
+            $categories = wp_get_post_terms($product_id, 'product_cat', array('fields' => 'names'));
+            $category = !empty($categories) ? $categories[0] : 'general';
+            $base_price = floatval($product->get_regular_price()) ?: null;
+            
+            // Procesar completo
+            $result = $ai_client->process_product_complete(
+                $product_name,
+                $category,
+                array(),
+                $base_price,
+                true
+            );
+            
+            if ($result['success']) {
+                // Aplicar descripción
+                if (!empty($result['description'])) {
+                    $ai_client->apply_description_to_product($product_id, $result['description']);
+                }
+                
+                // Aplicar precio óptimo
+                if (!empty($result['pricing'])) {
+                    $ai_client->apply_optimal_price($product_id, $result['pricing']);
+                }
+                
+                // Aplicar imágenes
+                if (!empty($result['images'])) {
+                    $ai_client->apply_images_to_product($product_id, $result['images']);
+                }
+                
+                wp_send_json_success(array(
+                    'message' => '✅ Producto procesado completamente con AI',
+                    'details' => $result
+                ));
+            } else {
+                wp_send_json_error($result);
+            }
+            
+        } catch (Exception $e) {
+            wp_send_json_error($e->getMessage());
+        }
+    }
+    
+    public function ajax_generate_description() {
+        check_ajax_referer('ai_dropship_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error('Unauthorized');
+        }
+        
+        $product_id = intval($_POST['product_id']);
+        $product = wc_get_product($product_id);
+        
+        if (!$product) {
+            wp_send_json_error('Producto no encontrado');
+        }
+        
+        try {
+            $ai_client = new AI_SuperPowered_Client();
+            
+            $product_name = $product->get_name();
+            $categories = wp_get_post_terms($product_id, 'product_cat', array('fields' => 'names'));
+            $category = !empty($categories) ? $categories[0] : 'general';
+            
+            $result = $ai_client->generate_description($product_name, $category);
+            
+            if ($result['success']) {
+                // Aplicar al producto
+                $ai_client->apply_description_to_product($product_id, $result);
+                
+                wp_send_json_success(array(
+                    'message' => '✅ Descripción SEO generada y aplicada',
+                    'data' => $result
+                ));
+            } else {
+                wp_send_json_error($result);
+            }
+            
+        } catch (Exception $e) {
+            wp_send_json_error($e->getMessage());
+        }
+    }
+    
+    public function ajax_generate_images() {
+        check_ajax_referer('ai_dropship_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error('Unauthorized');
+        }
+        
+        $product_id = intval($_POST['product_id']);
+        $product = wc_get_product($product_id);
+        
+        if (!$product) {
+            wp_send_json_error('Producto no encontrado');
+        }
+        
+        try {
+            $ai_client = new AI_SuperPowered_Client();
+            
+            $product_name = $product->get_name();
+            $categories = wp_get_post_terms($product_id, 'product_cat', array('fields' => 'names'));
+            $category = !empty($categories) ? $categories[0] : 'general';
+            
+            $result = $ai_client->generate_images($product_name, $category, 'professional product photo', 2);
+            
+            if ($result['success']) {
+                // Descargar y aplicar imágenes
+                $count = $ai_client->apply_images_to_product($product_id, $result);
+                
+                wp_send_json_success(array(
+                    'message' => "✅ $count imágenes generadas y aplicadas",
+                    'data' => $result
+                ));
+            } else {
+                wp_send_json_error($result);
+            }
+            
+        } catch (Exception $e) {
+            wp_send_json_error($e->getMessage());
+        }
+    }
+    
+    public function ajax_market_analysis() {
+        check_ajax_referer('ai_dropship_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error('Unauthorized');
+        }
+        
+        $product_id = intval($_POST['product_id']);
+        $product = wc_get_product($product_id);
+        
+        if (!$product) {
+            wp_send_json_error('Producto no encontrado');
+        }
+        
+        try {
+            $ai_client = new AI_SuperPowered_Client();
+            
+            $product_name = $product->get_name();
+            $categories = wp_get_post_terms($product_id, 'product_cat', array('fields' => 'names'));
+            $category = !empty($categories) ? $categories[0] : 'general';
+            
+            $result = $ai_client->analyze_market($product_name, $category);
+            
+            wp_send_json_success(array(
+                'message' => '✅ Análisis de mercado completado',
+                'data' => $result
+            ));
+            
+        } catch (Exception $e) {
+            wp_send_json_error($e->getMessage());
+        }
+    }
+    
+    public function ajax_optimal_pricing() {
+        check_ajax_referer('ai_dropship_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error('Unauthorized');
+        }
+        
+        $product_id = intval($_POST['product_id']);
+        $product = wc_get_product($product_id);
+        
+        if (!$product) {
+            wp_send_json_error('Producto no encontrado');
+        }
+        
+        try {
+            $ai_client = new AI_SuperPowered_Client();
+            
+            $product_name = $product->get_name();
+            $categories = wp_get_post_terms($product_id, 'product_cat', array('fields' => 'names'));
+            $category = !empty($categories) ? $categories[0] : 'general';
+            $base_price = floatval($product->get_regular_price());
+            
+            if ($base_price <= 0) {
+                $base_price = 40.0; // Precio base por defecto
+            }
+            
+            $result = $ai_client->calculate_optimal_price($product_name, $category, $base_price);
+            
+            if ($result['success']) {
+                // Aplicar precio
+                $ai_client->apply_optimal_price($product_id, $result);
+                
+                wp_send_json_success(array(
+                    'message' => '✅ Precio óptimo calculado y aplicado: €' . $result['optimal_price'],
+                    'data' => $result
+                ));
+            } else {
+                wp_send_json_error($result);
+            }
+            
+        } catch (Exception $e) {
+            wp_send_json_error($e->getMessage());
+        }
+    }
+    
+    public function ajax_social_content() {
+        check_ajax_referer('ai_dropship_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error('Unauthorized');
+        }
+        
+        $product_id = intval($_POST['product_id']);
+        $product = wc_get_product($product_id);
+        
+        if (!$product) {
+            wp_send_json_error('Producto no encontrado');
+        }
+        
+        try {
+            $ai_client = new AI_SuperPowered_Client();
+            
+            $product_name = $product->get_name();
+            $description = $product->get_short_description() ?: $product->get_description();
+            
+            $result = $ai_client->generate_social_content(
+                $product_name,
+                strip_tags($description),
+                array('instagram', 'facebook', 'twitter')
+            );
+            
+            wp_send_json_success(array(
+                'message' => '✅ Contenido de redes sociales generado',
+                'data' => $result
+            ));
+            
+        } catch (Exception $e) {
+            wp_send_json_error($e->getMessage());
+        }
+    }
+    
+    public function ajax_email_campaign() {
+        check_ajax_referer('ai_dropship_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error('Unauthorized');
+        }
+        
+        $product_id = intval($_POST['product_id']);
+        $product = wc_get_product($product_id);
+        
+        if (!$product) {
+            wp_send_json_error('Producto no encontrado');
+        }
+        
+        try {
+            $ai_client = new AI_SuperPowered_Client();
+            
+            $product_name = $product->get_name();
+            $description = $product->get_short_description() ?: $product->get_description();
+            
+            $result = $ai_client->generate_email_campaign(
+                $product_name,
+                strip_tags($description),
+                'general'
+            );
+            
+            wp_send_json_success(array(
+                'message' => '✅ Campaña de email generada',
+                'data' => $result
+            ));
+            
+        } catch (Exception $e) {
+            wp_send_json_error($e->getMessage());
+        }
+    }
+
         check_ajax_referer('ai_dropship_nonce', 'nonce');
         
         if (!current_user_can('manage_woocommerce')) {
