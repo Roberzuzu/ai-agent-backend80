@@ -107,7 +107,7 @@ async def fix_products_without_price():
             print(f"   💰 Precio proveedor estimado: €{supplier_price:.2f}")
             
             # Calcular precio de venta con margen
-            pricing = calculate_selling_price(supplier_price, 'EUR')
+            pricing = calculate_price(supplier_price, 'EUR')
             selling_price = pricing['selling_price_rounded']
             profit = pricing['profit']
             margin = pricing['margin_percentage'] * 100
