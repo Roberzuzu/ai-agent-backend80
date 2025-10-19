@@ -248,6 +248,63 @@ def process_command(product_id):
         send_telegram_message(f"❌ Error: {str(e)}")
 
 
+def process_natural_command(command: str, chat_id: int):
+    """Procesar comando en lenguaje natural usando el agente inteligente"""
+    logger.info(f"Comando natural: {command}")
+    
+    # Notificar que está procesando
+    send_telegram_message(f"🧠 *Analizando tu solicitud...*\n\n'{command}'")
+    
+    try:
+        response = requests.post(
+            f"{BACKEND_URL}/agent/execute",
+            json={
+                "command": command,
+                "user_id": f"telegram_{chat_id}"
+            },
+            timeout=180
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            
+            if result.get("success"):
+                mensaje = result.get("mensaje", "Procesado")
+                plan = result.get("plan", "")
+                resultados = result.get("resultados", [])
+                
+                # Construir respuesta
+                respuesta = f"✅ *{mensaje}*\n\n"
+                
+                if plan:
+                    respuesta += f"📋 *Plan:* {plan}\n\n"
+                
+                if resultados:
+                    respuesta += "*Resultados:*\n"
+                    for idx, res in enumerate(resultados, 1):
+                        herramienta = res.get("herramienta", "")
+                        resultado_data = res.get("resultado", {})
+                        
+                        if resultado_data.get("success"):
+                            respuesta += f"✓ {herramienta}\n"
+                        else:
+                            respuesta += f"✗ {herramienta}: {resultado_data.get('error', 'Error')}\n"
+                
+                send_telegram_message(respuesta)
+                logger.info(f"✅ Comando natural procesado: {command}")
+            else:
+                send_telegram_message(f"❌ Error: {result.get('error', 'Error desconocido')}")
+        else:
+            send_telegram_message(f"❌ Error de conexión: {response.status_code}")
+    
+    except Exception as e:
+        logger.error(f"Error en comando natural: {e}")
+        send_telegram_message(
+            f"❌ *Error procesando tu solicitud*\n\n"
+            f"Intenta reformular el comando o usa `/ayuda` para ver ejemplos."
+        )
+
+
 def main():
     """Loop principal"""
     global last_update_id
