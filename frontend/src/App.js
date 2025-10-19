@@ -44,6 +44,7 @@ function Navigation() {
   
   const navItems = [
     { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/woocommerce', icon: Store, label: 'WooCommerce' },
     { path: '/dashboard-enhanced', icon: Gauge, label: 'Analytics' },
     { path: '/trends', icon: TrendingUp, label: 'Growth Hacker' },
     { path: '/content', icon: Sparkles, label: 'Content Creator' },
