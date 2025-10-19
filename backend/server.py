@@ -6367,6 +6367,270 @@ async def download_info():
         }
     }
 
+
+# =========================
+# WORDPRESS MANAGEMENT ENDPOINTS
+# =========================
+
+from wordpress_integration import create_wordpress_client
+
+@api_router.get("/wordpress/status")
+async def wordpress_status():
+    """Test WordPress connection and get status"""
+    try:
+        wp = create_wordpress_client()
+        result = wp.test_connection()
+        return result
+    except Exception as e:
+        logger.error(f"WordPress status error: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+@api_router.get("/wordpress/pages")
+async def get_wordpress_pages(per_page: int = 20, status: str = 'publish'):
+    """Get all WordPress pages"""
+    try:
+        wp = create_wordpress_client()
+        result = wp.get_pages(per_page, status)
+        return result
+    except Exception as e:
+        logger.error(f"Error getting pages: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+@api_router.get("/wordpress/posts")
+async def get_wordpress_posts(per_page: int = 20, status: str = 'publish'):
+    """Get all WordPress blog posts"""
+    try:
+        wp = create_wordpress_client()
+        result = wp.get_posts(per_page, status)
+        return result
+    except Exception as e:
+        logger.error(f"Error getting posts: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+@api_router.post("/wordpress/pages/create")
+async def create_wordpress_page(page_data: dict):
+    """Create a new WordPress page"""
+    try:
+        wp = create_wordpress_client()
+        result = wp.create_page(page_data)
+        return result
+    except Exception as e:
+        logger.error(f"Error creating page: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+@api_router.post("/wordpress/pages/create-bulk")
+async def create_common_pages(page_types: List[str] = None):
+    """
+    Create common website pages in bulk
+    page_types: list of page types to create, or None for all
+    Available types: about, contact, shipping, returns, terms, privacy, faq
+    """
+    try:
+        wp = create_wordpress_client()
+        all_pages = wp.get_common_pages_template()
+        
+        if page_types:
+            # Filter pages based on requested types
+            type_map = {
+                'about': 'Sobre Nosotros',
+                'contact': 'Contacto',
+                'shipping': 'Política de Envíos',
+                'returns': 'Política de Devoluciones',
+                'terms': 'Términos y Condiciones',
+                'privacy': 'Política de Privacidad',
+                'faq': 'Preguntas Frecuentes'
+            }
+            titles_to_create = [type_map.get(pt) for pt in page_types if pt in type_map]
+            pages_to_create = [p for p in all_pages if p['title'] in titles_to_create]
+        else:
+            pages_to_create = all_pages
+        
+        result = wp.create_page_bulk(pages_to_create)
+        return result
+    except Exception as e:
+        logger.error(f"Error creating bulk pages: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+@api_router.put("/wordpress/pages/{page_id}")
+async def update_wordpress_page(page_id: int, page_data: dict):
+    """Update an existing WordPress page"""
+    try:
+        wp = create_wordpress_client()
+        result = wp.update_page(page_id, page_data)
+        return result
+    except Exception as e:
+        logger.error(f"Error updating page: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+@api_router.post("/wordpress/posts/create")
+async def create_wordpress_post(post_data: dict):
+    """Create a new WordPress blog post"""
+    try:
+        wp = create_wordpress_client()
+        result = wp.create_blog_post(post_data)
+        return result
+    except Exception as e:
+        logger.error(f"Error creating post: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+@api_router.put("/wordpress/posts/{post_id}")
+async def update_wordpress_post(post_id: int, post_data: dict):
+    """Update an existing WordPress post"""
+    try:
+        wp = create_wordpress_client()
+        result = wp.update_post(post_id, post_data)
+        return result
+    except Exception as e:
+        logger.error(f"Error updating post: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+@api_router.post("/wordpress/posts/{post_id}/publish")
+async def publish_wordpress_post(post_id: int):
+    """Publish a draft post"""
+    try:
+        wp = create_wordpress_client()
+        result = wp.publish_post(post_id)
+        return result
+    except Exception as e:
+        logger.error(f"Error publishing post: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+@api_router.get("/wordpress/plugins")
+async def get_wordpress_plugins():
+    """Get list of installed plugins"""
+    try:
+        wp = create_wordpress_client()
+        result = wp.get_plugins()
+        return result
+    except Exception as e:
+        logger.error(f"Error getting plugins: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+@api_router.post("/wordpress/plugins/install")
+async def install_wordpress_plugin(plugin_data: dict):
+    """
+    Install a plugin from WordPress.org
+    plugin_data: {"slug": "plugin-slug"}
+    """
+    try:
+        plugin_slug = plugin_data.get('slug')
+        if not plugin_slug:
+            return {"success": False, "error": "Plugin slug is required"}
+        
+        wp = create_wordpress_client()
+        result = wp.install_plugin(plugin_slug)
+        return result
+    except Exception as e:
+        logger.error(f"Error installing plugin: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+@api_router.post("/wordpress/plugins/{plugin_path}/activate")
+async def activate_wordpress_plugin(plugin_path: str):
+    """Activate an installed plugin"""
+    try:
+        wp = create_wordpress_client()
+        result = wp.activate_plugin(plugin_path)
+        return result
+    except Exception as e:
+        logger.error(f"Error activating plugin: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+@api_router.post("/wordpress/analytics/setup")
+async def setup_google_analytics(analytics_data: dict):
+    """
+    Setup Google Analytics
+    analytics_data: {"tracking_id": "G-XXXXXXXXXX", "method": "header" or "plugin"}
+    """
+    try:
+        tracking_id = analytics_data.get('tracking_id')
+        method = analytics_data.get('method', 'header')
+        
+        if not tracking_id:
+            return {"success": False, "error": "Google Analytics tracking ID is required"}
+        
+        wp = create_wordpress_client()
+        result = wp.add_google_analytics(tracking_id, method)
+        return result
+    except Exception as e:
+        logger.error(f"Error setting up Google Analytics: {str(e)}")
+        return {"success": False, "error": str(e)}
+
+@api_router.get("/wordpress/seo/recommendations")
+async def get_seo_recommendations():
+    """Get SEO plugin recommendations and setup instructions"""
+    return {
+        "success": True,
+        "recommendations": [
+            {
+                "name": "Yoast SEO",
+                "slug": "wordpress-seo",
+                "description": "El plugin SEO más popular para WordPress",
+                "features": [
+                    "Análisis SEO en tiempo real",
+                    "Vista previa de snippets de Google",
+                    "Gestión de XML sitemaps",
+                    "Análisis de legibilidad",
+                    "Integración con redes sociales"
+                ],
+                "rating": 5,
+                "downloads": "5M+",
+                "recommended": True
+            },
+            {
+                "name": "Rank Math SEO",
+                "slug": "seo-by-rank-math",
+                "description": "Plugin SEO moderno con IA integrada",
+                "features": [
+                    "Optimización con IA",
+                    "Soporte para múltiples palabras clave",
+                    "Análisis SEO avanzado",
+                    "Rich Snippets integrados",
+                    "Seguimiento de rankings"
+                ],
+                "rating": 5,
+                "downloads": "1M+",
+                "recommended": True
+            },
+            {
+                "name": "All in One SEO",
+                "slug": "all-in-one-seo-pack",
+                "description": "Suite completa de herramientas SEO",
+                "features": [
+                    "Configuración sencilla",
+                    "Optimización automática",
+                    "Análisis de TruSEO",
+                    "SEO local",
+                    "Schema markup"
+                ],
+                "rating": 4.5,
+                "downloads": "3M+",
+                "recommended": False
+            }
+        ],
+        "installation_guide": {
+            "automatic": [
+                "1. Usa el endpoint POST /api/wordpress/plugins/install con el slug del plugin",
+                "2. Activa el plugin con POST /api/wordpress/plugins/{slug}/activate",
+                "3. Configura las opciones básicas en WordPress admin"
+            ],
+            "manual": [
+                "1. Ve a Plugins > Añadir nuevo en WordPress",
+                "2. Busca 'Yoast SEO' o 'Rank Math'",
+                "3. Click en 'Instalar ahora'",
+                "4. Click en 'Activar'",
+                "5. Sigue el asistente de configuración"
+            ]
+        },
+        "setup_tips": [
+            "Configura tu título y descripción por defecto",
+            "Conecta Google Search Console",
+            "Genera y envía tu XML sitemap",
+            "Optimiza cada página con la palabra clave objetivo",
+            "Verifica que no haya errores en el análisis SEO"
+        ]
+    }
+
+
 # =========================
 # ROOT ROUTE
 # =========================
