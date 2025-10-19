@@ -278,7 +278,8 @@ async def generate_product_description(
     product_name: str,
     category: str,
     features: List[str] = None,
-    language: str = "es"
+    language: str = "es",
+    custom_prompt: str = None
 ) -> Dict[str, Any]:
     """
     Genera descripción completa del producto con SEO
@@ -286,7 +287,14 @@ async def generate_product_description(
     """
     features_text = "\n".join([f"- {f}" for f in (features or [])])
     
-    prompt = f"""Genera una descripción profesional para eCommerce en español.
+    # Usar prompt personalizado si se proporciona
+    if custom_prompt:
+        prompt = custom_prompt.replace("{product_name}", product_name)
+        prompt = prompt.replace("{category}", category)
+        prompt = prompt.replace("{features}", features_text)
+    else:
+        # Prompt por defecto
+        prompt = f"""Genera una descripción profesional para eCommerce en español.
 
 Producto: {product_name}
 Categoría: {category}
