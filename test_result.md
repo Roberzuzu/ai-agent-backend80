@@ -102,7 +102,20 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Optimización de base de datos: Implementar sistema completo con índices, schema validation, migraciones automáticas y backups"
+user_problem_statement: |
+  "Optimización de base de datos: Implementar sistema completo con índices, schema validation, migraciones automáticas y backups"
+  
+  "NUEVO: Agregar 'Cerebro AI' a la app existente - Sistema de Agente Inteligente con Claude 3.5 Sonnet"
+  
+  Implementación completa:
+  1. Endpoint POST /api/agent/execute para interpretar comandos en lenguaje natural
+  2. Integración con Claude 3.5 Sonnet para toma de decisiones
+  3. Sistema de memoria persistente con MongoDB
+  4. Búsqueda semántica con RAG (Retrieval-Augmented Generation)
+  5. 18 herramientas integradas (productos, análisis, marketing, creatividad, integraciones)
+  6. Bot de Telegram funcionando como mensajero
+  7. Historial completo de conversaciones
+  8. Embeddings con OpenAI para búsqueda contextual
 
 backend:
   - task: "Sistema de Migraciones de Base de Datos"
