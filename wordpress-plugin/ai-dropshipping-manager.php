@@ -20,13 +20,18 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('AI_DROPSHIP_VERSION', '1.1.0');
+define('AI_DROPSHIP_VERSION', '2.0.0');
 define('AI_DROPSHIP_PATH', plugin_dir_path(__FILE__));
 define('AI_DROPSHIP_URL', plugin_dir_url(__FILE__));
 define('AI_DROPSHIP_FILE', __FILE__);
 
-// API Configuration - CAMBIAR POR TU URL DE API
+// API Configuration
 define('AI_DROPSHIP_API_URL', 'https://agente90.preview.emergentagent.com/api');
+
+// AI Super Powers - APIs Externas
+define('OPENROUTER_API_KEY', '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');
+define('ABACUS_API_KEY', 's2_3902ed8d205a4c2f95f35e7a361fbb59');
+define('PERPLEXITY_API_KEY', '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');
 
 /**
  * Main Plugin Class
