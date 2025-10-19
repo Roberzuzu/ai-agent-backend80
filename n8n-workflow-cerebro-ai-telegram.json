@@ -1,0 +1,378 @@
+{
+  "name": "🧠 Cerebro AI - Telegram Control Hub",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": ["message"],
+        "additionalFields": {}
+      },
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "telegram-cerebro-ai",
+      "credentials": {
+        "telegramApi": {
+          "id": "1",
+          "name": "Telegram Bot Cerebro AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json[\"message\"][\"text\"]}}",
+              "operation": "startsWith",
+              "value2": "/"
+            }
+          ]
+        }
+      },
+      "name": "Is Command?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extraer comando y argumentos\nconst text = $input.item.json.message.text;\nconst parts = text.split(' ');\nconst command = parts[0];\nconst args = parts.slice(1);\n\nreturn {\n  command: command,\n  args: args,\n  original_text: text,\n  chat_id: $input.item.json.message.chat.id,\n  user_id: `telegram_${$input.item.json.message.from.id}`,\n  from: $input.item.json.message.from\n};"
+      },
+      "name": "Parse Command",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 200]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json[\"chat_id\"]}}",
+        "text": "🧠 *Cerebro AI - Comandos Disponibles*\n\n*Comandos directos:*\n• `/procesar [ID]` - Procesar producto con AI\n• `/ayuda` - Ver esta ayuda\n• `/status` - Estado del sistema\n• `/memoria` - Ver tu memoria\n\n*Comandos en lenguaje natural:*\nEscribe lo que necesites:\n\n• 'Busca 10 herramientas eléctricas tendencia'\n• 'Procesa el producto 4146'\n• 'Dame las estadísticas del sitio'\n• 'Crea un cupón del 20% para sierras'\n• 'Analiza la competencia de taladros'\n• 'Actualiza el stock del producto 100 a 50'\n\n*El Cerebro AI entiende lenguaje natural* 🚀",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "name": "Send Help",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [850, 100],
+      "credentials": {
+        "telegramApi": {
+          "id": "1",
+          "name": "Telegram Bot Cerebro AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://cerebro-ai-agent.preview.emergentagent.com/api/agent/status",
+        "options": {}
+      },
+      "name": "Get Agent Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [850, 200]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$node[\"Parse Command\"].json[\"chat_id\"]}}",
+        "text": "📊 *Estado del Cerebro AI*\n\n🤖 Agente: {{$json[\"agente_activo\"] ? \"✅ Activo\" : \"❌ Inactivo\"}}\n🔧 Herramientas: {{$json[\"herramientas_disponibles\"]}}\n💾 Conversaciones: {{$json[\"conversaciones_totales\"]}}\n🧠 Memorias: {{$json[\"memorias_guardadas\"]}}\n\n*Características:*\n• Memoria persistente: {{$json[\"caracteristicas\"][\"memoria_persistente\"] ? \"✅\" : \"❌\"}}\n• RAG habilitado: {{$json[\"caracteristicas\"][\"rag_enabled\"] ? \"✅\" : \"❌\"}}\n• Búsqueda semántica: {{$json[\"caracteristicas\"][\"busqueda_semantica\"] ? \"✅\" : \"❌\"}}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "name": "Send Status",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [1050, 200],
+      "credentials": {
+        "telegramApi": {
+          "id": "1",
+          "name": "Telegram Bot Cerebro AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://cerebro-ai-agent.preview.emergentagent.com/api/agent/memory/={{$node[\"Parse Command\"].json[\"user_id\"]}}?limit=5",
+        "options": {}
+      },
+      "name": "Get User Memory",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const memories = $input.item.json.memories || [];\nconst chatId = $node[\"Parse Command\"].json.chat_id;\n\nif (memories.length === 0) {\n  return {\n    chat_id: chatId,\n    message: \"📝 No tienes memorias guardadas aún.\\n\\nEmpieza a usar el Cerebro AI y tu historial se guardará automáticamente.\"\n  };\n}\n\nlet text = `📝 *Tus últimas ${memories.length} memorias*\\n\\n`;\n\nmemories.forEach((mem, idx) => {\n  const date = new Date(mem.timestamp).toLocaleDateString('es-ES');\n  text += `${idx + 1}. **Comando:** ${mem.command.substring(0, 50)}...\\n`;\n  text += `   📅 ${date}\\n\\n`;\n});\n\ntext += \"\\n_Usa /borrar_memoria para limpiar tu historial_\";\n\nreturn {\n  chat_id: chatId,\n  message: text\n};"
+      },
+      "name": "Format Memory",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json[\"chat_id\"]}}",
+        "text": "={{$json[\"message\"]}}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "name": "Send Memory",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [1250, 300],
+      "credentials": {
+        "telegramApi": {
+          "id": "1",
+          "name": "Telegram Bot Cerebro AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Comando en lenguaje natural\nconst text = $input.item.json.message.text;\nconst userId = `telegram_${$input.item.json.message.from.id}`;\nconst chatId = $input.item.json.message.chat.id;\n\nreturn {\n  command: text,\n  user_id: userId,\n  chat_id: chatId,\n  from: $input.item.json.message.from\n};"
+      },
+      "name": "Parse Natural Language",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 400]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json[\"chat_id\"]}}",
+        "text": "🧠 *Analizando tu solicitud...*\n\n'{{$json[\"command\"]}}'",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "name": "Send Processing",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [850, 400],
+      "credentials": {
+        "telegramApi": {
+          "id": "1",
+          "name": "Telegram Bot Cerebro AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://cerebro-ai-agent.preview.emergentagent.com/api/agent/execute",
+        "method": "POST",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"command\": \"{{$json[\"command\"]}}\",\n  \"user_id\": \"{{$json[\"user_id\"]}}\"\n}",
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "name": "Execute with Cerebro AI",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1050, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $input.item.json;\nconst chatId = $node[\"Parse Natural Language\"].json.chat_id;\n\nif (!result.success) {\n  return {\n    chat_id: chatId,\n    message: `❌ *Error*\\n\\n${result.error || 'Error desconocido'}`\n  };\n}\n\nlet message = `✅ *${result.mensaje || 'Completado'}*\\n\\n`;\n\nif (result.plan) {\n  message += `📋 *Plan:* ${result.plan}\\n\\n`;\n}\n\nif (result.resultados && result.resultados.length > 0) {\n  message += `*Resultados:*\\n`;\n  \n  result.resultados.forEach((res, idx) => {\n    const herramienta = res.herramienta || 'Desconocida';\n    const success = res.resultado?.success;\n    \n    if (success) {\n      message += `✅ ${herramienta}\\n`;\n      \n      // Agregar detalles específicos según la herramienta\n      if (res.resultado.productos) {\n        message += `   📦 Productos: ${res.resultado.productos.total || 0}\\n`;\n      }\n      if (res.resultado.ventas) {\n        message += `   💰 Ventas: ${res.resultado.ventas.total_ordenes || 0}\\n`;\n      }\n      if (res.resultado.mensaje) {\n        message += `   ℹ️ ${res.resultado.mensaje}\\n`;\n      }\n    } else {\n      const error = res.resultado?.error || 'Error desconocido';\n      message += `❌ ${herramienta}: ${error.substring(0, 100)}\\n`;\n    }\n  });\n}\n\nreturn {\n  chat_id: chatId,\n  message: message\n};"
+      },
+      "name": "Format Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 400]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json[\"chat_id\"]}}",
+        "text": "={{$json[\"message\"]}}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "name": "Send Result",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [1450, 400],
+      "credentials": {
+        "telegramApi": {
+          "id": "1",
+          "name": "Telegram Bot Cerebro AI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json[\"command\"]}}",
+              "operation": "equals",
+              "value2": "/ayuda"
+            },
+            {
+              "value1": "={{$json[\"command\"]}}",
+              "operation": "equals",
+              "value2": "/start"
+            }
+          ]
+        }
+      },
+      "name": "Route Command",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [850, 150]
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Is Command?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Command?": {
+      "main": [
+        [
+          {
+            "node": "Parse Command",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Parse Natural Language",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Command": {
+      "main": [
+        [
+          {
+            "node": "Route Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Command": {
+      "main": [
+        [
+          {
+            "node": "Send Help",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Agent Status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get User Memory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Agent Status": {
+      "main": [
+        [
+          {
+            "node": "Send Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User Memory": {
+      "main": [
+        [
+          {
+            "node": "Format Memory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Memory": {
+      "main": [
+        [
+          {
+            "node": "Send Memory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Natural Language": {
+      "main": [
+        [
+          {
+            "node": "Send Processing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Processing": {
+      "main": [
+        [
+          {
+            "node": "Execute with Cerebro AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute with Cerebro AI": {
+      "main": [
+        [
+          {
+            "node": "Format Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Result": {
+      "main": [
+        [
+          {
+            "node": "Send Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2025-01-15T12:00:00.000Z",
+  "versionId": "cerebro-ai-v1"
+}
