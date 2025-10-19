@@ -6320,6 +6320,53 @@ async def download_sistema_completo():
         media_type="application/gzip"
     )
 
+@api_router.get("/download/parte/{parte_id}")
+async def download_parte(parte_id: str):
+    """Download system in parts (aa, ab, ac, ad, ae, af, ag)"""
+    from fastapi.responses import FileResponse
+    import os
+    
+    if parte_id not in ['aa', 'ab', 'ac', 'ad', 'ae', 'af', 'ag']:
+        raise HTTPException(status_code=404, detail="Part not found")
+    
+    file_path = f"/tmp/sistema-parte-{parte_id}"
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    return FileResponse(
+        path=file_path,
+        filename=f"sistema-parte-{parte_id}",
+        media_type="application/octet-stream"
+    )
+
+@api_router.get("/download/info")
+async def download_info():
+    """Get download information"""
+    import os
+    
+    partes = []
+    for parte in ['aa', 'ab', 'ac', 'ad', 'ae', 'af', 'ag']:
+        path = f"/tmp/sistema-parte-{parte}"
+        if os.path.exists(path):
+            size = os.path.getsize(path)
+            partes.append({
+                'parte': parte,
+                'url': f'/api/download/parte/{parte}',
+                'size_mb': round(size / (1024 * 1024), 2)
+            })
+    
+    return {
+        'total_partes': len(partes),
+        'size_total_mb': 69,
+        'partes': partes,
+        'instrucciones': {
+            'descargar': 'Descarga todas las partes (aa, ab, ac, ad, ae, af, ag)',
+            'juntar': 'cat sistema-parte-* > sistema-dropshipping-ia.tar.gz',
+            'extraer': 'tar -xzf sistema-dropshipping-ia.tar.gz'
+        }
+    }
+
 # =========================
 # ROOT ROUTE
 # =========================
