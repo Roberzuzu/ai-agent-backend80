@@ -15,7 +15,7 @@ from datetime import datetime
 # Configuración
 TELEGRAM_TOKEN = "7708509018:AAErAOblRAlC587j1QB4k19PAfDgoiZ3kWk"
 TELEGRAM_CHAT_ID = 7202793910
-BACKEND_URL = "https://signal-stream.preview.emergentagent.com/api"
+BACKEND_URL = "https://cerebro-ai-agent.preview.emergentagent.com/api"
 WC_URL = "https://herramientasyaccesorios.store/wp-json/wc/v3"
 WC_KEY = "ck_4f50637d85ec404fff441fceb7b113b5050431ea"
 WC_SECRET = "cs_e59ef18ea20d80ffdf835803ad2fdd834a4ba19f"

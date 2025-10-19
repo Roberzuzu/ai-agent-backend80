@@ -8,7 +8,7 @@
 
 ### **CORE - Sistema Funcionando:**
 1. ✅ `ai-dropshipping-manager.zip` (16KB) - Plugin WordPress
-2. ✅ Backend API funcionando - https://signal-stream.preview.emergentagent.com/api
+2. ✅ Backend API funcionando - https://cerebro-ai-agent.preview.emergentagent.com/api
 3. ✅ Webhooks activos y configurados
 4. ✅ 20 productos con precios optimizados
 
@@ -35,7 +35,7 @@
 ## 🎯 TAREAS COMPLETADAS POR MÍ:
 
 ### **Backend (100%):**
-- [x] API funcionando en https://signal-stream.preview.emergentagent.com/api
+- [x] API funcionando en https://cerebro-ai-agent.preview.emergentagent.com/api
 - [x] Webhooks configurados y activos
 - [x] Cron job creado
 - [x] 20 productos con precios óptimos (45-50% margen)
@@ -235,7 +235,7 @@ Instagram/Facebook:
 3. Ver logs en WooCommerce
 
 **Plugin no conecta:**
-1. Verificar URL API: https://signal-stream.preview.emergentagent.com/api
+1. Verificar URL API: https://cerebro-ai-agent.preview.emergentagent.com/api
 2. Comprobar sin barra final (/)
 3. Refrescar caché WordPress
 

@@ -61,7 +61,7 @@ Un solo click para procesar productos con todas las funcionalidades AI:
 2. **Configurar Backend API**
    - Ir a AI Dropshipping → Configuración
    - Configurar URL del backend FastAPI
-   - Por defecto: `https://signal-stream.preview.emergentagent.com/api`
+   - Por defecto: `https://cerebro-ai-agent.preview.emergentagent.com/api`
 
 3. **Verificar Conexión**
    - El plugin verificará automáticamente que todas las APIs AI estén disponibles

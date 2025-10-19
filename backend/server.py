@@ -6657,13 +6657,13 @@ async def get_plugin_info():
         "plugin": {
             "name": "AI Dropshipping Manager",
             "version": "1.1.0",
-            "api_url": "https://signal-stream.preview.emergentagent.com/api",
+            "api_url": "https://cerebro-ai-agent.preview.emergentagent.com/api",
             "description": "Gestión automática de productos dropshipping con IA",
             "changelog": [
                 "v1.1.0 - API URL actualizada a agente90.preview.emergentagent.com",
                 "v1.0.0 - Versión inicial"
             ],
-            "download_url": "https://signal-stream.preview.emergentagent.com/api/wordpress/plugin/download",
+            "download_url": "https://cerebro-ai-agent.preview.emergentagent.com/api/wordpress/plugin/download",
             "installation": [
                 "1. Descarga el plugin desde el enlace de arriba",
                 "2. En WordPress, ve a Plugins > Añadir nuevo > Subir plugin",

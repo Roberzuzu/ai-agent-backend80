@@ -275,7 +275,7 @@ GET  /api/ai/health                     # Health check APIs
 2. **Configurar API Backend**
    ```
    AI Dropshipping → Configuración
-   → URL Backend: https://signal-stream.preview.emergentagent.com/api
+   → URL Backend: https://cerebro-ai-agent.preview.emergentagent.com/api
    → Guardar
    ```
 

@@ -12,9 +12,9 @@ from datetime import datetime
 from typing import Dict, Any, List
 
 # Configuration
-BASE_URL = "https://signal-stream.preview.emergentagent.com/api"
+BASE_URL = "https://cerebro-ai-agent.preview.emergentagent.com/api"
 TEST_EMAIL = "usuario.test@example.com"
-ORIGIN_URL = "https://signal-stream.preview.emergentagent.com"
+ORIGIN_URL = "https://cerebro-ai-agent.preview.emergentagent.com"
 
 class PaymentSystemTester:
     def __init__(self):
