@@ -1,6 +1,7 @@
 """
 AI Agent - Cerebro Central del Sistema
 Usa Claude 3.5 Sonnet para interpretar comandos y ejecutar acciones
+Sistema de Memoria con RAG para recordar y buscar contexto
 """
 
 import os
@@ -9,6 +10,10 @@ import asyncio
 from typing import Dict, List, Any, Optional
 import httpx
 from datetime import datetime
+from motor.motor_asyncio import AsyncIOMotorClient
+from openai import OpenAI
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
 
 # APIs disponibles
 OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY")
@@ -16,6 +21,14 @@ PERPLEXITY_KEY = os.getenv("PERPLEXITY_API_KEY")
 OPENAI_KEY = os.getenv("OPENAI_API_KEY")
 FAL_KEY = os.getenv("FAL_API_KEY")
 ABACUS_KEY = os.getenv("ABACUS_API_KEY")
+
+# MongoDB para memoria
+MONGO_URL = os.getenv("MONGO_URL")
+mongo_client = AsyncIOMotorClient(MONGO_URL)
+db = mongo_client[os.getenv("DB_NAME", "social_media_monetization")]
+
+# OpenAI para embeddings
+openai_client = OpenAI(api_key=OPENAI_KEY) if OPENAI_KEY else None
 
 # WooCommerce
 WC_KEY = "ck_4f50637d85ec404fff441fceb7b113b5050431ea"
