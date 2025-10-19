@@ -6933,7 +6933,9 @@ async def download_wordpress_plugin():
     
     return FileResponse(
         path=file_path,
-
+        filename="ai-dropshipping-manager.zip",
+        media_type="application/zip"
+    )
 
 @api_router.get("/download/wordpress-plugin-fixed")
 async def download_wordpress_plugin_fixed():
