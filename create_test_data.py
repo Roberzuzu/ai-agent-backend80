@@ -7,7 +7,7 @@ import requests
 import json
 from datetime import datetime, timedelta
 
-BASE_URL = "https://wp-pro-helper-1.preview.emergentagent.com/api"
+BASE_URL = "https://signal-stream.preview.emergentagent.com/api"
 
 def create_test_products():
     """Create test products for checkout testing"""

@@ -4,7 +4,7 @@
 
 La API del plugin ha sido actualizada a:
 ```
-https://agente90.preview.emergentagent.com/api
+https://signal-stream.preview.emergentagent.com/api
 ```
 
 ## 📦 Información del Plugin
@@ -14,7 +14,7 @@ https://agente90.preview.emergentagent.com/api
 **Descripción:** Gestión automática de productos dropshipping con IA
 
 ### Cambios en v1.1.0
-- ✅ API URL actualizada a: `https://agente90.preview.emergentagent.com/api`
+- ✅ API URL actualizada a: `https://signal-stream.preview.emergentagent.com/api`
 - ✅ Conexión configurada automáticamente al instalar
 - ✅ Compatible con WooCommerce 5.0+
 - ✅ Procesamiento automático de precios con margen del 50%
@@ -28,13 +28,13 @@ https://agente90.preview.emergentagent.com/api
 
 Opción A - Desde el navegador:
 ```
-https://agente90.preview.emergentagent.com/api/wordpress/plugin/download
+https://signal-stream.preview.emergentagent.com/api/wordpress/plugin/download
 ```
 
 Opción B - Desde la terminal:
 ```bash
 curl -o ai-dropshipping-manager.zip \
-  https://agente90.preview.emergentagent.com/api/wordpress/plugin/download
+  https://signal-stream.preview.emergentagent.com/api/wordpress/plugin/download
 ```
 
 ### Paso 2: Instalar en WordPress
@@ -51,7 +51,7 @@ curl -o ai-dropshipping-manager.zip \
 1. Ve a: **AI Dropshipping → Configuración**
 2. Verifica que la URL de API sea:
    ```
-   https://agente90.preview.emergentagent.com/api
+   https://signal-stream.preview.emergentagent.com/api
    ```
 3. Guarda los cambios si es necesario
 
@@ -66,7 +66,7 @@ Si tienes acceso SSH o FTP a tu servidor WordPress:
 cd /path/to/wordpress/wp-content/plugins/
 
 # Descargar y descomprimir
-wget https://agente90.preview.emergentagent.com/api/wordpress/plugin/download \
+wget https://signal-stream.preview.emergentagent.com/api/wordpress/plugin/download \
   -O ai-dropshipping-manager.zip
 
 unzip ai-dropshipping-manager.zip -d ai-dropshipping-manager/
@@ -121,7 +121,7 @@ Para habilitar el procesamiento automático en tiempo real:
    - **Tema:** product.created
    - **URL de entrega:** 
      ```
-     https://agente90.preview.emergentagent.com/api/webhooks/woocommerce/product-created
+     https://signal-stream.preview.emergentagent.com/api/webhooks/woocommerce/product-created
      ```
    - **Secreto:** `wc_webhook_secret_herramientas2024`
 
@@ -131,7 +131,7 @@ Para habilitar el procesamiento automático en tiempo real:
    - **Tema:** product.updated
    - **URL de entrega:** 
      ```
-     https://agente90.preview.emergentagent.com/api/webhooks/woocommerce/product-updated
+     https://signal-stream.preview.emergentagent.com/api/webhooks/woocommerce/product-updated
      ```
    - **Secreto:** `wc_webhook_secret_herramientas2024`
 
@@ -172,7 +172,7 @@ El dashboard muestra:
 ### Test 1: Verificar conexión API
 
 ```bash
-curl https://agente90.preview.emergentagent.com/api/
+curl https://signal-stream.preview.emergentagent.com/api/
 ```
 
 Debería responder con información de la API.
@@ -220,7 +220,7 @@ Sí, utiliza modelos de IA avanzados para generar imágenes profesionales de pro
 
 ### Si dice "API no disponible":
 1. Verifica tu conexión a internet
-2. Comprueba que la URL sea: `https://agente90.preview.emergentagent.com/api`
+2. Comprueba que la URL sea: `https://signal-stream.preview.emergentagent.com/api`
 3. Prueba acceder a la URL directamente desde el navegador
 
 ### Si no procesa los productos:
@@ -245,7 +245,7 @@ Sí, utiliza modelos de IA avanzados para generar imágenes profesionales de pro
 Tu plugin AI Dropshipping Manager está actualizado y listo para usar con la nueva API.
 
 **URL de descarga:**  
-https://agente90.preview.emergentagent.com/api/wordpress/plugin/download
+https://signal-stream.preview.emergentagent.com/api/wordpress/plugin/download
 
 **Versión:** 1.1.0  
 **Última actualización:** Octubre 2025
