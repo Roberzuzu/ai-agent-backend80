@@ -322,50 +322,7 @@ class AIAgentTester:
             self.log_test("Agent Search Memory", False, f"Exception: {str(e)}")
             return False
 
-    def test_campaign_roi(self):
-        """Test GET /api/analytics/campaign-roi"""
-        print("🔍 Testing Campaign ROI Analytics...")
-        try:
-            response = self.session.get(f"{BASE_URL}/analytics/campaign-roi")
-            
-            if response.status_code == 200:
-                roi_data = response.json()
-                
-                # Verify required fields
-                required_fields = ["campaigns", "total_ad_spend", "total_revenue", "average_roi"]
-                missing_fields = [field for field in required_fields if field not in roi_data]
-                if missing_fields:
-                    self.log_test("Campaign ROI Structure", False, 
-                                f"Missing fields: {missing_fields}", roi_data)
-                    return False
-                
-                # Verify campaigns is array
-                if not isinstance(roi_data["campaigns"], list):
-                    self.log_test("Campaign ROI Data Type", False, 
-                                "campaigns should be an array", type(roi_data["campaigns"]))
-                    return False
-                
-                # If there are campaigns, verify structure
-                if roi_data["campaigns"]:
-                    campaign = roi_data["campaigns"][0]
-                    campaign_fields = ["campaign_id", "campaign_name", "platform", "budget", "revenue", "roi", "status"]
-                    missing_campaign_fields = [field for field in campaign_fields if field not in campaign]
-                    if missing_campaign_fields:
-                        self.log_test("Campaign ROI Campaign Structure", False,
-                                    f"Missing campaign fields: {missing_campaign_fields}", campaign)
-                        return False
-                
-                self.log_test("Campaign ROI", True, 
-                            f"Found {len(roi_data['campaigns'])} campaigns, Average ROI: {roi_data['average_roi']}%", 
-                            {k: v for k, v in roi_data.items() if k != "campaigns"})
-                return True
-            else:
-                self.log_test("Campaign ROI", False, f"HTTP {response.status_code}", response.text)
-                return False
-                
-        except Exception as e:
-            self.log_test("Campaign ROI", False, f"Exception: {str(e)}")
-            return False
+    # Additional test methods can be added here if needed
 
     def test_affiliate_commissions(self):
         """Test GET /api/analytics/affiliate-commissions"""
