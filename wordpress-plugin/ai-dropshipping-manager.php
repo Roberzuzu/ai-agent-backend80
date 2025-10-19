@@ -26,7 +26,7 @@ define('AI_DROPSHIP_URL', plugin_dir_url(__FILE__));
 define('AI_DROPSHIP_FILE', __FILE__);
 
 // API Configuration - CAMBIAR POR TU URL DE API
-define('AI_DROPSHIP_API_URL', 'https://wp-pro-helper-1.preview.emergentagent.com/api');
+define('AI_DROPSHIP_API_URL', 'https://agente90.preview.emergentagent.com/api');
 
 /**
  * Main Plugin Class
