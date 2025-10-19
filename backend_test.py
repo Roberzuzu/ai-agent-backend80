@@ -39,53 +39,55 @@ class AIAgentTester:
             print(f"    Response: {response_data}")
         print()
 
-    def test_subscription_plans(self):
-        """Test GET /api/subscriptions/plans"""
-        print("🔍 Testing Subscription Plans...")
+    def test_agent_status(self):
+        """Test GET /api/agent/status - Verificar estado del agente"""
+        print("🔍 Testing Agent Status...")
         try:
-            response = self.session.get(f"{BASE_URL}/subscriptions/plans")
+            response = self.session.get(f"{BASE_URL}/agent/status")
             
             if response.status_code == 200:
-                plans = response.json()
+                status = response.json()
                 
-                # Verify we have 3 plans
-                if len(plans) != 3:
-                    self.log_test("Subscription Plans Count", False, f"Expected 3 plans, got {len(plans)}", plans)
+                # Verificar campos requeridos
+                required_fields = ["success", "agente_activo", "herramientas_disponibles", "caracteristicas"]
+                missing_fields = [field for field in required_fields if field not in status]
+                if missing_fields:
+                    self.log_test("Agent Status Structure", False, f"Missing fields: {missing_fields}", status)
                     return False
                 
-                # Verify plan structure and prices
-                expected_plans = {
-                    "basic": {"price": 9.99, "name": "Plan Básico"},
-                    "pro": {"price": 29.99, "name": "Plan Pro"},
-                    "enterprise": {"price": 99.99, "name": "Plan Empresa"}
-                }
+                # Verificar valores específicos
+                if not status.get("success"):
+                    self.log_test("Agent Status Success", False, "success should be true", status)
+                    return False
                 
-                plans_by_id = {plan["id"]: plan for plan in plans}
+                if not status.get("agente_activo"):
+                    self.log_test("Agent Status Active", False, "agente_activo should be true", status)
+                    return False
                 
-                for plan_id, expected in expected_plans.items():
-                    if plan_id not in plans_by_id:
-                        self.log_test("Subscription Plans Structure", False, f"Missing plan: {plan_id}", plans)
-                        return False
-                    
-                    plan = plans_by_id[plan_id]
-                    if plan["price"] != expected["price"]:
-                        self.log_test("Subscription Plans Prices", False, 
-                                    f"Plan {plan_id}: expected ${expected['price']}, got ${plan['price']}", plan)
-                        return False
-                    
-                    if plan["name"] != expected["name"]:
-                        self.log_test("Subscription Plans Names", False,
-                                    f"Plan {plan_id}: expected '{expected['name']}', got '{plan['name']}'", plan)
-                        return False
+                if status.get("herramientas_disponibles") != 18:
+                    self.log_test("Agent Status Tools", False, f"Expected 18 tools, got {status.get('herramientas_disponibles')}", status)
+                    return False
                 
-                self.log_test("Subscription Plans", True, "All 3 plans verified with correct prices and names", plans)
+                # Verificar características
+                caracteristicas = status.get("caracteristicas", {})
+                if not caracteristicas.get("memoria_persistente"):
+                    self.log_test("Agent Status Memory", False, "memoria_persistente should be true", caracteristicas)
+                    return False
+                
+                if not caracteristicas.get("rag_enabled"):
+                    self.log_test("Agent Status RAG", False, "rag_enabled should be true", caracteristicas)
+                    return False
+                
+                self.log_test("Agent Status", True, 
+                            f"Agent active with {status['herramientas_disponibles']} tools, memory and RAG enabled", 
+                            {k: v for k, v in status.items() if k != "caracteristicas"})
                 return True
             else:
-                self.log_test("Subscription Plans", False, f"HTTP {response.status_code}", response.text)
+                self.log_test("Agent Status", False, f"HTTP {response.status_code}", response.text)
                 return False
                 
         except Exception as e:
-            self.log_test("Subscription Plans", False, f"Exception: {str(e)}")
+            self.log_test("Agent Status", False, f"Exception: {str(e)}")
             return False
 
     def get_products(self):
