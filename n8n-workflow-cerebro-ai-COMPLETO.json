@@ -262,7 +262,7 @@
     {
       "parameters": {
         "chatId": "={{ $json.chat_id }}",
-        "text": "=🧠 *Analizando tu solicitud...*\n\n\"{{ $json.command }}\"\n\n_Cerebro AI procesando con Claude 3.5 Sonnet..._",
+        "text": "=🧠 *Analizando tu solicitud...*\n\n\"{{ $json.command }}\"\n\n_Cerebro AI procesando con Perplexity Pro..._",
         "additionalFields": {
           "parse_mode": "Markdown"
         }
