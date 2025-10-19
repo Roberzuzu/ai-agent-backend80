@@ -617,6 +617,402 @@ Formato: Análisis estructurado"""
                 }
             
             return {"success": False, "error": "Error generando contenido"}
+    
+    # ==========================================
+    # NUEVAS HERRAMIENTAS
+    # ==========================================
+    
+    async def _actualizar_producto(self, product_id: int, datos: Dict[str, Any]) -> Dict[str, Any]:
+        """Actualiza un producto existente en WooCommerce"""
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.put(
+                    f"{WC_URL}/products/{product_id}",
+                    json=datos,
+                    auth=(WC_KEY, WC_SECRET)
+                )
+                
+                if response.status_code == 200:
+                    product = response.json()
+                    return {
+                        "success": True,
+                        "product_id": product.get("id"),
+                        "name": product.get("name"),
+                        "mensaje": f"Producto {product_id} actualizado correctamente"
+                    }
+                
+                return {"success": False, "error": f"Error actualizando: {response.text}"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def _eliminar_producto(self, product_id: int) -> Dict[str, Any]:
+        """Elimina un producto de WooCommerce"""
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.delete(
+                    f"{WC_URL}/products/{product_id}",
+                    params={"force": True},
+                    auth=(WC_KEY, WC_SECRET)
+                )
+                
+                if response.status_code == 200:
+                    return {
+                        "success": True,
+                        "mensaje": f"Producto {product_id} eliminado correctamente"
+                    }
+                
+                return {"success": False, "error": "Error eliminando producto"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def _buscar_productos(self, query: str, filtros: Dict[str, Any]) -> Dict[str, Any]:
+        """Búsqueda avanzada de productos en WooCommerce"""
+        try:
+            params = {
+                "search": query,
+                "per_page": filtros.get("limite", 20),
+                "orderby": filtros.get("ordenar_por", "relevance")
+            }
+            
+            if filtros.get("categoria"):
+                params["category"] = filtros["categoria"]
+            if filtros.get("min_precio"):
+                params["min_price"] = filtros["min_precio"]
+            if filtros.get("max_precio"):
+                params["max_price"] = filtros["max_precio"]
+            if filtros.get("en_oferta"):
+                params["on_sale"] = True
+            
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    f"{WC_URL}/products",
+                    params=params,
+                    auth=(WC_KEY, WC_SECRET)
+                )
+                
+                if response.status_code == 200:
+                    productos = response.json()
+                    return {
+                        "success": True,
+                        "total": len(productos),
+                        "productos": [
+                            {
+                                "id": p.get("id"),
+                                "nombre": p.get("name"),
+                                "precio": p.get("regular_price"),
+                                "precio_oferta": p.get("sale_price"),
+                                "stock": p.get("stock_quantity"),
+                                "url": p.get("permalink")
+                            }
+                            for p in productos
+                        ]
+                    }
+                
+                return {"success": False, "error": "Error en búsqueda"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def _gestionar_inventario(self, operacion: str, datos: Dict[str, Any]) -> Dict[str, Any]:
+        """Gestión de inventario en bulk (stock, precios)"""
+        try:
+            resultados = []
+            
+            if operacion == "actualizar_stock":
+                # datos = {"productos": [{"id": 123, "stock": 50}, ...]}
+                for item in datos.get("productos", []):
+                    async with httpx.AsyncClient() as client:
+                        response = await client.put(
+                            f"{WC_URL}/products/{item['id']}",
+                            json={"stock_quantity": item["stock"]},
+                            auth=(WC_KEY, WC_SECRET)
+                        )
+                        
+                        resultados.append({
+                            "id": item["id"],
+                            "success": response.status_code == 200
+                        })
+            
+            elif operacion == "actualizar_precios":
+                # datos = {"productos": [{"id": 123, "precio": 29.99}, ...]}
+                for item in datos.get("productos", []):
+                    async with httpx.AsyncClient() as client:
+                        response = await client.put(
+                            f"{WC_URL}/products/{item['id']}",
+                            json={"regular_price": str(item["precio"])},
+                            auth=(WC_KEY, WC_SECRET)
+                        )
+                        
+                        resultados.append({
+                            "id": item["id"],
+                            "success": response.status_code == 200
+                        })
+            
+            return {
+                "success": True,
+                "operacion": operacion,
+                "resultados": resultados,
+                "actualizados": sum(1 for r in resultados if r["success"])
+            }
+        
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def _obtener_estadisticas(self, tipo: str) -> Dict[str, Any]:
+        """Obtiene estadísticas del sitio"""
+        try:
+            async with httpx.AsyncClient() as client:
+                # Obtener productos
+                productos_response = await client.get(
+                    f"{WC_URL}/products",
+                    params={"per_page": 100},
+                    auth=(WC_KEY, WC_SECRET)
+                )
+                
+                # Obtener órdenes
+                ordenes_response = await client.get(
+                    f"{WC_URL}/orders",
+                    params={"per_page": 100},
+                    auth=(WC_KEY, WC_SECRET)
+                )
+                
+                productos = productos_response.json() if productos_response.status_code == 200 else []
+                ordenes = ordenes_response.json() if ordenes_response.status_code == 200 else []
+                
+                # Calcular estadísticas
+                total_productos = len(productos)
+                productos_sin_stock = sum(1 for p in productos if p.get("stock_quantity", 0) <= 0)
+                productos_en_oferta = sum(1 for p in productos if p.get("on_sale", False))
+                
+                total_ventas = len([o for o in ordenes if o.get("status") == "completed"])
+                ingresos_totales = sum(float(o.get("total", 0)) for o in ordenes if o.get("status") == "completed")
+                
+                return {
+                    "success": True,
+                    "tipo": tipo,
+                    "productos": {
+                        "total": total_productos,
+                        "sin_stock": productos_sin_stock,
+                        "en_oferta": productos_en_oferta
+                    },
+                    "ventas": {
+                        "total_ordenes": total_ventas,
+                        "ingresos_totales": ingresos_totales,
+                        "ticket_promedio": ingresos_totales / total_ventas if total_ventas > 0 else 0
+                    }
+                }
+        
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def _analizar_ventas(self, periodo: str, filtros: Dict[str, Any]) -> Dict[str, Any]:
+        """Análisis detallado de ventas"""
+        try:
+            # Configurar rango de fechas según periodo
+            now = datetime.utcnow()
+            if periodo == "hoy":
+                after = now.replace(hour=0, minute=0, second=0)
+            elif periodo == "semana":
+                after = now - timedelta(days=7)
+            elif periodo == "mes":
+                after = now - timedelta(days=30)
+            elif periodo == "año":
+                after = now - timedelta(days=365)
+            else:
+                after = now - timedelta(days=30)
+            
+            params = {
+                "per_page": 100,
+                "after": after.isoformat(),
+                "status": "completed"
+            }
+            
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    f"{WC_URL}/orders",
+                    params=params,
+                    auth=(WC_KEY, WC_SECRET)
+                )
+                
+                if response.status_code == 200:
+                    ordenes = response.json()
+                    
+                    # Análisis
+                    total_ordenes = len(ordenes)
+                    ingresos = sum(float(o.get("total", 0)) for o in ordenes)
+                    
+                    # Productos más vendidos
+                    productos_vendidos = {}
+                    for orden in ordenes:
+                        for item in orden.get("line_items", []):
+                            prod_id = item.get("product_id")
+                            cantidad = item.get("quantity", 0)
+                            productos_vendidos[prod_id] = productos_vendidos.get(prod_id, 0) + cantidad
+                    
+                    top_productos = sorted(
+                        productos_vendidos.items(),
+                        key=lambda x: x[1],
+                        reverse=True
+                    )[:5]
+                    
+                    return {
+                        "success": True,
+                        "periodo": periodo,
+                        "resumen": {
+                            "total_ordenes": total_ordenes,
+                            "ingresos_totales": ingresos,
+                            "ticket_promedio": ingresos / total_ordenes if total_ordenes > 0 else 0
+                        },
+                        "top_productos": [
+                            {"product_id": pid, "unidades_vendidas": cant}
+                            for pid, cant in top_productos
+                        ]
+                    }
+                
+                return {"success": False, "error": "Error obteniendo ventas"}
+        
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def _crear_campana(self, tipo: str, producto_id: int, presupuesto: float) -> Dict[str, Any]:
+        """Crea una campaña publicitaria en MongoDB"""
+        try:
+            campana = {
+                "id": str(uuid.uuid4()),
+                "tipo": tipo,
+                "producto_id": producto_id,
+                "presupuesto": presupuesto,
+                "estado": "activa",
+                "created_at": datetime.utcnow()
+            }
+            
+            await db["campaigns"].insert_one(campana)
+            
+            return {
+                "success": True,
+                "campana_id": campana["id"],
+                "mensaje": f"Campaña {tipo} creada con presupuesto de ${presupuesto}"
+            }
+        
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def _crear_descuento(self, tipo: str, valor: float, productos: List[int]) -> Dict[str, Any]:
+        """Crea cupón de descuento en WooCommerce"""
+        try:
+            import random
+            import string
+            
+            # Generar código único
+            codigo = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+            
+            cupon_data = {
+                "code": codigo,
+                "discount_type": tipo,  # percent, fixed_cart, fixed_product
+                "amount": str(valor),
+                "individual_use": True,
+                "product_ids": productos,
+                "usage_limit": 100
+            }
+            
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{WC_URL}/coupons",
+                    json=cupon_data,
+                    auth=(WC_KEY, WC_SECRET)
+                )
+                
+                if response.status_code == 201:
+                    cupon = response.json()
+                    return {
+                        "success": True,
+                        "codigo": codigo,
+                        "cupon_id": cupon.get("id"),
+                        "mensaje": f"Cupón {codigo} creado: {valor}{'%' if tipo == 'percent' else '€'} de descuento"
+                    }
+                
+                return {"success": False, "error": "Error creando cupón"}
+        
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def _sincronizar_wordpress(self, accion: str, datos: Dict[str, Any]) -> Dict[str, Any]:
+        """Sincronización con WordPress"""
+        try:
+            if accion == "publicar_articulo":
+                post_data = {
+                    "title": datos.get("titulo"),
+                    "content": datos.get("contenido"),
+                    "status": "publish"
+                }
+                
+                async with httpx.AsyncClient() as client:
+                    response = await client.post(
+                        f"{WP_URL}/posts",
+                        json=post_data,
+                        auth=(WP_USER, WP_PASS)
+                    )
+                    
+                    if response.status_code == 201:
+                        post = response.json()
+                        return {
+                            "success": True,
+                            "post_id": post.get("id"),
+                            "url": post.get("link"),
+                            "mensaje": "Artículo publicado en WordPress"
+                        }
+            
+            return {"success": False, "error": "Acción no soportada"}
+        
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def _optimizar_seo(self, producto_id: int) -> Dict[str, Any]:
+        """Optimiza SEO de un producto"""
+        from ai_integrations import generate_seo_content
+        
+        try:
+            # Obtener producto
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    f"{WC_URL}/products/{producto_id}",
+                    auth=(WC_KEY, WC_SECRET)
+                )
+                
+                if response.status_code != 200:
+                    return {"success": False, "error": "Producto no encontrado"}
+                
+                producto = response.json()
+                
+                # Generar contenido SEO
+                seo_result = await generate_seo_content(
+                    producto.get("name"),
+                    producto.get("categories", [{}])[0].get("name", "general")
+                )
+                
+                if seo_result.get("success"):
+                    # Actualizar producto con contenido SEO
+                    update_data = {
+                        "description": seo_result.get("description"),
+                        "short_description": seo_result.get("meta_description")
+                    }
+                    
+                    update_response = await client.put(
+                        f"{WC_URL}/products/{producto_id}",
+                        json=update_data,
+                        auth=(WC_KEY, WC_SECRET)
+                    )
+                    
+                    if update_response.status_code == 200:
+                        return {
+                            "success": True,
+                            "mensaje": f"SEO optimizado para producto {producto_id}",
+                            "keywords": seo_result.get("keywords", [])
+                        }
+                
+                return {"success": False, "error": "Error optimizando SEO"}
+        
+        except Exception as e:
+            return {"success": False, "error": str(e)}
 
 
 # Instancia global del agente
