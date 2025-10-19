@@ -16,11 +16,10 @@ BASE_URL = "https://cerebro-ai-agent.preview.emergentagent.com/api"
 TEST_USER_ID = "test_user_backend"
 ORIGIN_URL = "https://cerebro-ai-agent.preview.emergentagent.com"
 
-class PaymentSystemTester:
+class AIAgentTester:
     def __init__(self):
         self.session = requests.Session()
         self.test_results = []
-        self.products = []
         
     def log_test(self, test_name: str, success: bool, details: str = "", response_data: Any = None):
         """Log test results"""
