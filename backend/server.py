@@ -6920,6 +6920,102 @@ async def ai_health_check():
     }
 
 
+# =====================================================
+# AI AGENT - CEREBRO CENTRAL DEL SISTEMA
+# =====================================================
+
+from ai_agent import agent
+
+class AgentExecuteRequest(BaseModel):
+    """Request para ejecutar comando del agente"""
+    command: str
+    user_id: str = "default"
+
+@api_router.post("/agent/execute")
+async def agent_execute_command(request: AgentExecuteRequest):
+    """
+    Endpoint principal del agente inteligente
+    Recibe comandos en lenguaje natural y los ejecuta
+    """
+    try:
+        # El agente piensa qué hacer
+        think_result = await agent.think(request.command, request.user_id)
+        
+        if not think_result.get("success"):
+            return think_result
+        
+        plan = think_result.get("plan", {})
+        acciones = plan.get("acciones", [])
+        
+        # Responder inmediatamente al usuario
+        initial_response = {
+            "success": True,
+            "mensaje": plan.get("respuesta_usuario", "Procesando tu solicitud..."),
+            "plan": plan.get("plan", ""),
+            "acciones_planificadas": len(acciones)
+        }
+        
+        # Si hay acciones, ejecutarlas
+        if acciones:
+            resultados = []
+            
+            # Ordenar acciones
+            acciones_ordenadas = sorted(acciones, key=lambda x: x.get("orden", 0))
+            
+            for accion in acciones_ordenadas:
+                resultado = await agent.execute_action(accion)
+                resultados.append({
+                    "herramienta": accion.get("herramienta"),
+                    "resultado": resultado
+                })
+            
+            initial_response["resultados"] = resultados
+            initial_response["completado"] = True
+        
+        return initial_response
+    
+    except Exception as e:
+        logger.error(f"Error en agente: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/agent/chat")
+async def agent_chat(request: AgentExecuteRequest):
+    """
+    Chat conversacional con el agente
+    Mantiene contexto de conversación
+    """
+    try:
+        # Solo pensar, sin ejecutar automáticamente
+        think_result = await agent.think(request.command, request.user_id)
+        
+        if not think_result.get("success"):
+            return think_result
+        
+        plan = think_result.get("plan", {})
+        
+        return {
+            "success": True,
+            "respuesta": plan.get("respuesta_usuario", ""),
+            "plan": plan.get("plan", ""),
+            "acciones_sugeridas": plan.get("acciones", [])
+        }
+    
+    except Exception as e:
+        logger.error(f"Error en chat: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/agent/status")
+async def agent_status():
+    """Estado del agente y conversaciones activas"""
+    return {
+        "success": True,
+        "agente_activo": True,
+        "conversaciones_activas": len(agent.conversation_history),
+        "herramientas_disponibles": 10
+    }
+
+
+
 @api_router.get("/download/wordpress-plugin")
 async def download_wordpress_plugin():
     """Descarga el plugin de WordPress en formato ZIP"""
