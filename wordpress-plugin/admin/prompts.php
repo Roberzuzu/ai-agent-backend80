@@ -237,3 +237,4 @@ if (isset($_GET['reset']) && $_GET['reset'] == '1') {
     
     echo '<script>alert("✅ Prompts restaurados a valores por defecto"); window.location.href="' . admin_url('admin.php?page=ai-dropshipping-prompts') . '";</script>';
 }
+?>
