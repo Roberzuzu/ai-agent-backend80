@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: AI Dropshipping Manager
+ * Plugin Name: AI Dropshipping Manager - Super Powered
  * Plugin URI: https://herramientasyaccesorios.store
- * Description: Gestión automática de productos dropshipping con IA - Calcula precios óptimos y genera contenido profesional
- * Version: 1.1.0
+ * Description: Gestión AUTOMÁTICA de productos con IA avanzada - OpenRouter + Perplexity + Abacus AI para análisis de mercado, precios óptimos y contenido profesional
+ * Version: 2.0.0
  * Author: Agente Monetización
  * Author URI: https://emergentagent.com
  * License: GPL v2 or later
