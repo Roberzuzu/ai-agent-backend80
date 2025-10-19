@@ -6402,6 +6402,10 @@ async def root():
 # Include the router in the main app
 app.include_router(api_router)
 
+# Include webhook router
+from webhooks import webhook_router
+app.include_router(webhook_router)
+
 # =========================
 # SECURITY MIDDLEWARES
 # =========================
