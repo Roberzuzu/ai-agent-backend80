@@ -6146,13 +6146,18 @@ async def check_generation_status(request_id: str):
 # Pricing Endpoints
 @api_router.post("/dropshipping/calculate-price")
 async def calculate_selling_price(
-    supplier_price: float,
-    currency: str = "EUR"
+    data: Dict
 ):
     """Calculate selling price with profit margin"""
     try:
+        supplier_price = data.get('supplier_price')
+        currency = data.get('currency', 'EUR')
+        
+        if not supplier_price:
+            raise HTTPException(status_code=400, detail="supplier_price is required")
+        
         calculator = DropshippingPriceCalculator()
-        pricing = calculator.calculate_selling_price(supplier_price, currency)
+        pricing = calculator.calculate_selling_price(float(supplier_price), currency)
         return pricing
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
