@@ -6583,6 +6583,50 @@ async def get_seo_recommendations():
                 "slug": "seo-by-rank-math",
                 "description": "Plugin SEO moderno con IA integrada",
                 "features": [
+
+@api_router.get("/wordpress/plugin/download")
+async def download_wordpress_plugin():
+    """Download the AI Dropshipping Manager plugin"""
+    import os
+    plugin_path = "/app/wordpress-plugin/ai-dropshipping-manager.zip"
+    
+    if not os.path.exists(plugin_path):
+        return {"success": False, "error": "Plugin file not found"}
+    
+    from fastapi.responses import FileResponse
+    return FileResponse(
+        path=plugin_path,
+        filename="ai-dropshipping-manager.zip",
+        media_type="application/zip"
+    )
+
+@api_router.get("/wordpress/plugin/info")
+async def get_plugin_info():
+    """Get plugin information"""
+    return {
+        "success": True,
+        "plugin": {
+            "name": "AI Dropshipping Manager",
+            "version": "1.1.0",
+            "api_url": "https://agente90.preview.emergentagent.com/api",
+            "description": "Gestión automática de productos dropshipping con IA",
+            "changelog": [
+                "v1.1.0 - API URL actualizada a agente90.preview.emergentagent.com",
+                "v1.0.0 - Versión inicial"
+            ],
+            "download_url": "https://agente90.preview.emergentagent.com/api/wordpress/plugin/download",
+            "installation": [
+                "1. Descarga el plugin desde el enlace de arriba",
+                "2. En WordPress, ve a Plugins > Añadir nuevo > Subir plugin",
+                "3. Selecciona el archivo .zip descargado",
+                "4. Click en 'Instalar ahora'",
+                "5. Activa el plugin",
+                "6. La API ya está configurada automáticamente"
+            ]
+        }
+    }
+
+
                     "Optimización con IA",
                     "Soporte para múltiples palabras clave",
                     "Análisis SEO avanzado",
