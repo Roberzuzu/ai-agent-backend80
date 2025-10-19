@@ -161,30 +161,60 @@ class AIAgent:
     
     async def think(self, command: str, user_id: str) -> Dict[str, Any]:
         """
-        El cerebro del agente - usa Claude 3.5 para analizar el comando
-        y decidir qué acciones tomar
+        El cerebro del agente - usa Claude 3.5 con memoria y contexto relevante (RAG)
+        para analizar el comando y decidir qué acciones tomar
         """
         
-        # Obtener historial de conversación
-        history = self.conversation_history.get(user_id, [])
+        # Buscar memorias relevantes (RAG)
+        relevant_memories = await self.search_relevant_memories(user_id, command, limit=3)
         
-        # Definir las herramientas disponibles
+        # Obtener historial reciente de conversación
+        recent_history = await self.get_conversation_history(user_id, limit=5)
+        
+        # Construir contexto de memoria
+        memory_context = ""
+        if relevant_memories:
+            memory_context = "\n\n📚 CONTEXTO DE MEMORIAS RELEVANTES:\n"
+            for idx, mem in enumerate(relevant_memories, 1):
+                memory_context += f"{idx}. Comando anterior: {mem['command']}\n"
+                memory_context += f"   Respuesta: {mem['response'][:200]}...\n"
+                memory_context += f"   Similaridad: {mem['similarity']:.2f}\n\n"
+        
+        # Definir las herramientas disponibles (ahora con 17 herramientas)
         tools_description = """
 Tienes acceso a estas HERRAMIENTAS:
 
+**PRODUCTOS:**
 1. **procesar_producto(product_id)** - Procesa un producto con AI (descripción, precio, imágenes)
-2. **buscar_tendencias(categoria, pais)** - Busca productos tendencia con Perplexity
-3. **crear_producto(datos)** - Crea un nuevo producto en WooCommerce
-4. **analizar_precios(producto, categoria)** - Analiza precios óptimos con Abacus AI
-5. **generar_imagenes(descripcion, cantidad)** - Genera imágenes con Fal AI
-6. **crear_campana(tipo, producto_id, presupuesto)** - Crea campaña publicitaria
-7. **obtener_productos(filtros)** - Lista productos de WooCommerce
-8. **analizar_competencia(producto, categoria)** - Análisis de competencia con Perplexity
-9. **optimizar_seo(producto_id)** - Optimiza SEO del producto
-10. **generar_contenido(tipo, tema)** - Crea blogs, emails, posts sociales
+2. **crear_producto(datos)** - Crea un nuevo producto en WooCommerce
+3. **actualizar_producto(product_id, datos)** - Actualiza un producto existente
+4. **eliminar_producto(product_id)** - Elimina un producto de WooCommerce
+5. **obtener_productos(filtros)** - Lista productos de WooCommerce
+6. **buscar_productos(query, filtros)** - Búsqueda avanzada de productos
+7. **gestionar_inventario(operacion, datos)** - Gestión de stock y precios en bulk
+
+**ANÁLISIS E INTELIGENCIA:**
+8. **buscar_tendencias(categoria, pais)** - Busca productos tendencia con Perplexity
+9. **analizar_precios(producto, categoria)** - Analiza precios óptimos con Abacus AI
+10. **analizar_competencia(producto, categoria)** - Análisis de competencia con Perplexity
+11. **obtener_estadisticas(tipo)** - Estadísticas del sitio (ventas, productos, visitas)
+12. **analizar_ventas(periodo, filtros)** - Reportes detallados de ventas
+
+**MARKETING:**
+13. **crear_campana(tipo, producto_id, presupuesto)** - Crea campaña publicitaria
+14. **crear_descuento(tipo, valor, productos)** - Crea cupones y promociones
+15. **generar_contenido(tipo, tema)** - Crea blogs, emails, posts sociales
+
+**CREATIVIDAD:**
+16. **generar_imagenes(descripcion, cantidad)** - Genera imágenes con Fal AI
+
+**INTEGRACIONES:**
+17. **sincronizar_wordpress(accion, datos)** - Sincronización con WordPress
+18. **optimizar_seo(producto_id)** - Optimiza SEO del producto
 
 INSTRUCCIONES:
 - Analiza el comando del usuario
+- Usa el contexto de memorias relevantes para entender mejor
 - Decide qué herramientas usar y en qué orden
 - Devuelve un plan de ejecución en JSON
 
@@ -202,11 +232,11 @@ Formato de respuesta:
 }
 """
         
-        # Crear el prompt para Claude
-        messages = history + [
+        # Crear el prompt para Claude con contexto completo
+        messages = recent_history + [
             {
                 "role": "user",
-                "content": f"{tools_description}\n\nComando del usuario: {command}\n\nAnaliza y crea el plan de ejecución."
+                "content": f"{tools_description}\n\n{memory_context}\n\nComando del usuario: {command}\n\nAnaliza usando el contexto de memorias y crea el plan de ejecución."
             }
         ]
         
@@ -230,11 +260,6 @@ Formato de respuesta:
                     data = response.json()
                     assistant_message = data["choices"][0]["message"]["content"]
                     
-                    # Guardar en historial
-                    history.append({"role": "user", "content": command})
-                    history.append({"role": "assistant", "content": assistant_message})
-                    self.conversation_history[user_id] = history[-10:]  # Mantener últimos 10 mensajes
-                    
                     # Extraer JSON del mensaje
                     try:
                         # Buscar JSON en el texto
@@ -242,6 +267,11 @@ Formato de respuesta:
                         json_end = assistant_message.rfind("}") + 1
                         if json_start >= 0 and json_end > json_start:
                             plan_json = json.loads(assistant_message[json_start:json_end])
+                            
+                            # Guardar en memoria
+                            await self.save_conversation(user_id, command, assistant_message, plan_json)
+                            await self.save_to_memory(user_id, command, assistant_message, plan_json)
+                            
                             return {
                                 "success": True,
                                 "plan": plan_json
@@ -249,13 +279,18 @@ Formato de respuesta:
                     except:
                         pass
                     
+                    # Guardar incluso si no hay JSON
+                    plan_fallback = {
+                        "plan": "Ejecutar comando",
+                        "respuesta_usuario": assistant_message,
+                        "acciones": []
+                    }
+                    await self.save_conversation(user_id, command, assistant_message, plan_fallback)
+                    await self.save_to_memory(user_id, command, assistant_message, plan_fallback)
+                    
                     return {
                         "success": True,
-                        "plan": {
-                            "plan": "Ejecutar comando",
-                            "respuesta_usuario": assistant_message,
-                            "acciones": []
-                        }
+                        "plan": plan_fallback
                     }
                 
                 return {"success": False, "error": f"Error: {response.status_code}"}
