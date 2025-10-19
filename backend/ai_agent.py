@@ -168,7 +168,7 @@ class AIAgent:
     
     async def think(self, command: str, user_id: str) -> Dict[str, Any]:
         """
-        El cerebro del agente - usa Claude 3.5 con memoria y contexto relevante (RAG)
+        El cerebro del agente - usa Perplexity Pro con memoria y contexto relevante (RAG)
         para analizar el comando y decidir qué acciones tomar
         """
         
