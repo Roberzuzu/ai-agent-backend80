@@ -22,14 +22,33 @@ function Dashboard() {
         axios.get(`${API}/campaigns`).catch(() => ({ data: [] })),
       ]);
       
+      const trends = Array.isArray(trendsRes.data) ? trendsRes.data : [];
+      const products = Array.isArray(productsRes.data) ? productsRes.data : [];
+      const posts = Array.isArray(socialRes.data) ? socialRes.data : [];
+      const campaigns = Array.isArray(campaignsRes.data) ? campaignsRes.data : [];
+      
+      // Count published posts
+      const publishedPosts = posts.filter(p => p.status === 'published').length;
+      // Count active campaigns  
+      const activeCampaigns = campaigns.filter(c => c.status === 'active').length;
+      // Count featured products
+      const featuredProducts = products.filter(p => p.is_featured).length;
+      
       setAnalytics({
         totals: {
-          trends: trendsRes.data.length || 0,
-          content: contentRes.data.length || 0,
-          products: productsRes.data.length || 0,
-          posts: socialRes.data.length || 0,
-          campaigns: campaignsRes.data.length || 0,
-        }
+          trends: trends.length,
+          content: Array.isArray(contentRes.data) ? contentRes.data.length : 0,
+          products: products.length,
+          posts: posts.length,
+          campaigns: campaigns.length,
+        },
+        stats: {
+          published_posts: publishedPosts,
+          active_campaigns: activeCampaigns,
+          featured_products: featuredProducts,
+        },
+        recent_trends: trends.slice(0, 5),
+        top_posts: posts.slice(0, 5),
       });
     } catch (error) {
       console.error('Error loading analytics:', error);
@@ -41,7 +60,14 @@ function Dashboard() {
           products: 0,
           posts: 0,
           campaigns: 0,
-        }
+        },
+        stats: {
+          published_posts: 0,
+          active_campaigns: 0,
+          featured_products: 0,
+        },
+        recent_trends: [],
+        top_posts: [],
       });
     } finally {
       setLoading(false);
