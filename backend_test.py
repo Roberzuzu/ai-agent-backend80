@@ -202,46 +202,56 @@ class AIAgentTester:
             self.log_test("Agent Memory Get", False, f"Exception: {str(e)}")
             return False
 
-    def test_subscription_checkout(self):
-        """Test POST /api/payments/checkout/session for subscription"""
-        print("🔍 Testing Subscription Checkout...")
+    def test_agent_chat(self):
+        """Test POST /api/agent/chat - Chat sin ejecución"""
+        print("🔍 Testing Agent Chat...")
         try:
-            checkout_data = {
-                "payment_type": "subscription",
-                "plan_id": "basic",
-                "user_email": TEST_EMAIL,
-                "origin_url": ORIGIN_URL
+            chat_data = {
+                "command": "¿Qué herramientas tienes disponibles?",
+                "user_id": TEST_USER_ID
             }
             
             response = self.session.post(
-                f"{BASE_URL}/payments/checkout/session",
-                json=checkout_data,
+                f"{BASE_URL}/agent/chat",
+                json=chat_data,
                 headers={"Content-Type": "application/json"}
             )
             
             if response.status_code == 200:
                 result = response.json()
                 
-                # Verify response structure
-                if "url" not in result or "session_id" not in result:
-                    self.log_test("Subscription Checkout Response", False, "Missing url or session_id in response", result)
+                # Verificar campos requeridos
+                required_fields = ["success", "respuesta", "plan", "acciones_sugeridas"]
+                missing_fields = [field for field in required_fields if field not in result]
+                if missing_fields:
+                    self.log_test("Agent Chat Structure", False, f"Missing fields: {missing_fields}", result)
                     return False
                 
-                # Verify URL contains Stripe
-                if "stripe" not in result["url"].lower():
-                    self.log_test("Subscription Checkout URL", False, "URL doesn't appear to be a Stripe URL", result["url"])
+                # Verificar success
+                if not result.get("success"):
+                    self.log_test("Agent Chat Success", False, "success should be true", result)
                     return False
                 
-                self.log_test("Subscription Checkout", True, 
-                            "Checkout session created for basic plan ($9.99/month)", 
-                            {"session_id": result["session_id"], "has_stripe_url": True})
+                # Verificar que hay respuesta
+                if not result.get("respuesta"):
+                    self.log_test("Agent Chat Response", False, "respuesta should not be empty", result)
+                    return False
+                
+                # Verificar que acciones_sugeridas es array
+                if not isinstance(result.get("acciones_sugeridas"), list):
+                    self.log_test("Agent Chat Actions", False, "acciones_sugeridas should be an array", type(result.get("acciones_sugeridas")))
+                    return False
+                
+                self.log_test("Agent Chat", True, 
+                            f"Chat response received with {len(result.get('acciones_sugeridas', []))} suggested actions", 
+                            {"has_response": bool(result.get("respuesta")), "has_plan": bool(result.get("plan"))})
                 return True
             else:
-                self.log_test("Subscription Checkout", False, f"HTTP {response.status_code}", response.text)
+                self.log_test("Agent Chat", False, f"HTTP {response.status_code}", response.text)
                 return False
                 
         except Exception as e:
-            self.log_test("Subscription Checkout", False, f"Exception: {str(e)}")
+            self.log_test("Agent Chat", False, f"Exception: {str(e)}")
             return False
 
     def test_revenue_analytics(self):
