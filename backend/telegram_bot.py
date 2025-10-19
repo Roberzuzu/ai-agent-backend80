@@ -1,0 +1,332 @@
+#!/usr/bin/env python3
+"""
+Telegram Bot - AI Product Processor
+Escucha comandos de Telegram y procesa productos automáticamente
+"""
+
+import os
+import sys
+import time
+import json
+import requests
+import logging
+from datetime import datetime
+
+# Configuración
+TELEGRAM_TOKEN = "7708509018:AAErAOblRAlC587j1QB4k19PAfDgoiZ3kWk"
+TELEGRAM_CHAT_ID = 7202793910
+BACKEND_URL = "https://signal-stream.preview.emergentagent.com/api"
+WC_URL = "https://herramientasyaccesorios.store/wp-json/wc/v3"
+WC_KEY = "ck_4f50637d85ec404fff441fceb7b113b5050431ea"
+WC_SECRET = "cs_e59ef18ea20d80ffdf835803ad2fdd834a4ba19f"
+WP_URL = "https://herramientasyaccesorios.store/wp-json/wp/v2"
+WP_USER = "agenteweb@herramientasyaccesorios.store"
+WP_PASS = "RWWLW1eVi8whOS5OsUosb5AU"
+
+# Logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('/var/log/telegram_bot.log'),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+logger = logging.getLogger(__name__)
+
+# Estado
+last_update_id = None
+
+
+def send_telegram_message(text):
+    """Enviar mensaje a Telegram"""
+    try:
+        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+        data = {
+            "chat_id": TELEGRAM_CHAT_ID,
+            "text": text,
+            "parse_mode": "Markdown"
+        }
+        response = requests.post(url, json=data, timeout=10)
+        return response.json().get('ok', False)
+    except Exception as e:
+        logger.error(f"Error enviando mensaje: {e}")
+        return False
+
+
+def get_telegram_updates():
+    """Obtener actualizaciones de Telegram"""
+    global last_update_id
+    
+    try:
+        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/getUpdates"
+        params = {"timeout": 30}
+        
+        if last_update_id:
+            params["offset"] = last_update_id + 1
+        
+        response = requests.get(url, params=params, timeout=35)
+        data = response.json()
+        
+        if data.get('ok'):
+            return data.get('result', [])
+        return []
+    except Exception as e:
+        logger.error(f"Error obteniendo updates: {e}")
+        return []
+
+
+def get_woocommerce_product(product_id):
+    """Obtener producto de WooCommerce"""
+    try:
+        url = f"{WC_URL}/products/{product_id}"
+        response = requests.get(url, auth=(WC_KEY, WC_SECRET), timeout=15)
+        
+        if response.status_code == 200:
+            return response.json()
+        return None
+    except Exception as e:
+        logger.error(f"Error obteniendo producto {product_id}: {e}")
+        return None
+
+
+def process_with_ai(product_name, category, base_price):
+    """Procesar producto con backend AI"""
+    try:
+        url = f"{BACKEND_URL}/ai/product/complete"
+        data = {
+            "product_name": product_name,
+            "category": category,
+            "base_price": base_price,
+            "generate_images": True
+        }
+        
+        logger.info(f"Procesando con AI: {product_name}")
+        response = requests.post(url, json=data, timeout=180)
+        
+        if response.status_code == 200:
+            return response.json()
+        
+        logger.error(f"Error AI: {response.status_code} - {response.text}")
+        return None
+    except Exception as e:
+        logger.error(f"Error procesando con AI: {e}")
+        return None
+
+
+def update_woocommerce_product(product_id, ai_result):
+    """Actualizar producto en WooCommerce"""
+    try:
+        url = f"{WC_URL}/products/{product_id}"
+        
+        update_data = {}
+        
+        # Actualizar descripción
+        if ai_result.get('description'):
+            desc = ai_result['description']
+            update_data['description'] = desc.get('description', '')
+            update_data['short_description'] = desc.get('meta_description', '')
+        
+        # Actualizar precio
+        if ai_result.get('pricing'):
+            optimal_price = ai_result['pricing'].get('optimal_price')
+            if optimal_price:
+                update_data['regular_price'] = str(optimal_price)
+        
+        if update_data:
+            response = requests.put(
+                url,
+                json=update_data,
+                auth=(WC_KEY, WC_SECRET),
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                logger.info(f"Producto {product_id} actualizado en WooCommerce")
+                return True
+        
+        return False
+    except Exception as e:
+        logger.error(f"Error actualizando WooCommerce: {e}")
+        return False
+
+
+def upload_images_to_wordpress(product_id, ai_result):
+    """Subir imágenes a WordPress y asignarlas al producto"""
+    try:
+        images = ai_result.get('images', {}).get('images', [])
+        if not images:
+            return 0
+        
+        image_ids = []
+        
+        for idx, img_data in enumerate(images):
+            img_url = img_data.get('url')
+            if not img_url:
+                continue
+            
+            # Descargar imagen
+            img_response = requests.get(img_url, timeout=30)
+            if img_response.status_code != 200:
+                continue
+            
+            # Subir a WordPress
+            files = {
+                'file': (f'ai-image-{idx+1}.jpg', img_response.content, 'image/jpeg')
+            }
+            
+            wp_response = requests.post(
+                f"{WP_URL}/media",
+                files=files,
+                auth=(WP_USER, WP_PASS),
+                timeout=30
+            )
+            
+            if wp_response.status_code == 201:
+                media_id = wp_response.json().get('id')
+                image_ids.append(media_id)
+                logger.info(f"Imagen {idx+1} subida: ID {media_id}")
+        
+        # Asignar imágenes al producto
+        if image_ids:
+            images_data = [{'id': img_id} for img_id in image_ids]
+            
+            url = f"{WC_URL}/products/{product_id}"
+            response = requests.put(
+                url,
+                json={'images': images_data},
+                auth=(WC_KEY, WC_SECRET),
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                logger.info(f"{len(image_ids)} imágenes asignadas al producto {product_id}")
+                return len(image_ids)
+        
+        return 0
+    except Exception as e:
+        logger.error(f"Error subiendo imágenes: {e}")
+        return 0
+
+
+def process_command(product_id):
+    """Procesar comando /procesar"""
+    logger.info(f"Procesando producto {product_id}")
+    
+    # Notificar inicio
+    send_telegram_message(
+        f"⏳ *Procesando producto {product_id}...*\n\n"
+        f"Esto puede tardar 2-3 minutos.\n\n"
+        f"🤖 Generando:\n"
+        f"✓ Descripción SEO\n"
+        f"✓ Precio óptimo\n"
+        f"✓ Imágenes AI\n"
+        f"✓ Análisis de mercado"
+    )
+    
+    # Obtener producto
+    product = get_woocommerce_product(product_id)
+    if not product:
+        send_telegram_message(f"❌ Error: Producto {product_id} no encontrado")
+        return
+    
+    product_name = product.get('name', 'Sin nombre')
+    category = product.get('categories', [{}])[0].get('name', 'general')
+    base_price = float(product.get('regular_price') or 40.0)
+    
+    logger.info(f"Producto: {product_name}, Categoría: {category}, Precio: {base_price}")
+    
+    # Procesar con AI
+    ai_result = process_with_ai(product_name, category, base_price)
+    
+    if not ai_result or not ai_result.get('success'):
+        send_telegram_message(
+            f"❌ *Error al procesar producto {product_id}*\n\n"
+            f"El backend AI no pudo procesar el producto.\n"
+            f"Intenta nuevamente."
+        )
+        return
+    
+    # Actualizar WooCommerce
+    updated = update_woocommerce_product(product_id, ai_result)
+    
+    # Subir imágenes
+    images_count = upload_images_to_wordpress(product_id, ai_result)
+    
+    # Resultado
+    optimal_price = ai_result.get('pricing', {}).get('optimal_price', 'N/A')
+    
+    send_telegram_message(
+        f"✅ *¡PRODUCTO PROCESADO CON ÉXITO!*\n\n"
+        f"🆔 ID: {product_id}\n"
+        f"📝 {product_name[:50]}...\n\n"
+        f"✨ *Actualizaciones:*\n"
+        f"✓ Descripción SEO generada\n"
+        f"✓ Precio óptimo: *€{optimal_price}*\n"
+        f"✓ {images_count} imágenes AI generadas\n"
+        f"✓ Meta tags actualizados\n\n"
+        f"🔗 [Ver producto en WordPress](https://herramientasyaccesorios.store/wp-admin/post.php?post={product_id}&action=edit)\n\n"
+        f"_Producto actualizado automáticamente_ 🚀"
+    )
+    
+    logger.info(f"✅ Producto {product_id} procesado completamente")
+
+
+def main():
+    """Loop principal"""
+    global last_update_id
+    
+    logger.info("🤖 Bot iniciado - Esperando comandos...")
+    send_telegram_message("🤖 *Bot AI activado*\n\nEnvía `/procesar [ID]` para procesar productos.")
+    
+    while True:
+        try:
+            updates = get_telegram_updates()
+            
+            for update in updates:
+                last_update_id = update.get('update_id')
+                message = update.get('message', {})
+                
+                chat_id = message.get('chat', {}).get('id')
+                text = message.get('text', '')
+                
+                # Solo responder al chat autorizado
+                if chat_id != TELEGRAM_CHAT_ID:
+                    continue
+                
+                # Procesar comando /procesar
+                if text.startswith('/procesar'):
+                    parts = text.split()
+                    if len(parts) >= 2 and parts[1].isdigit():
+                        product_id = int(parts[1])
+                        process_command(product_id)
+                    else:
+                        send_telegram_message(
+                            "❌ Formato incorrecto.\n\n"
+                            "Usa: `/procesar [ID]`\n"
+                            "Ejemplo: `/procesar 4146`"
+                        )
+                
+                # Comando /ayuda
+                elif text == '/ayuda' or text == '/start':
+                    send_telegram_message(
+                        "🤖 *Bot AI - Comandos disponibles*\n\n"
+                        "• `/procesar [ID]` - Procesar producto con AI\n"
+                        "• `/ayuda` - Ver esta ayuda\n\n"
+                        "*Ejemplo:*\n"
+                        "`/procesar 4146`\n\n"
+                        "_El bot procesará el producto automáticamente_"
+                    )
+            
+            time.sleep(2)  # Esperar 2 segundos entre checks
+            
+        except KeyboardInterrupt:
+            logger.info("Bot detenido por usuario")
+            break
+        except Exception as e:
+            logger.error(f"Error en loop principal: {e}")
+            time.sleep(10)  # Esperar más tiempo si hay error
+
+
+if __name__ == "__main__":
+    main()
