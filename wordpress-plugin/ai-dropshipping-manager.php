@@ -80,6 +80,7 @@ class AI_Dropshipping_Manager {
     private function load_includes() {
         // Include API client
         require_once AI_DROPSHIP_PATH . 'includes/class-api-client.php';
+        require_once AI_DROPSHIP_PATH . 'includes/class-ai-client.php'; // NUEVO: Cliente AI Super Powered
         require_once AI_DROPSHIP_PATH . 'includes/class-product-processor.php';
         require_once AI_DROPSHIP_PATH . 'includes/class-ai-superpowered.php'; // NUEVO: IA Avanzada
     }
