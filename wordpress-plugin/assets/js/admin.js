@@ -147,6 +147,241 @@
             .html('@keyframes rotation { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }')
             .appendTo('head');
 
+        // ==========================================
+        // NUEVOS HANDLERS - AI SUPER POWERS
+        // ==========================================
+        
+        /**
+         * Procesamiento Completo AI
+         */
+        $('.ai-complete-process').on('click', function() {
+            var $btn = $(this);
+            var productId = $btn.data('product-id');
+            
+            if (!confirm('🚀 PROCESAMIENTO COMPLETO AI\n\nEsto ejecutará:\n- Descripción SEO optimizada\n- Análisis de mercado\n- Precio óptimo\n- Generación de imágenes\n- Contenido para redes sociales\n\nPuede tardar 2-3 minutos.\n\n¿Continuar?')) {
+                return;
+            }
+            
+            $btn.prop('disabled', true).addClass('ai-processing');
+            $btn.find('.dashicons').addClass('dashicons-update-alt').css('animation', 'rotation 2s infinite linear');
+            $btn.html('<span class="dashicons dashicons-update-alt"></span> Procesando...');
+            
+            $.ajax({
+                url: aiDropship.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'ai_complete_process',
+                    nonce: aiDropship.nonce,
+                    product_id: productId
+                },
+                timeout: 180000, // 3 minutos
+                success: function(response) {
+                    if (response.success) {
+                        alert('✅ ' + response.data.message + '\n\nEl producto ha sido actualizado completamente.');
+                        location.reload();
+                    } else {
+                        alert('❌ Error: ' + (response.data || 'Error desconocido'));
+                    }
+                },
+                error: function(xhr) {
+                    alert('❌ Error de conexión: ' + xhr.responseText);
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).removeClass('ai-processing');
+                    $btn.html('<span class="dashicons dashicons-superhero"></span> 🚀 PROCESAMIENTO COMPLETO AI');
+                }
+            });
+        });
+        
+        /**
+         * Generar Descripción SEO
+         */
+        $('.ai-generate-description').on('click', function() {
+            var $btn = $(this);
+            var productId = $btn.data('product-id');
+            
+            $btn.prop('disabled', true).addClass('ai-processing');
+            $btn.html('<span class="dashicons dashicons-update-alt"></span> Generando...');
+            
+            $.ajax({
+                url: aiDropship.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'ai_generate_description',
+                    nonce: aiDropship.nonce,
+                    product_id: productId
+                },
+                timeout: 60000,
+                success: function(response) {
+                    if (response.success) {
+                        alert('✅ ' + response.data.message);
+                        location.reload();
+                    } else {
+                        alert('❌ Error: ' + (response.data || 'Error desconocido'));
+                    }
+                },
+                error: function(xhr) {
+                    alert('❌ Error: ' + xhr.responseText);
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).removeClass('ai-processing');
+                    $btn.html('<span class="dashicons dashicons-edit"></span> 📝 Descripción SEO');
+                }
+            });
+        });
+        
+        /**
+         * Generar Imágenes AI
+         */
+        $('.ai-generate-images-btn').on('click', function() {
+            var $btn = $(this);
+            var productId = $btn.data('product-id');
+            
+            if (!confirm('🖼️ Generar Imágenes AI\n\nSe generarán 2 imágenes profesionales del producto.\nPuede tardar 1-2 minutos.\n\n¿Continuar?')) {
+                return;
+            }
+            
+            $btn.prop('disabled', true).addClass('ai-processing');
+            $btn.html('<span class="dashicons dashicons-update-alt"></span> Generando...');
+            
+            $.ajax({
+                url: aiDropship.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'ai_generate_images',
+                    nonce: aiDropship.nonce,
+                    product_id: productId
+                },
+                timeout: 120000,
+                success: function(response) {
+                    if (response.success) {
+                        alert('✅ ' + response.data.message);
+                        location.reload();
+                    } else {
+                        alert('❌ Error: ' + (response.data || 'Error desconocido'));
+                    }
+                },
+                error: function(xhr) {
+                    alert('❌ Error: ' + xhr.responseText);
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).removeClass('ai-processing');
+                    $btn.html('<span class="dashicons dashicons-format-image"></span> 🖼️ Generar Imágenes');
+                }
+            });
+        });
+        
+        /**
+         * Calcular Precio Óptimo
+         */
+        $('.ai-optimal-pricing').on('click', function() {
+            var $btn = $(this);
+            var productId = $btn.data('product-id');
+            
+            $btn.prop('disabled', true).addClass('ai-processing');
+            $btn.html('<span class="dashicons dashicons-update-alt"></span> Calculando...');
+            
+            $.ajax({
+                url: aiDropship.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'ai_optimal_pricing',
+                    nonce: aiDropship.nonce,
+                    product_id: productId
+                },
+                timeout: 30000,
+                success: function(response) {
+                    if (response.success) {
+                        alert('✅ ' + response.data.message);
+                        location.reload();
+                    } else {
+                        alert('❌ Error: ' + (response.data || 'Error desconocido'));
+                    }
+                },
+                error: function(xhr) {
+                    alert('❌ Error: ' + xhr.responseText);
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).removeClass('ai-processing');
+                    $btn.html('<span class="dashicons dashicons-chart-line"></span> 💰 Precio Óptimo');
+                }
+            });
+        });
+        
+        /**
+         * Análisis de Mercado
+         */
+        $('.ai-market-analysis').on('click', function() {
+            var $btn = $(this);
+            var productId = $btn.data('product-id');
+            
+            $btn.prop('disabled', true).addClass('ai-processing');
+            $btn.html('<span class="dashicons dashicons-update-alt"></span> Analizando...');
+            
+            $.ajax({
+                url: aiDropship.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'ai_market_analysis',
+                    nonce: aiDropship.nonce,
+                    product_id: productId
+                },
+                timeout: 60000,
+                success: function(response) {
+                    if (response.success) {
+                        // Mostrar resultados en modal o alert
+                        var content = response.data.content || JSON.stringify(response.data, null, 2);
+                        alert('✅ Análisis de Mercado Completado\n\n' + content.substring(0, 500) + '...');
+                    } else {
+                        alert('❌ Error: ' + (response.data || 'Error desconocido'));
+                    }
+                },
+                error: function(xhr) {
+                    alert('❌ Error: ' + xhr.responseText);
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).removeClass('ai-processing');
+                    $btn.html('<span class="dashicons dashicons-analytics"></span> 📊 Análisis de Mercado');
+                }
+            });
+        });
+        
+        /**
+         * Generar Contenido Social
+         */
+        $('.ai-social-content').on('click', function() {
+            var $btn = $(this);
+            var productId = $btn.data('product-id');
+            
+            $btn.prop('disabled', true).addClass('ai-processing');
+            $btn.html('<span class="dashicons dashicons-update-alt"></span> Generando...');
+            
+            $.ajax({
+                url: aiDropship.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'ai_social_content',
+                    nonce: aiDropship.nonce,
+                    product_id: productId
+                },
+                timeout: 60000,
+                success: function(response) {
+                    if (response.success) {
+                        alert('✅ ' + response.data.message + '\n\nContenido generado para Instagram, Facebook y Twitter.');
+                    } else {
+                        alert('❌ Error: ' + (response.data || 'Error desconocido'));
+                    }
+                },
+                error: function(xhr) {
+                    alert('❌ Error: ' + xhr.responseText);
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).removeClass('ai-processing');
+                    $btn.html('<span class="dashicons dashicons-share"></span> 📱 Contenido Social');
+                }
+            });
+        });
+
     });
 
 })(jQuery);
