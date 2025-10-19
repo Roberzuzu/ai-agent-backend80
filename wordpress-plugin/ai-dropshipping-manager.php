@@ -75,6 +75,15 @@ class AI_Dropshipping_Manager {
         add_action('wp_ajax_ai_generate_content', array($this, 'ajax_generate_content'));
         add_action('wp_ajax_ai_process_all', array($this, 'ajax_process_all'));
         add_action('wp_ajax_ai_get_stats', array($this, 'ajax_get_stats'));
+        
+        // NUEVOS: AI Super Powers
+        add_action('wp_ajax_ai_complete_process', array($this, 'ajax_complete_process'));
+        add_action('wp_ajax_ai_generate_description', array($this, 'ajax_generate_description'));
+        add_action('wp_ajax_ai_generate_images', array($this, 'ajax_generate_images'));
+        add_action('wp_ajax_ai_market_analysis', array($this, 'ajax_market_analysis'));
+        add_action('wp_ajax_ai_optimal_pricing', array($this, 'ajax_optimal_pricing'));
+        add_action('wp_ajax_ai_social_content', array($this, 'ajax_social_content'));
+        add_action('wp_ajax_ai_email_campaign', array($this, 'ajax_email_campaign'));
     }
     
     private function load_includes() {
