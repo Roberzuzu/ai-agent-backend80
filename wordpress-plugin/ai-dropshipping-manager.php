@@ -290,7 +290,16 @@ class AI_Dropshipping_Manager {
     }
     
     public function ajax_get_stats() {
-
+        check_ajax_referer('ai_dropship_nonce', 'nonce');
+        
+        if (!current_user_can('manage_woocommerce')) {
+            wp_send_json_error('Unauthorized');
+        }
+        
+        $api_client = new AI_Dropship_API_Client();
+        $stats = $api_client->get_stats();
+        wp_send_json_success($stats);
+    }
     
     // ==========================================
     // NUEVOS AJAX HANDLERS - AI SUPER POWERS
