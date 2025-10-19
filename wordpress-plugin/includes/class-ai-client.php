@@ -141,11 +141,19 @@ class AI_SuperPowered_Client {
      * Genera posts optimizados para cada plataforma
      */
     public function generate_social_content($product_name, $description, $platforms = array('instagram', 'facebook', 'twitter')) {
-        return $this->request('POST', 'ai/content/social-media', array(
+        $custom_prompt = get_option('ai_dropship_prompt_social', '');
+        
+        $data = array(
             'product_name' => $product_name,
             'description' => $description,
             'platforms' => $platforms
-        ));
+        );
+        
+        if (!empty($custom_prompt)) {
+            $data['custom_prompt'] = $custom_prompt;
+        }
+        
+        return $this->request('POST', 'ai/content/social-media', $data);
     }
     
     /**
@@ -153,11 +161,19 @@ class AI_SuperPowered_Client {
      * Crea email completo con asuntos y segmentación
      */
     public function generate_email_campaign($product_name, $description, $target_audience = 'general') {
-        return $this->request('POST', 'ai/content/email-campaign', array(
+        $custom_prompt = get_option('ai_dropship_prompt_email', '');
+        
+        $data = array(
             'product_name' => $product_name,
             'description' => $description,
             'target_audience' => $target_audience
-        ));
+        );
+        
+        if (!empty($custom_prompt)) {
+            $data['custom_prompt'] = $custom_prompt;
+        }
+        
+        return $this->request('POST', 'ai/content/email-campaign', $data);
     }
     
     /**
