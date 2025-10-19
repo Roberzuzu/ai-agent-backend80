@@ -1,0 +1,371 @@
+{
+  "name": "AI Product Processor - WooCommerce",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "woocommerce-webhook",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "name": "Webhook WooCommerce",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "woocommerce-product-trigger"
+    },
+    {
+      "parameters": {
+        "url": "=https://herramientasyaccesorios.store/wp-json/wc/v3/products/{{$json[\"id\"]}}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "options": {}
+      },
+      "name": "Get Product Details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [450, 300],
+      "credentials": {
+        "httpBasicAuth": {
+          "name": "WooCommerce API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://signal-stream.preview.emergentagent.com/api/ai/product/complete",
+        "method": "POST",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "product_name",
+              "value": "={{$json[\"name\"]}}"
+            },
+            {
+              "name": "category",
+              "value": "={{$json[\"categories\"][0][\"name\"] || 'general'}}"
+            },
+            {
+              "name": "base_price",
+              "value": "={{parseFloat($json[\"regular_price\"]) || 0}}"
+            },
+            {
+              "name": "generate_images",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "name": "Process with AI Backend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json[\"success\"]}}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "Check Success",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "url": "=https://herramientasyaccesorios.store/wp-json/wc/v3/products/{{$node[\"Webhook WooCommerce\"].json[\"id\"]}}",
+        "method": "PUT",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "description",
+              "value": "={{$json[\"description\"][\"description\"]}}"
+            },
+            {
+              "name": "short_description",
+              "value": "={{$json[\"description\"][\"meta_description\"]}}"
+            },
+            {
+              "name": "regular_price",
+              "value": "={{$json[\"pricing\"][\"optimal_price\"].toString()}}"
+            },
+            {
+              "name": "meta_data",
+              "value": "=[{\"key\": \"_yoast_wpseo_title\", \"value\": \"{{$json[\"description\"][\"meta_title\"]}}\"}, {\"key\": \"_yoast_wpseo_metadesc\", \"value\": \"{{$json[\"description\"][\"meta_description\"]}}\"}, {\"key\": \"_ai_processed\", \"value\": \"true\"}, {\"key\": \"_ai_processed_date\", \"value\": \"{{new Date().toISOString()}}\"}]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Update Product - Description & Price",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1050, 200],
+      "credentials": {
+        "httpBasicAuth": {
+          "name": "WooCommerce API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extraer URLs de imágenes generadas\nconst images = $input.item.json.images?.images || [];\nconst imageUrls = images.map(img => img.url);\n\nreturn imageUrls.map(url => ({\n  json: {\n    url: url,\n    product_id: $node[\"Webhook WooCommerce\"].json.id\n  }\n}));"
+      },
+      "name": "Extract Image URLs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 400]
+    },
+    {
+      "parameters": {
+        "url": "={{$json[\"url\"]}}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "name": "Download Images",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1250, 400]
+    },
+    {
+      "parameters": {
+        "url": "=https://herramientasyaccesorios.store/wp-json/wp/v2/media",
+        "method": "POST",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "file",
+              "value": "={{$binary.data}}"
+            },
+            {
+              "name": "title",
+              "value": "=AI Generated Image {{$runIndex + 1}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Upload to WordPress Media",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1450, 400],
+      "credentials": {
+        "httpBasicAuth": {
+          "name": "WooCommerce API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Recopilar IDs de imágenes subidas\nconst items = $input.all();\nconst imageIds = items.map(item => item.json.id);\nconst productId = $node[\"Webhook WooCommerce\"].json.id;\n\nreturn [{\n  json: {\n    product_id: productId,\n    featured_image: imageIds[0],\n    gallery_images: imageIds.slice(1)\n  }\n}];"
+      },
+      "name": "Prepare Image Assignment",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1650, 400]
+    },
+    {
+      "parameters": {
+        "url": "=https://herramientasyaccesorios.store/wp-json/wc/v3/products/{{$json[\"product_id\"]}}",
+        "method": "PUT",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "images",
+              "value": "={{[{\"id\": $json[\"featured_image\"]}, ...$json[\"gallery_images\"].map(id => ({\"id\": id}))]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Assign Images to Product",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1850, 400],
+      "credentials": {
+        "httpBasicAuth": {
+          "name": "WooCommerce API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"success\": true, \"message\": \"Product processed successfully with AI\", \"product_id\": {{$node[\"Webhook WooCommerce\"].json.id}}}",
+        "options": {}
+      },
+      "name": "Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [2050, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"success\": false, \"message\": \"AI processing failed\", \"error\": {{$json[\"error\"]}}}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "name": "Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1050, 500]
+    }
+  ],
+  "connections": {
+    "Webhook WooCommerce": {
+      "main": [
+        [
+          {
+            "node": "Get Product Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Product Details": {
+      "main": [
+        [
+          {
+            "node": "Process with AI Backend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process with AI Backend": {
+      "main": [
+        [
+          {
+            "node": "Check Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Success": {
+      "main": [
+        [
+          {
+            "node": "Update Product - Description & Price",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract Image URLs",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Image URLs": {
+      "main": [
+        [
+          {
+            "node": "Download Images",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Images": {
+      "main": [
+        [
+          {
+            "node": "Upload to WordPress Media",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to WordPress Media": {
+      "main": [
+        [
+          {
+            "node": "Prepare Image Assignment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Image Assignment": {
+      "main": [
+        [
+          {
+            "node": "Assign Images to Product",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assign Images to Product": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Product - Description & Price": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2025-10-19T18:00:00.000Z",
+  "versionId": "1"
+}
