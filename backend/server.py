@@ -6738,6 +6738,7 @@ class AIDescriptionRequest(BaseModel):
     category: str
     features: Optional[List[str]] = None
     language: str = "es"
+    custom_prompt: Optional[str] = None
 
 class AIImageRequest(BaseModel):
     """Request para generar imágenes"""
@@ -6745,11 +6746,13 @@ class AIImageRequest(BaseModel):
     category: str
     style: str = "professional product photo"
     num_images: int = 1
+    custom_prompt: Optional[str] = None
 
 class AIMarketRequest(BaseModel):
     """Request para análisis de mercado"""
     product_name: str
     category: str
+    custom_prompt: Optional[str] = None
 
 class AIPricingRequest(BaseModel):
     """Request para cálculo de precio óptimo"""
@@ -6762,12 +6765,14 @@ class AISocialMediaRequest(BaseModel):
     product_name: str
     description: str
     platforms: List[str] = ["instagram", "facebook", "twitter"]
+    custom_prompt: Optional[str] = None
 
 class AIEmailRequest(BaseModel):
     """Request para campaña de email"""
     product_name: str
     description: str
     target_audience: str = "general"
+    custom_prompt: Optional[str] = None
 
 @api_router.post("/ai/product/complete")
 async def ai_process_product_complete(request: AIProductRequest):
