@@ -66,12 +66,22 @@ class AI_SuperPowered_Client {
      * Genera título, descripción, meta tags y keywords
      */
     public function generate_description($product_name, $category, $features = array(), $language = 'es') {
-        return $this->request('POST', 'ai/product/description', array(
+        // Obtener prompt personalizado si existe
+        $custom_prompt = get_option('ai_dropship_prompt_description', '');
+        
+        $data = array(
             'product_name' => $product_name,
             'category' => $category,
             'features' => $features,
             'language' => $language
-        ));
+        );
+        
+        // Si hay prompt personalizado, enviarlo
+        if (!empty($custom_prompt)) {
+            $data['custom_prompt'] = $custom_prompt;
+        }
+        
+        return $this->request('POST', 'ai/product/description', $data);
     }
     
     /**
