@@ -1043,6 +1043,213 @@ Formato: Análisis estructurado"""
         
         except Exception as e:
             return {"success": False, "error": str(e)}
+    
+    # ==========================================
+    # HERRAMIENTAS CON NUEVAS APIs
+    # ==========================================
+    
+    async def _buscar_google(self, query: str) -> Dict[str, Any]:
+        """Búsqueda en Google usando SerpAPI"""
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    "https://serpapi.com/search",
+                    params={
+                        "q": query,
+                        "api_key": SERP_API_KEY,
+                        "engine": "google",
+                        "gl": "es",
+                        "hl": "es",
+                        "num": 10
+                    },
+                    timeout=30
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    organic_results = data.get("organic_results", [])
+                    
+                    resultados = []
+                    for result in organic_results[:10]:
+                        resultados.append({
+                            "titulo": result.get("title"),
+                            "url": result.get("link"),
+                            "snippet": result.get("snippet"),
+                            "posicion": result.get("position")
+                        })
+                    
+                    return {
+                        "success": True,
+                        "query": query,
+                        "total_resultados": len(resultados),
+                        "resultados": resultados
+                    }
+                
+                return {"success": False, "error": f"Error en SerpAPI: {response.status_code}"}
+        
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def _scraping_web(self, url: str, selector: str = None) -> Dict[str, Any]:
+        """Scraping web usando Apify"""
+        try:
+            async with httpx.AsyncClient() as client:
+                # Usar Apify Web Scraper
+                actor_id = "apify/web-scraper"
+                
+                run_input = {
+                    "startUrls": [{"url": url}],
+                    "pageFunction": f"""
+                    async function pageFunction(context) {{
+                        const $ = context.jQuery;
+                        return {{
+                            url: context.request.url,
+                            title: $('title').text(),
+                            content: $('body').text().substring(0, 1000)
+                        }};
+                    }}
+                    """
+                }
+                
+                # Iniciar el actor
+                response = await client.post(
+                    f"https://api.apify.com/v2/acts/{actor_id}/runs",
+                    params={"token": APIFY_TOKEN},
+                    json=run_input,
+                    timeout=60
+                )
+                
+                if response.status_code == 201:
+                    run_data = response.json()
+                    run_id = run_data["data"]["id"]
+                    
+                    # Esperar a que termine (max 30 segundos)
+                    for _ in range(15):
+                        await asyncio.sleep(2)
+                        
+                        status_response = await client.get(
+                            f"https://api.apify.com/v2/actor-runs/{run_id}",
+                            params={"token": APIFY_TOKEN}
+                        )
+                        
+                        if status_response.status_code == 200:
+                            status_data = status_response.json()
+                            if status_data["data"]["status"] == "SUCCEEDED":
+                                # Obtener resultados
+                                dataset_id = status_data["data"]["defaultDatasetId"]
+                                results_response = await client.get(
+                                    f"https://api.apify.com/v2/datasets/{dataset_id}/items",
+                                    params={"token": APIFY_TOKEN}
+                                )
+                                
+                                if results_response.status_code == 200:
+                                    results = results_response.json()
+                                    return {
+                                        "success": True,
+                                        "url": url,
+                                        "data": results[0] if results else {}
+                                    }
+                    
+                    return {"success": False, "error": "Timeout esperando scraping"}
+                
+                return {"success": False, "error": "Error iniciando scraper"}
+        
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def _analizar_keywords(self, tema: str) -> Dict[str, Any]:
+        """Análisis SEO de keywords con SerpAPI"""
+        try:
+            async with httpx.AsyncClient() as client:
+                # Buscar keywords relacionadas
+                response = await client.get(
+                    "https://serpapi.com/search",
+                    params={
+                        "q": tema,
+                        "api_key": SERP_API_KEY,
+                        "engine": "google",
+                        "gl": "es",
+                        "hl": "es"
+                    },
+                    timeout=30
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    
+                    # Extraer búsquedas relacionadas
+                    related_searches = data.get("related_searches", [])
+                    keywords = [s.get("query") for s in related_searches]
+                    
+                    # Extraer people also ask
+                    people_also_ask = data.get("related_questions", [])
+                    preguntas = [q.get("question") for q in people_also_ask[:5]]
+                    
+                    return {
+                        "success": True,
+                        "tema": tema,
+                        "keywords_relacionadas": keywords,
+                        "preguntas_frecuentes": preguntas,
+                        "total_keywords": len(keywords)
+                    }
+                
+                return {"success": False, "error": "Error obteniendo keywords"}
+        
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def _monitorear_competencia(self, productos: List[str], frecuencia: str) -> Dict[str, Any]:
+        """Monitoreo automático de precios de competencia"""
+        try:
+            resultados = []
+            
+            for producto in productos:
+                # Buscar el producto en Google Shopping
+                async with httpx.AsyncClient() as client:
+                    response = await client.get(
+                        "https://serpapi.com/search",
+                        params={
+                            "q": producto,
+                            "api_key": SERP_API_KEY,
+                            "engine": "google_shopping",
+                            "gl": "es",
+                            "hl": "es"
+                        },
+                        timeout=30
+                    )
+                    
+                    if response.status_code == 200:
+                        data = response.json()
+                        shopping_results = data.get("shopping_results", [])
+                        
+                        if shopping_results:
+                            # Obtener los 3 primeros resultados
+                            competidores = []
+                            for result in shopping_results[:3]:
+                                competidores.append({
+                                    "titulo": result.get("title"),
+                                    "precio": result.get("price"),
+                                    "tienda": result.get("source"),
+                                    "link": result.get("link")
+                                })
+                            
+                            resultados.append({
+                                "producto": producto,
+                                "competidores": competidores,
+                                "precio_minimo": min([c.get("precio", "0").replace("€", "").replace(",", ".") for c in competidores], default="0"),
+                                "precio_maximo": max([c.get("precio", "0").replace("€", "").replace(",", ".") for c in competidores], default="0")
+                            })
+            
+            return {
+                "success": True,
+                "total_productos": len(resultados),
+                "frecuencia": frecuencia,
+                "resultados": resultados,
+                "mensaje": f"Monitoreo configurado para {len(productos)} productos con frecuencia {frecuencia}"
+            }
+        
+        except Exception as e:
+            return {"success": False, "error": str(e)}
 
 
 # Instancia global del agente
