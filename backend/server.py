@@ -6808,7 +6808,8 @@ async def ai_generate_description(request: AIDescriptionRequest):
             product_name=request.product_name,
             category=request.category,
             features=request.features,
-            language=request.language
+            language=request.language,
+            custom_prompt=request.custom_prompt
         )
         return result
     except Exception as e:
