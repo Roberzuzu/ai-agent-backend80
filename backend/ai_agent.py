@@ -969,7 +969,7 @@ Formato: Análisis estructurado"""
     
     async def _optimizar_seo(self, producto_id: int) -> Dict[str, Any]:
         """Optimiza SEO de un producto"""
-        from ai_integrations import generate_seo_content
+        from ai_integrations import generate_product_description
         
         try:
             # Obtener producto
@@ -985,7 +985,7 @@ Formato: Análisis estructurado"""
                 producto = response.json()
                 
                 # Generar contenido SEO
-                seo_result = await generate_seo_content(
+                seo_result = await generate_product_description(
                     producto.get("name"),
                     producto.get("categories", [{}])[0].get("name", "general")
                 )
