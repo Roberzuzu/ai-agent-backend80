@@ -7007,12 +7007,29 @@ async def agent_chat(request: AgentExecuteRequest):
 @api_router.get("/agent/status")
 async def agent_status():
     """Estado del agente y conversaciones activas"""
-    return {
-        "success": True,
-        "agente_activo": True,
-        "conversaciones_activas": len(agent.conversation_history),
-        "herramientas_disponibles": 10
-    }
+    try:
+        # Contar conversaciones en MongoDB
+        total_conversations = await db["conversations"].count_documents({})
+        total_memories = await db["agent_memory"].count_documents({})
+        
+        return {
+            "success": True,
+            "agente_activo": True,
+            "conversaciones_totales": total_conversations,
+            "memorias_guardadas": total_memories,
+            "herramientas_disponibles": 18,
+            "caracteristicas": {
+                "memoria_persistente": True,
+                "busqueda_semantica": True,
+                "rag_enabled": True,
+                "embeddings": bool(OPENAI_KEY)
+            }
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
 
 
 
