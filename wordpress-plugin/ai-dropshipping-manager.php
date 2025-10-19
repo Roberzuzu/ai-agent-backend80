@@ -20,7 +20,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('AI_DROPSHIP_VERSION', '1.0.0');
+define('AI_DROPSHIP_VERSION', '1.1.0');
 define('AI_DROPSHIP_PATH', plugin_dir_path(__FILE__));
 define('AI_DROPSHIP_URL', plugin_dir_url(__FILE__));
 define('AI_DROPSHIP_FILE', __FILE__);
