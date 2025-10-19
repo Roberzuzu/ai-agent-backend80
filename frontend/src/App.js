@@ -140,42 +140,44 @@ function App() {
   return (
     <ThemeProvider>
       <ErrorBoundary>
-        <div className="App min-h-screen bg-gray-50 dark:bg-gray-900">
-          <Toaster 
-            position="top-right" 
-            expand={false}
-            richColors
-            closeButton
-            duration={4000}
-          />
-          <BrowserRouter>
-            <OnboardingFlow />
-            <Navigation />
-            <main className="max-w-7xl mx-auto px-4 py-8">
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/dashboard-enhanced" element={<DashboardEnhanced />} />
-                <Route path="/trends" element={<TrendsPage />} />
-                <Route path="/content" element={<ContentPage />} />
-                <Route path="/products" element={<ProductsPage />} />
-                <Route path="/social" element={<SocialPage />} />
-                <Route path="/campaigns" element={<CampaignsPage />} />
-                <Route path="/subscriptions" element={<SubscriptionsPage />} />
-                <Route path="/revenue" element={<RevenueAnalyticsPage />} />
-                <Route path="/affiliate" element={<AffiliatePage />} />
-                <Route path="/affiliate-dashboard" element={<AffiliateDashboardPage />} />
-                <Route path="/affiliate-payouts" element={<AffiliatePayoutsPage />} />
-                <Route path="/advanced" element={<AdvancedMonetizationPage />} />
-                <Route path="/conversion" element={<ConversionOptimizationPage />} />
-                <Route path="/payment-success" element={<PaymentSuccessPage />} />
-                <Route path="/payment-cancelled" element={<PaymentCancelledPage />} />
-                <Route path="/notifications" element={<NotificationsPage />} />
-                <Route path="/notifications/preferences" element={<NotificationPreferencesPage />} />
-                <Route path="/recommendations" element={<RecommendationsPage />} />
-              </Routes>
-            </main>
-          </BrowserRouter>
-        </div>
+        <AuthProvider>
+          <div className="App min-h-screen bg-gray-50 dark:bg-gray-900">
+            <Toaster 
+              position="top-right" 
+              expand={false}
+              richColors
+              closeButton
+              duration={4000}
+            />
+            <BrowserRouter>
+              <OnboardingFlow />
+              <Navigation />
+              <main className="max-w-7xl mx-auto px-4 py-8">
+                <Routes>
+                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/dashboard-enhanced" element={<DashboardEnhanced />} />
+                  <Route path="/trends" element={<TrendsPage />} />
+                  <Route path="/content" element={<ContentPage />} />
+                  <Route path="/products" element={<ProductsPage />} />
+                  <Route path="/social" element={<SocialPage />} />
+                  <Route path="/campaigns" element={<CampaignsPage />} />
+                  <Route path="/subscriptions" element={<SubscriptionsPage />} />
+                  <Route path="/revenue" element={<RevenueAnalyticsPage />} />
+                  <Route path="/affiliate" element={<AffiliatePage />} />
+                  <Route path="/affiliate-dashboard" element={<AffiliateDashboardPage />} />
+                  <Route path="/affiliate-payouts" element={<AffiliatePayoutsPage />} />
+                  <Route path="/advanced" element={<AdvancedMonetizationPage />} />
+                  <Route path="/conversion" element={<ConversionOptimizationPage />} />
+                  <Route path="/payment-success" element={<PaymentSuccessPage />} />
+                  <Route path="/payment-cancelled" element={<PaymentCancelledPage />} />
+                  <Route path="/notifications" element={<NotificationsPage />} />
+                  <Route path="/notifications/preferences" element={<NotificationPreferencesPage />} />
+                  <Route path="/recommendations" element={<RecommendationsPage />} />
+                </Routes>
+              </main>
+            </BrowserRouter>
+          </div>
+        </AuthProvider>
       </ErrorBoundary>
     </ThemeProvider>
   );
