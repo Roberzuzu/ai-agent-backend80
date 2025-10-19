@@ -7021,6 +7021,7 @@ async def agent_status():
             "conversaciones_totales": total_conversations,
             "memorias_guardadas": total_memories,
             "herramientas_disponibles": 22,
+            "modelo": "Perplexity Pro (sonar-pro)",
             "caracteristicas": {
                 "memoria_persistente": True,
                 "busqueda_semantica": openai_key_available,
@@ -7028,7 +7029,8 @@ async def agent_status():
                 "embeddings": openai_key_available,
                 "serp_api": bool(os.environ.get('SERP_API_KEY')),
                 "apify": bool(os.environ.get('APIFY_TOKEN')),
-                "google_cloud": bool(os.environ.get('GOOGLE_CLIENT_ID'))
+                "google_cloud": bool(os.environ.get('GOOGLE_CLIENT_ID')),
+                "perplexity_pro": bool(os.environ.get('PERPLEXITY_API_KEY'))
             }
         }
     except Exception as e:
