@@ -305,17 +305,43 @@ Formato de respuesta:
         parametros = action.get("parametros", {})
         
         try:
+            # PRODUCTOS
             if herramienta == "procesar_producto":
                 return await self._procesar_producto(parametros.get("product_id"))
             
+            elif herramienta == "crear_producto":
+                return await self._crear_producto(parametros)
+            
+            elif herramienta == "actualizar_producto":
+                return await self._actualizar_producto(
+                    parametros.get("product_id"),
+                    parametros.get("datos", {})
+                )
+            
+            elif herramienta == "eliminar_producto":
+                return await self._eliminar_producto(parametros.get("product_id"))
+            
+            elif herramienta == "obtener_productos":
+                return await self._obtener_productos(parametros.get("filtros", {}))
+            
+            elif herramienta == "buscar_productos":
+                return await self._buscar_productos(
+                    parametros.get("query"),
+                    parametros.get("filtros", {})
+                )
+            
+            elif herramienta == "gestionar_inventario":
+                return await self._gestionar_inventario(
+                    parametros.get("operacion"),
+                    parametros.get("datos", {})
+                )
+            
+            # ANÁLISIS E INTELIGENCIA
             elif herramienta == "buscar_tendencias":
                 return await self._buscar_tendencias(
                     parametros.get("categoria"),
                     parametros.get("pais", "España")
                 )
-            
-            elif herramienta == "crear_producto":
-                return await self._crear_producto(parametros)
             
             elif herramienta == "analizar_precios":
                 return await self._analizar_precios(
@@ -323,19 +349,34 @@ Formato de respuesta:
                     parametros.get("categoria")
                 )
             
-            elif herramienta == "generar_imagenes":
-                return await self._generar_imagenes(
-                    parametros.get("descripcion"),
-                    parametros.get("cantidad", 2)
-                )
-            
-            elif herramienta == "obtener_productos":
-                return await self._obtener_productos(parametros.get("filtros", {}))
-            
             elif herramienta == "analizar_competencia":
                 return await self._analizar_competencia(
                     parametros.get("producto"),
                     parametros.get("categoria")
+                )
+            
+            elif herramienta == "obtener_estadisticas":
+                return await self._obtener_estadisticas(parametros.get("tipo"))
+            
+            elif herramienta == "analizar_ventas":
+                return await self._analizar_ventas(
+                    parametros.get("periodo"),
+                    parametros.get("filtros", {})
+                )
+            
+            # MARKETING
+            elif herramienta == "crear_campana":
+                return await self._crear_campana(
+                    parametros.get("tipo"),
+                    parametros.get("producto_id"),
+                    parametros.get("presupuesto")
+                )
+            
+            elif herramienta == "crear_descuento":
+                return await self._crear_descuento(
+                    parametros.get("tipo"),
+                    parametros.get("valor"),
+                    parametros.get("productos", [])
                 )
             
             elif herramienta == "generar_contenido":
@@ -343,6 +384,23 @@ Formato de respuesta:
                     parametros.get("tipo"),
                     parametros.get("tema")
                 )
+            
+            # CREATIVIDAD
+            elif herramienta == "generar_imagenes":
+                return await self._generar_imagenes(
+                    parametros.get("descripcion"),
+                    parametros.get("cantidad", 2)
+                )
+            
+            # INTEGRACIONES
+            elif herramienta == "sincronizar_wordpress":
+                return await self._sincronizar_wordpress(
+                    parametros.get("accion"),
+                    parametros.get("datos", {})
+                )
+            
+            elif herramienta == "optimizar_seo":
+                return await self._optimizar_seo(parametros.get("producto_id"))
             
             else:
                 return {
