@@ -425,6 +425,12 @@ Formato de respuesta:
             elif herramienta == "optimizar_seo":
                 return await self._optimizar_seo(parametros.get("producto_id"))
             
+            elif herramienta == "monitorear_competencia":
+                return await self._monitorear_competencia(
+                    parametros.get("productos", []),
+                    parametros.get("frecuencia", "diaria")
+                )
+            
             else:
                 return {
                     "success": False,
