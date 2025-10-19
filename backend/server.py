@@ -6419,15 +6419,17 @@ async def create_wordpress_page(page_data: dict):
         return {"success": False, "error": str(e)}
 
 @api_router.post("/wordpress/pages/create-bulk")
-async def create_common_pages(page_types: List[str] = None):
+async def create_common_pages(request: dict = None):
     """
     Create common website pages in bulk
-    page_types: list of page types to create, or None for all
+    request: {"page_types": ["about", "contact", ...]} or None for all
     Available types: about, contact, shipping, returns, terms, privacy, faq
     """
     try:
         wp = create_wordpress_client()
         all_pages = wp.get_common_pages_template()
+        
+        page_types = request.get('page_types') if request else None
         
         if page_types:
             # Filter pages based on requested types
