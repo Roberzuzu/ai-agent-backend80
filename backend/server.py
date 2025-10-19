@@ -6920,6 +6920,25 @@ async def ai_health_check():
     }
 
 
+@api_router.get("/download/wordpress-plugin")
+async def download_wordpress_plugin():
+    """Descarga el plugin de WordPress en formato ZIP"""
+    from fastapi.responses import FileResponse
+    import os
+    
+    file_path = "/app/ai-dropshipping-super-powered-v2.0.zip"
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Plugin ZIP not found")
+    
+    return FileResponse(
+        path=file_path,
+        filename="ai-dropshipping-super-powered-v2.0.zip",
+        media_type="application/zip"
+    )
+
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
