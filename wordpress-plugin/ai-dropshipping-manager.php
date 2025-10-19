@@ -81,6 +81,7 @@ class AI_Dropshipping_Manager {
         // Include API client
         require_once AI_DROPSHIP_PATH . 'includes/class-api-client.php';
         require_once AI_DROPSHIP_PATH . 'includes/class-product-processor.php';
+        require_once AI_DROPSHIP_PATH . 'includes/class-ai-superpowered.php'; // NUEVO: IA Avanzada
     }
     
     public function woocommerce_missing_notice() {
