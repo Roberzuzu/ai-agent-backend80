@@ -90,27 +90,62 @@ class AIAgentTester:
             self.log_test("Agent Status", False, f"Exception: {str(e)}")
             return False
 
-    def get_products(self):
-        """Get products for testing checkout"""
-        print("🔍 Getting Products for Checkout Testing...")
+    def test_agent_execute_simple(self):
+        """Test POST /api/agent/execute - Ejecutar comando simple"""
+        print("🔍 Testing Agent Execute Simple Command...")
         try:
-            response = self.session.get(f"{BASE_URL}/products")
+            command_data = {
+                "command": "Dame las estadísticas del sitio",
+                "user_id": TEST_USER_ID
+            }
+            
+            response = self.session.post(
+                f"{BASE_URL}/agent/execute",
+                json=command_data,
+                headers={"Content-Type": "application/json"}
+            )
             
             if response.status_code == 200:
-                products = response.json()
-                if products:
-                    self.products = products
-                    self.log_test("Get Products", True, f"Retrieved {len(products)} products", len(products))
-                    return True
-                else:
-                    self.log_test("Get Products", False, "No products found for testing")
+                result = response.json()
+                
+                # Verificar campos requeridos
+                required_fields = ["success", "mensaje", "plan", "resultados"]
+                missing_fields = [field for field in required_fields if field not in result]
+                if missing_fields:
+                    self.log_test("Agent Execute Structure", False, f"Missing fields: {missing_fields}", result)
                     return False
+                
+                # Verificar success
+                if not result.get("success"):
+                    self.log_test("Agent Execute Success", False, "success should be true", result)
+                    return False
+                
+                # Verificar que hay mensaje
+                if not result.get("mensaje"):
+                    self.log_test("Agent Execute Message", False, "mensaje should not be empty", result)
+                    return False
+                
+                # Verificar que hay plan
+                if not result.get("plan"):
+                    self.log_test("Agent Execute Plan", False, "plan should not be empty", result)
+                    return False
+                
+                # Verificar que hay resultados (array con al menos 1 resultado)
+                resultados = result.get("resultados", [])
+                if not isinstance(resultados, list) or len(resultados) < 1:
+                    self.log_test("Agent Execute Results", False, "resultados should be array with at least 1 result", resultados)
+                    return False
+                
+                self.log_test("Agent Execute Simple", True, 
+                            f"Command executed successfully with {len(resultados)} results", 
+                            {"has_message": bool(result.get("mensaje")), "has_plan": bool(result.get("plan")), "results_count": len(resultados)})
+                return True
             else:
-                self.log_test("Get Products", False, f"HTTP {response.status_code}", response.text)
+                self.log_test("Agent Execute Simple", False, f"HTTP {response.status_code}", response.text)
                 return False
                 
         except Exception as e:
-            self.log_test("Get Products", False, f"Exception: {str(e)}")
+            self.log_test("Agent Execute Simple", False, f"Exception: {str(e)}")
             return False
 
     def test_product_checkout(self):
