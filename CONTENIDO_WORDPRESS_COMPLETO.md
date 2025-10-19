@@ -1232,3 +1232,640 @@ Para cada página/post:
 ---
 
 *Continuará en el siguiente mensaje con FAQ...*
+
+## 7. PREGUNTAS FRECUENTES (FAQ)
+
+**Título:** Preguntas Frecuentes (FAQ)
+
+**Slug:** preguntas-frecuentes-faq
+
+**Contenido HTML:**
+
+```html
+<h2>❓ Preguntas Frecuentes</h2>
+<p class="lead">Encuentra respuestas rápidas a las preguntas más comunes sobre nuestros productos, envíos, devoluciones y más.</p>
+
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 12px; margin: 30px 0; text-align: center;">
+    <p style="font-size: 1.3em; margin: 0;">¿No encuentras lo que buscas?</p>
+    <p style="font-size: 1.1em; margin: 10px 0;"><a href="/contacto/" style="color: white; text-decoration: underline;">Contáctanos</a> y te ayudaremos personalmente</p>
+</div>
+
+<nav style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 30px 0;">
+    <h3>📑 Índice Rápido</h3>
+    <ul style="columns: 2; -webkit-columns: 2; -moz-columns: 2;">
+        <li><a href="#pedidos">Pedidos y Compras</a></li>
+        <li><a href="#envios">Envíos</a></li>
+        <li><a href="#pagos">Pagos</a></li>
+        <li><a href="#devoluciones">Devoluciones</a></li>
+        <li><a href="#productos">Productos</a></li>
+        <li><a href="#cuenta">Mi Cuenta</a></li>
+        <li><a href="#garantias">Garantías</a></li>
+        <li><a href="#tecnicas">Preguntas Técnicas</a></li>
+    </ul>
+</nav>
+
+<h2 id="pedidos">🛒 Pedidos y Compras</h2>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Cómo puedo hacer un pedido?</summary>
+    <div style="margin-top: 15px;">
+        <p>Hacer un pedido es muy fácil:</p>
+        <ol>
+            <li>Navega por nuestros productos y añade los que desees al carrito</li>
+            <li>Click en el icono del carrito para revisar tu pedido</li>
+            <li>Click en "Proceder al pago"</li>
+            <li>Introduce tus datos de envío y pago</li>
+            <li>Confirma el pedido</li>
+            <li>Recibirás un email de confirmación inmediatamente</li>
+        </ol>
+    </div>
+</details>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Necesito crear una cuenta para comprar?</summary>
+    <div style="margin-top: 15px;">
+        <p><strong>No, no es obligatorio.</strong> Puedes comprar como invitado.</p>
+        <p>Sin embargo, crear una cuenta tiene ventajas:</p>
+        <ul>
+            <li>✅ Historial de pedidos siempre disponible</li>
+            <li>✅ Proceso de compra más rápido (datos guardados)</li>
+            <li>✅ Seguimiento fácil de envíos</li>
+            <li>✅ Acceso a ofertas exclusivas</li>
+            <li>✅ Gestión fácil de devoluciones</li>
+        </ul>
+    </div>
+</details>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Puedo modificar mi pedido después de realizarlo?</summary>
+    <div style="margin-top: 15px;">
+        <p>Sí, pero <strong>solo durante las primeras 2 horas</strong> después de confirmar el pedido.</p>
+        <p>Para modificar tu pedido:</p>
+        <ol>
+            <li>Contacta inmediatamente por email: <strong>pedidos@herramientasyaccesorios.store</strong></li>
+            <li>Indica tu número de pedido</li>
+            <li>Especifica qué quieres cambiar</li>
+        </ol>
+        <p style="background: #fff3cd; padding: 10px; border-radius: 4px; margin-top: 10px;">
+            ⚠️ Si el pedido ya está en preparación o enviado, no podremos modificarlo, pero puedes hacer una devolución una vez lo recibas.
+        </p>
+    </div>
+</details>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Puedo cancelar mi pedido?</summary>
+    <div style="margin-top: 15px;">
+        <p><strong>Sí, siempre que no haya sido enviado todavía.</strong></p>
+        <p>Proceso de cancelación:</p>
+        <ol>
+            <li>Contacta lo antes posible: <strong>pedidos@herramientasyaccesorios.store</strong></li>
+            <li>Incluye tu número de pedido</li>
+            <li>Si aún no se ha enviado, lo cancelaremos</li>
+            <li>Recibirás reembolso completo en 3-5 días hábiles</li>
+        </ol>
+        <p><strong>Si ya se envió:</strong> Puedes rechazar el paquete al recibirlo o hacer una devolución normal.</p>
+    </div>
+</details>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #007bff;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Emiten factura?</summary>
+    <div style="margin-top: 15px;">
+        <p><strong>Sí, siempre.</strong> Con cada pedido recibirás:</p>
+        <ul>
+            <li>📧 <strong>Factura digital</strong> por email (PDF)</li>
+            <li>📄 <strong>Factura impresa</strong> en el paquete (opcional)</li>
+        </ul>
+        <p><strong>Si necesitas factura con datos de empresa:</strong></p>
+        <p>Indícalo durante el proceso de compra en "Datos de facturación" o contacta tras el pedido en las primeras 24h.</p>
+    </div>
+</details>
+
+<h2 id="envios">🚚 Envíos</h2>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #28a745;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Cuánto tarda en llegar mi pedido?</summary>
+    <div style="margin-top: 15px;">
+        <p>Los plazos de entrega son:</p>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr style="background: #e8f4f8;">
+                <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>Península</strong></td>
+                <td style="padding: 10px; border: 1px solid #dee2e6;">3-5 días hábiles</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>Baleares</strong></td>
+                <td style="padding: 10px; border: 1px solid #dee2e6;">5-7 días hábiles</td>
+            </tr>
+            <tr style="background: #e8f4f8;">
+                <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>Canarias</strong></td>
+                <td style="padding: 10px; border: 1px solid #dee2e6;">7-10 días hábiles</td>
+            </tr>
+            <tr>
+                <td style="padding: 10px; border: 1px solid #dee2e6;"><strong>Ceuta/Melilla</strong></td>
+                <td style="padding: 10px; border: 1px solid #dee2e6;">7-10 días hábiles</td>
+            </tr>
+        </table>
+        <p style="margin-top: 15px;"><strong>Envío Express:</strong> 1-2 días hábiles (+9,99€)</p>
+        <p style="font-size: 0.9em; color: #666;">⚠️ Los plazos son estimados y pueden variar en periodos de alta demanda.</p>
+    </div>
+</details>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #28a745;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Cuánto cuesta el envío?</summary>
+    <div style="margin-top: 15px;">
+        <ul style="font-size: 1.1em;">
+            <li>🚚 <strong>Envío Estándar:</strong> 5,99€</li>
+            <li>⚡ <strong>Envío Express:</strong> 9,99€</li>
+            <li>🎉 <strong>Envío GRATIS:</strong> En compras superiores a 50€</li>
+        </ul>
+        <p style="background: #d4edda; padding: 15px; border-radius: 8px; margin-top: 15px;">
+            💡 <strong>Consejo:</strong> Si tu carrito está cerca de 50€, añade un pequeño accesorio para conseguir envío gratis.
+        </p>
+    </div>
+</details>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #28a745;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Cómo puedo rastrear mi pedido?</summary>
+    <div style="margin-top: 15px;">
+        <p>Una vez que tu pedido sea enviado:</p>
+        <ol>
+            <li>📧 Recibirás un <strong>email con el número de seguimiento</strong></li>
+            <li>Click en el enlace del email para ver el estado en tiempo real</li>
+            <li>O entra en tu cuenta → "Mis Pedidos" → Ver detalles</li>
+        </ol>
+        <p style="margin-top: 15px;"><strong>Si no recibes el email de seguimiento:</strong></p>
+        <ul>
+            <li>Revisa tu carpeta de spam</li>
+            <li>Espera 24h después de la confirmación del pedido</li>
+            <li>Contacta con: envios@herramientasyaccesorios.store</li>
+        </ul>
+    </div>
+</details>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #28a745;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Qué hago si no estoy en casa cuando llega el pedido?</summary>
+    <div style="margin-top: 15px;">
+        <p>El transportista:</p>
+        <ol>
+            <li>Dejará un aviso en tu buzón</li>
+            <li>Intentará una segunda entrega al día siguiente</li>
+            <li>Si no estás, podrás recogerlo en la oficina de la empresa de transporte</li>
+        </ol>
+        <p><strong>💡 Recomendaciones:</strong></p>
+        <ul>
+            <li>Pon una dirección donde haya alguien (trabajo, familiar)</li>
+            <li>Deja instrucciones especiales en "Notas del pedido"</li>
+            <li>Contacta con la empresa de transporte para coordinar</li>
+        </ul>
+    </div>
+</details>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #28a745;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Envían a apartados de correos?</summary>
+    <div style="margin-top: 15px;">
+        <p><strong>No, lo sentimos.</strong></p>
+        <p>Debido al tamaño y peso de las herramientas, solo podemos enviar a <strong>direcciones físicas</strong> donde el transportista pueda entregar el paquete en persona.</p>
+    </div>
+</details>
+
+<h2 id="pagos">💳 Pagos</h2>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #ffc107;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Qué métodos de pago aceptan?</summary>
+    <div style="margin-top: 15px;">
+        <p>Aceptamos los siguientes métodos de pago:</p>
+        <ul style="list-style: none; padding: 0;">
+            <li style="padding: 10px; background: white; margin: 5px 0; border-radius: 4px;">💳 <strong>Tarjetas de crédito/débito</strong> (Visa, MasterCard, American Express)</li>
+            <li style="padding: 10px; background: white; margin: 5px 0; border-radius: 4px;">🅿️ <strong>PayPal</strong></li>
+            <li style="padding: 10px; background: white; margin: 5px 0; border-radius: 4px;">🔵 <strong>Stripe</strong> (pago seguro con tarjeta)</li>
+            <li style="padding: 10px; background: white; margin: 5px 0; border-radius: 4px;">🏦 <strong>Transferencia bancaria</strong> (solo pedidos +500€)</li>
+        </ul>
+        <p style="background: #d1ecf1; padding: 15px; border-radius: 8px; margin-top: 15px;">
+            🔒 <strong>Todos los pagos son 100% seguros</strong> con encriptación SSL y cumplimiento PCI-DSS.
+        </p>
+    </div>
+</details>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #ffc107;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Es seguro pagar con tarjeta en vuestra web?</summary>
+    <div style="margin-top: 15px;">
+        <p><strong>Absolutamente seguro.</strong> Tu seguridad es nuestra prioridad máxima.</p>
+        <p><strong>Medidas de seguridad:</strong></p>
+        <ul>
+            <li>✅ Certificado SSL (https:// - candado verde)</li>
+            <li>✅ Procesadores certificados PCI-DSS (Stripe, PayPal)</li>
+            <li>✅ <strong>NO almacenamos</strong> datos completos de tarjetas</li>
+            <li>✅ Autenticación 3D Secure (doble verificación)</li>
+            <li>✅ Encriptación de extremo a extremo</li>
+        </ul>
+    </div>
+</details>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #ffc107;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Cuándo se cargará el pago en mi tarjeta?</summary>
+    <div style="margin-top: 15px;">
+        <p>El cargo se realiza <strong>inmediatamente al confirmar el pedido</strong>.</p>
+        <p>Sin embargo:</p>
+        <ul>
+            <li>Algunos bancos muestran el cargo como "pendiente" 24-48h</li>
+            <li>Si cancelamos el pedido (ej: producto sin stock), el reembolso es inmediato</li>
+            <li>El reembolso puede tardar 3-5 días en reflejarse según tu banco</li>
+        </ul>
+    </div>
+</details>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #ffc107;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">Mi pago fue rechazado, ¿qué hago?</summary>
+    <div style="margin-top: 15px;">
+        <p><strong>Causas comunes de rechazo:</strong></p>
+        <ul>
+            <li>❌ Fondos insuficientes en la cuenta</li>
+            <li>❌ Límite diario de compras superado</li>
+            <li>❌ Tarjeta caducada</li>
+            <li>❌ Datos de facturación no coinciden con el banco</li>
+            <li>❌ El banco requiere autorización adicional</li>
+        </ul>
+        <p><strong>Solución:</strong></p>
+        <ol>
+            <li>Verifica los datos de tu tarjeta</li>
+            <li>Contacta con tu banco para autorizar la compra</li>
+            <li>Intenta con otro método de pago (PayPal)</li>
+            <li>Si persiste, contacta con nosotros: pagos@herramientasyaccesorios.store</li>
+        </ol>
+    </div>
+</details>
+
+<h2 id="devoluciones">🔄 Devoluciones y Reembolsos</h2>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #dc3545;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Puedo devolver un producto?</summary>
+    <div style="margin-top: 15px;">
+        <p><strong>Sí, tienes 30 días desde la recepción para devolverlo.</strong></p>
+        <p><strong>Condiciones:</strong></p>
+        <ul>
+            <li>✅ Producto sin usar</li>
+            <li>✅ En su embalaje original</li>
+            <li>✅ Con todos los accesorios y manuales</li>
+            <li>✅ Etiquetas originales intactas</li>
+        </ul>
+        <p style="margin-top: 15px;">📋 Ver <a href="/politica-de-devoluciones/">Política de Devoluciones completa</a></p>
+    </div>
+</details>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #dc3545;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Cómo hago una devolución?</summary>
+    <div style="margin-top: 15px;">
+        <p><strong>Proceso paso a paso:</strong></p>
+        <ol>
+            <li>📧 Envía email a: <strong>devoluciones@herramientasyaccesorios.store</strong></li>
+            <li>Indica: Número de pedido + Producto(s) a devolver + Motivo</li>
+            <li>Recibirás una etiqueta de devolución prepagada en 24h</li>
+            <li>Embala el producto en su caja original</li>
+            <li>Pega la etiqueta y envía</li>
+            <li>Recibirás reembolso en 5-7 días tras recibir el producto</li>
+        </ol>
+    </div>
+</details>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #dc3545;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Cuándo recibiré el reembolso?</summary>
+    <div style="margin-top: 15px;">
+        <p><strong>Plazo:</strong> 5-7 días hábiles desde que recibimos y verificamos el producto.</p>
+        <p><strong>El reembolso se realiza:</strong></p>
+        <ul>
+            <li>Al mismo método de pago usado en la compra</li>
+            <li>Por el 100% del importe del producto</li>
+            <li>Los gastos de envío originales NO son reembolsables</li>
+        </ul>
+        <p style="background: #fff3cd; padding: 10px; border-radius: 4px; margin-top: 10px;">
+            ⚠️ Excepción: Si el producto llegó defectuoso, se reembolsa TODO incluido el envío.
+        </p>
+    </div>
+</details>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #dc3545;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Qué hago si recibo un producto defectuoso o dañado?</summary>
+    <div style="margin-top: 15px;">
+        <p><strong>Contacta inmediatamente (en las primeras 48 horas):</strong></p>
+        <ol>
+            <li>Email: <strong>defectos@herramientasyaccesorios.store</strong></li>
+            <li>Adjunta fotos del producto y embalaje</li>
+            <li>Indica el problema específico</li>
+        </ol>
+        <p><strong>Resolución:</strong></p>
+        <ul>
+            <li>✅ Reemplazo gratuito inmediato</li>
+            <li>✅ O reembolso completo (producto + envío)</li>
+            <li>✅ NO necesitas devolver el producto defectuoso</li>
+        </ul>
+    </div>
+</details>
+
+<h2 id="productos">🛠️ Productos</h2>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #17a2b8;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Los productos son originales?</summary>
+    <div style="margin-top: 15px;">
+        <p><strong>100% originales y nuevos.</strong></p>
+        <ul>
+            <li>✅ Todos los productos son <strong>originales</strong> de fabricante</li>
+            <li>✅ Completamente <strong>nuevos</strong> (nunca usados ni reacondicionados)</li>
+            <li>✅ Con <strong>garantía oficial</strong> del fabricante</li>
+            <li>✅ Marcas reconocidas: Bosch, Makita, DeWalt, Stanley, etc.</li>
+        </ul>
+        <p style="background: #d4edda; padding: 15px; border-radius: 8px; margin-top: 15px;">
+            ✅ <strong>Somos distribuidores autorizados</strong> de las principales marcas de herramientas.
+        </p>
+    </div>
+</details>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #17a2b8;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Cómo sé qué herramienta necesito?</summary>
+    <div style="margin-top: 15px;">
+        <p><strong>Estamos aquí para ayudarte:</strong></p>
+        <ul>
+            <li>📧 <strong>Email:</strong> asesoria@herramientasyaccesorios.store</li>
+            <li>📞 <strong>Teléfono:</strong> [Tu teléfono]</li>
+            <li>📚 <strong>Blog:</strong> Guías y comparativas detalladas</li>
+        </ul>
+        <p><strong>Cuéntanos:</strong></p>
+        <ul>
+            <li>¿Qué proyecto o trabajo vas a realizar?</li>
+            <li>¿Uso ocasional o profesional?</li>
+            <li>Tu presupuesto aproximado</li>
+        </ul>
+        <p>Te recomendaremos la herramienta perfecta para ti.</p>
+    </div>
+</details>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #17a2b8;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Tienen stock disponible?</summary>
+    <div style="margin-top: 15px;">
+        <p>La disponibilidad mostrada en el sitio es en tiempo real:</p>
+        <ul>
+            <li>✅ <strong>"En Stock"</strong> = Disponible para envío inmediato</li>
+            <li>⏳ <strong>"Bajo Stock"</strong> = Pocas unidades, compra pronto</li>
+            <li>📅 <strong>"Próximamente"</strong> = Esperamos stock en X días</li>
+            <li>❌ <strong>"Agotado"</strong> = Sin stock actualmente</li>
+        </ul>
+        <p>Si un producto se agota después de tu pedido, te contactaremos para ofrecerte alternativas o reembolso.</p>
+    </div>
+</details>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #17a2b8;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Puedo ver los productos en persona antes de comprar?</summary>
+    <div style="margin-top: 15px;">
+        <p>Somos una <strong>tienda 100% online</strong>, no tenemos showroom físico.</p>
+        <p><strong>Pero no te preocupes:</strong></p>
+        <ul>
+            <li>📸 Fotos detalladas y descripción completa de cada producto</li>
+            <li>📹 Videos demostrativos (cuando disponibles)</li>
+            <li>⭐ Valoraciones reales de clientes</li>
+            <li>🔄 30 días de devolución sin compromiso</li>
+            <li>💬 Asesoramiento personalizado por expertos</li>
+        </ul>
+    </div>
+</details>
+
+<h2 id="cuenta">👤 Mi Cuenta</h2>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #6f42c1;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">He olvidado mi contraseña, ¿qué hago?</summary>
+    <div style="margin-top: 15px;">
+        <p><strong>Recuperar contraseña es fácil:</strong></p>
+        <ol>
+            <li>Ve a la página de inicio de sesión</li>
+            <li>Click en "¿Olvidaste tu contraseña?"</li>
+            <li>Introduce tu email</li>
+            <li>Recibirás un email con enlace para resetearla</li>
+            <li>Click en el enlace y crea una nueva contraseña</li>
+        </ol>
+        <p style="background: #fff3cd; padding: 10px; border-radius: 4px; margin-top: 10px;">
+            ⚠️ El enlace caduca en 24 horas. Si no recibes el email, revisa spam.
+        </p>
+    </div>
+</details>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #6f42c1;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Cómo cambio mis datos personales?</summary>
+    <div style="margin-top: 15px;">
+        <ol>
+            <li>Inicia sesión en tu cuenta</li>
+            <li>Ve a "Mi Perfil" o "Configuración"</li>
+            <li>Edita los datos que necesites cambiar</li>
+            <li>Guarda los cambios</li>
+        </ol>
+        <p><strong>Puedes modificar:</strong></p>
+        <ul>
+            <li>Nombre y apellidos</li>
+            <li>Email</li>
+            <li>Contraseña</li>
+            <li>Direcciones de envío</li>
+            <li>Preferencias de comunicación</li>
+        </ul>
+    </div>
+</details>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #6f42c1;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Puedo eliminar mi cuenta?</summary>
+    <div style="margin-top: 15px;">
+        <p><strong>Sí, respetamos tu derecho a eliminar tu cuenta.</strong></p>
+        <p>Para eliminar tu cuenta:</p>
+        <ol>
+            <li>Email a: <strong>privacidad@herramientasyaccesorios.store</strong></li>
+            <li>Asunto: "Solicitud de eliminación de cuenta"</li>
+            <li>Confirma tu identidad (email + DNI)</li>
+        </ol>
+        <p><strong>Qué se eliminará:</strong></p>
+        <ul>
+            <li>Datos personales</li>
+            <li>Historial de navegación</li>
+            <li>Preferencias guardadas</li>
+        </ul>
+        <p><strong>Qué se conservará (obligación legal):</strong></p>
+        <ul>
+            <li>Historial de pedidos (6 años - obligación fiscal)</li>
+            <li>Facturas</li>
+        </ul>
+    </div>
+</details>
+
+<h2 id="garantias">🛡️ Garantías</h2>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #28a745;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Qué garantía tienen los productos?</summary>
+    <div style="margin-top: 15px;">
+        <p><strong>Doble garantía:</strong></p>
+        <div style="background: #d4edda; padding: 15px; border-radius: 8px; margin: 10px 0;">
+            <p><strong>1️⃣ Garantía Legal (2 años)</strong></p>
+            <p>Según legislación europea, todos los productos tienen <strong>2 años de garantía legal</strong> contra defectos de conformidad.</p>
+        </div>
+        <div style="background: #d1ecf1; padding: 15px; border-radius: 8px; margin: 10px 0;">
+            <p><strong>2️⃣ Garantía del Fabricante</strong></p>
+            <p>Además, cada producto incluye la <strong>garantía oficial del fabricante</strong> (varía según marca: 1-5 años).</p>
+        </div>
+    </div>
+</details>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #28a745;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Cómo hago válida la garantía?</summary>
+    <div style="margin-top: 15px;">
+        <p><strong>Para hacer válida la garantía:</strong></p>
+        <ol>
+            <li>Contacta con nosotros: <strong>garantias@herramientasyaccesorios.store</strong></li>
+            <li>Proporciona:
+                <ul>
+                    <li>Número de pedido</li>
+                    <li>Descripción del problema</li>
+                    <li>Fotos o video del defecto</li>
+                    <li>Copia de la factura</li>
+                </ul>
+            </li>
+            <li>Evaluaremos el caso</li>
+            <li>Te indicaremos los siguientes pasos:
+                <ul>
+                    <li>Reparación</li>
+                    <li>Sustitución</li>
+                    <li>O reembolso</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+</details>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #28a745;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Qué NO cubre la garantía?</summary>
+    <div style="margin-top: 15px;">
+        <p>La garantía <strong>NO cubre</strong>:</p>
+        <ul style="list-style: none; padding: 0;">
+            <li style="padding: 10px; background: #f8d7da; margin: 5px 0; border-radius: 4px;">
+                ❌ Desgaste normal por uso regular
+            </li>
+            <li style="padding: 10px; background: #f8d7da; margin: 5px 0; border-radius: 4px;">
+                ❌ Uso inadecuado o no conforme a instrucciones
+            </li>
+            <li style="padding: 10px; background: #f8d7da; margin: 5px 0; border-radius: 4px;">
+                ❌ Daños por accidente, caída o golpe
+            </li>
+            <li style="padding: 10px; background: #f8d7da; margin: 5px 0; border-radius: 4px;">
+                ❌ Modificaciones o reparaciones no autorizadas
+            </li>
+            <li style="padding: 10px; background: #f8d7da; margin: 5px 0; border-radius: 4px;">
+                ❌ Daños por agua o humedad (si no es resistente)
+            </li>
+            <li style="padding: 10px; background: #f8d7da; margin: 5px 0; border-radius: 4px;">
+                ❌ Piezas consumibles (brocas, discos, cuchillas)
+            </li>
+        </ul>
+    </div>
+</details>
+
+<h2 id="tecnicas">🔧 Preguntas Técnicas</h2>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #fd7e14;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Los taladros inalámbricos incluyen batería?</summary>
+    <div style="margin-top: 15px;">
+        <p><strong>Depende del modelo:</strong></p>
+        <ul>
+            <li>✅ <strong>"Con kit"</strong> = Incluye batería + cargador + maletín</li>
+            <li>❌ <strong>"Solo cuerpo"</strong> = Solo el taladro (necesitas comprar batería aparte)</li>
+        </ul>
+        <p>Siempre lo indicamos claramente en la descripción del producto.</p>
+        <p style="background: #d1ecf1; padding: 10px; border-radius: 4px; margin-top: 10px;">
+            💡 <strong>Tip:</strong> Si ya tienes herramientas de la misma marca, puedes comprar "solo cuerpo" y usar tus baterías existentes.
+        </p>
+    </div>
+</details>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #fd7e14;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Las herramientas vienen con instrucciones en español?</summary>
+    <div style="margin-top: 15px;">
+        <p><strong>Sí, siempre.</strong></p>
+        <ul>
+            <li>✅ Manual de usuario en español</li>
+            <li>✅ Certificados de garantía en español</li>
+            <li>✅ Especificaciones técnicas traducidas</li>
+        </ul>
+        <p>Además, muchos fabricantes incluyen también códigos QR para acceder a manuales digitales y videos tutoriales.</p>
+    </div>
+</details>
+
+<details style="margin: 15px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #fd7e14;">
+    <summary style="cursor: pointer; font-weight: bold; font-size: 1.1em;">¿Necesito algo más aparte de la herramienta?</summary>
+    <div style="margin-top: 15px;">
+        <p>Depende del tipo de herramienta:</p>
+        
+        <div style="background: white; padding: 15px; border-radius: 8px; margin: 10px 0;">
+            <p><strong>🔩 Taladros:</strong></p>
+            <ul>
+                <li>Juego de brocas (madera, metal, hormigón)</li>
+                <li>Puntas de atornillar</li>
+            </ul>
+        </div>
+        
+        <div style="background: white; padding: 15px; border-radius: 8px; margin: 10px 0;">
+            <p><strong>🪚 Sierras:</strong></p>
+            <ul>
+                <li>Hojas de sierra específicas para el material</li>
+                <li>Guías de corte (opcional)</li>
+            </ul>
+        </div>
+        
+        <div style="background: white; padding: 15px; border-radius: 8px; margin: 10px 0;">
+            <p><strong>🔨 En general:</strong></p>
+            <ul>
+                <li>Gafas de protección</li>
+                <li>Guantes de trabajo</li>
+                <li>Mascarilla (para trabajos con polvo)</li>
+            </ul>
+        </div>
+        
+        <p style="background: #d4edda; padding: 10px; border-radius: 4px; margin-top: 15px;">
+            💡 Ofrecemos <strong>kits completos</strong> que incluyen la herramienta + accesorios + equipos de protección a precio especial.
+        </p>
+    </div>
+</details>
+
+<h2>📞 ¿Aún tienes dudas?</h2>
+
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; border-radius: 12px; margin: 40px 0; text-align: center;">
+    <h3 style="color: white; margin-top: 0; font-size: 2em;">Estamos Aquí Para Ayudarte</h3>
+    <p style="font-size: 1.2em; margin: 20px 0;">Nuestro equipo de expertos está disponible para responder todas tus preguntas</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin: 30px 0; text-align: left;">
+        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 8px;">
+            <p style="font-size: 1.3em; margin: 5px 0;">📧 Email</p>
+            <p style="margin: 5px 0;">contacto@herramientasyaccesorios.store</p>
+        </div>
+        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 8px;">
+            <p style="font-size: 1.3em; margin: 5px 0;">⏰ Horario</p>
+            <p style="margin: 5px 0;">Lunes a Viernes<br>9:00 - 18:00</p>
+        </div>
+    </div>
+    
+    <a href="/contacto/" style="display: inline-block; margin-top: 20px; padding: 15px 40px; background: white; color: #667eea; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 1.1em;">
+        Contáctanos Ahora
+    </a>
+</div>
+
+<p style="text-align: center; font-size: 0.9em; color: #666; margin-top: 40px;">
+    <strong>Última actualización:</strong> Enero 2025<br>
+    Esta página se actualiza regularmente con nuevas preguntas de nuestros clientes.
+</p>
+```
+
+---
+
+## 🎉 ¡TODAS LAS 7 PÁGINAS COMPLETADAS!
+
+Ahora tienes todo el contenido listo para copiar y pegar en WordPress.
+
+**Resumen de páginas:**
+1. ✅ Sobre Nosotros
+2. ✅ Contacto
+3. ✅ Política de Envíos
+4. ✅ Política de Devoluciones
+5. ✅ Términos y Condiciones
+6. ✅ Política de Privacidad
+7. ✅ Preguntas Frecuentes (FAQ)
+
+**Próximo paso:** Ve a WordPress y copia/pega cada página. ¡Te llevará unos 15 minutos crear las 7 páginas!
