@@ -7031,6 +7031,87 @@ async def agent_status():
             "error": str(e)
         }
 
+@api_router.get("/agent/memory/{user_id}")
+async def get_agent_memory(user_id: str, limit: int = 20):
+    """Obtiene el historial de memoria del agente para un usuario"""
+    try:
+        memories = await db["agent_memory"].find(
+            {"user_id": user_id}
+        ).sort("timestamp", -1).limit(limit).to_list(limit)
+        
+        # Formatear memorias (sin embeddings para ahorrar bandwidth)
+        formatted_memories = []
+        for mem in memories:
+            formatted_memories.append({
+                "command": mem.get("command"),
+                "response": mem.get("response"),
+                "plan": mem.get("plan"),
+                "timestamp": mem.get("timestamp")
+            })
+        
+        return {
+            "success": True,
+            "user_id": user_id,
+            "total": len(formatted_memories),
+            "memories": formatted_memories
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/agent/conversations/{user_id}")
+async def get_agent_conversations(user_id: str, limit: int = 50):
+    """Obtiene el historial completo de conversaciones de un usuario"""
+    try:
+        conversations = await db["conversations"].find(
+            {"user_id": user_id}
+        ).sort("timestamp", -1).limit(limit).to_list(limit)
+        
+        return {
+            "success": True,
+            "user_id": user_id,
+            "total": len(conversations),
+            "conversations": conversations
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/agent/search-memory")
+async def search_agent_memory(request: AgentExecuteRequest):
+    """Busca en la memoria del agente usando similaridad semántica"""
+    try:
+        memories = await agent.search_relevant_memories(
+            request.user_id,
+            request.command,
+            limit=10
+        )
+        
+        return {
+            "success": True,
+            "query": request.command,
+            "resultados": len(memories),
+            "memories": memories
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.delete("/agent/memory/{user_id}")
+async def delete_agent_memory(user_id: str):
+    """Elimina toda la memoria de un usuario"""
+    try:
+        # Eliminar conversaciones
+        result_conv = await db["conversations"].delete_many({"user_id": user_id})
+        
+        # Eliminar memorias
+        result_mem = await db["agent_memory"].delete_many({"user_id": user_id})
+        
+        return {
+            "success": True,
+            "conversaciones_eliminadas": result_conv.deleted_count,
+            "memorias_eliminadas": result_mem.deleted_count
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 
 @api_router.get("/download/wordpress-plugin")
