@@ -23,8 +23,9 @@ PERPLEXITY_KEY = os.getenv("PERPLEXITY_API_KEY")
 OPENAI_KEY = os.getenv("OPENAI_API_KEY")
 ABACUS_KEY = os.getenv("ABACUS_API_KEY")
 
-# Configurar Fal Client
-os.environ["FAL_KEY"] = FAL_KEY
+# Configurar Fal Client solo si la key existe
+if FAL_KEY:
+    os.environ["FAL_KEY"] = FAL_KEY
 
 # Cliente OpenAI
 openai_client = AsyncOpenAI(api_key=OPENAI_KEY)
