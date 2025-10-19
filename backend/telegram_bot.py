@@ -213,63 +213,39 @@ def process_command(product_id):
     """Procesar comando /procesar"""
     logger.info(f"Procesando producto {product_id}")
     
-    # Notificar inicio
-    send_telegram_message(
-        f"⏳ *Procesando producto {product_id}...*\n\n"
-        f"Esto puede tardar 2-3 minutos.\n\n"
-        f"🤖 Generando:\n"
-        f"✓ Descripción SEO\n"
-        f"✓ Precio óptimo\n"
-        f"✓ Imágenes AI\n"
-        f"✓ Análisis de mercado"
-    )
+    # Usar el agente inteligente
+    command = f"Procesa el producto {product_id} con AI: genera descripción SEO, calcula precio óptimo, crea 2 imágenes profesionales y actualiza todo en WooCommerce"
     
-    # Obtener producto
-    product = get_woocommerce_product(product_id)
-    if not product:
-        send_telegram_message(f"❌ Error: Producto {product_id} no encontrado")
-        return
-    
-    product_name = product.get('name', 'Sin nombre')
-    category = product.get('categories', [{}])[0].get('name', 'general')
-    base_price = float(product.get('regular_price') or 40.0)
-    
-    logger.info(f"Producto: {product_name}, Categoría: {category}, Precio: {base_price}")
-    
-    # Procesar con AI
-    ai_result = process_with_ai(product_name, category, base_price)
-    
-    if not ai_result or not ai_result.get('success'):
-        send_telegram_message(
-            f"❌ *Error al procesar producto {product_id}*\n\n"
-            f"El backend AI no pudo procesar el producto.\n"
-            f"Intenta nuevamente."
+    try:
+        response = requests.post(
+            f"{BACKEND_URL}/agent/execute",
+            json={
+                "command": command,
+                "user_id": f"telegram_{TELEGRAM_CHAT_ID}"
+            },
+            timeout=180
         )
-        return
+        
+        if response.status_code == 200:
+            result = response.json()
+            
+            if result.get("success"):
+                # Enviar resultado
+                send_telegram_message(
+                    f"✅ *{result.get('mensaje', 'Completado')}*\n\n"
+                    f"Plan ejecutado: {result.get('plan', 'N/A')}\n\n"
+                    f"🔗 Ver producto:\n"
+                    f"https://herramientasyaccesorios.store/wp-admin/post.php?post={product_id}&action=edit"
+                )
+                logger.info(f"✅ Producto {product_id} procesado por el agente")
+            else:
+                send_telegram_message(f"❌ Error: {result.get('error', 'Error desconocido')}")
+        else:
+            send_telegram_message(f"❌ Error de conexión con el agente")
     
-    # Actualizar WooCommerce
-    updated = update_woocommerce_product(product_id, ai_result)
-    
-    # Subir imágenes
-    images_count = upload_images_to_wordpress(product_id, ai_result)
-    
-    # Resultado
-    optimal_price = ai_result.get('pricing', {}).get('optimal_price', 'N/A')
-    
-    send_telegram_message(
-        f"✅ *¡PRODUCTO PROCESADO CON ÉXITO!*\n\n"
-        f"🆔 ID: {product_id}\n"
-        f"📝 {product_name[:50]}...\n\n"
-        f"✨ *Actualizaciones:*\n"
-        f"✓ Descripción SEO generada\n"
-        f"✓ Precio óptimo: *€{optimal_price}*\n"
-        f"✓ {images_count} imágenes AI generadas\n"
-        f"✓ Meta tags actualizados\n\n"
-        f"🔗 [Ver producto en WordPress](https://herramientasyaccesorios.store/wp-admin/post.php?post={product_id}&action=edit)\n\n"
-        f"_Producto actualizado automáticamente_ 🚀"
-    )
-    
-    logger.info(f"✅ Producto {product_id} procesado completamente")
+    except Exception as e:
+        logger.error(f"Error usando agente: {e}")
+        send_telegram_message(f"❌ Error: {str(e)}")
 
 
 def main():
