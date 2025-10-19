@@ -124,6 +124,15 @@ class AI_Dropshipping_Manager {
         
         add_submenu_page(
             'ai-dropshipping',
+            __('Prompts AI', 'ai-dropshipping'),
+            __('🤖 Prompts AI', 'ai-dropshipping'),
+            'manage_options',
+            'ai-dropshipping-prompts',
+            array($this, 'render_prompts_page')
+        );
+        
+        add_submenu_page(
+            'ai-dropshipping',
             __('Configuración', 'ai-dropshipping'),
             __('Configuración', 'ai-dropshipping'),
             'manage_options',
