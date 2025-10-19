@@ -23,6 +23,12 @@ OPENAI_KEY = os.getenv("OPENAI_API_KEY")
 FAL_KEY = os.getenv("FAL_API_KEY")
 ABACUS_KEY = os.getenv("ABACUS_API_KEY")
 
+# Nuevas APIs
+APIFY_TOKEN = os.getenv("APIFY_TOKEN")
+SERP_API_KEY = os.getenv("SERP_API_KEY")
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+
 # MongoDB para memoria
 MONGO_URL = os.getenv("MONGO_URL")
 mongo_client = AsyncIOMotorClient(MONGO_URL)
