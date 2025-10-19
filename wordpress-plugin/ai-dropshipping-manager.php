@@ -3,7 +3,7 @@
  * Plugin Name: AI Dropshipping Manager
  * Plugin URI: https://herramientasyaccesorios.store
  * Description: Gestión automática de productos dropshipping con IA - Calcula precios óptimos y genera contenido profesional
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: Agente Monetización
  * Author URI: https://emergentagent.com
  * License: GPL v2 or later
