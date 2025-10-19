@@ -187,7 +187,7 @@ class AIAgent:
                 memory_context += f"   Respuesta: {mem['response'][:200]}...\n"
                 memory_context += f"   Similaridad: {mem['similarity']:.2f}\n\n"
         
-        # Definir las herramientas disponibles (ahora con 17 herramientas)
+        # Definir las herramientas disponibles (ahora con 22 herramientas)
         tools_description = """
 Tienes acceso a estas HERRAMIENTAS:
 
@@ -206,18 +206,22 @@ Tienes acceso a estas HERRAMIENTAS:
 10. **analizar_competencia(producto, categoria)** - Análisis de competencia con Perplexity
 11. **obtener_estadisticas(tipo)** - Estadísticas del sitio (ventas, productos, visitas)
 12. **analizar_ventas(periodo, filtros)** - Reportes detallados de ventas
+13. **buscar_google(query)** - Búsqueda en Google con SerpAPI
+14. **scraping_web(url, selector)** - Extrae datos de webs con Apify
 
 **MARKETING:**
-13. **crear_campana(tipo, producto_id, presupuesto)** - Crea campaña publicitaria
-14. **crear_descuento(tipo, valor, productos)** - Crea cupones y promociones
-15. **generar_contenido(tipo, tema)** - Crea blogs, emails, posts sociales
+15. **crear_campana(tipo, producto_id, presupuesto)** - Crea campaña publicitaria
+16. **crear_descuento(tipo, valor, productos)** - Crea cupones y promociones
+17. **generar_contenido(tipo, tema)** - Crea blogs, emails, posts sociales
+18. **analizar_keywords(tema)** - Análisis SEO de keywords con SerpAPI
 
 **CREATIVIDAD:**
-16. **generar_imagenes(descripcion, cantidad)** - Genera imágenes con Fal AI
+19. **generar_imagenes(descripcion, cantidad)** - Genera imágenes con Fal AI
 
 **INTEGRACIONES:**
-17. **sincronizar_wordpress(accion, datos)** - Sincronización con WordPress
-18. **optimizar_seo(producto_id)** - Optimiza SEO del producto
+20. **sincronizar_wordpress(accion, datos)** - Sincronización con WordPress
+21. **optimizar_seo(producto_id)** - Optimiza SEO del producto
+22. **monitorear_competencia(productos, frecuencia)** - Monitoreo automático de precios
 
 INSTRUCCIONES:
 - Analiza el comando del usuario
