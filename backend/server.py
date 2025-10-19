@@ -6066,6 +6066,235 @@ async def monitoring_dashboard():
     }
 
 # =========================
+# DROPSHIPPING & AI CONTENT GENERATION ENDPOINTS
+# =========================
+
+from integrations import (
+    get_fal_client,
+    get_woo_client,
+    DropshippingPriceCalculator,
+    create_dropshipping_system
+)
+
+# Initialize dropshipping system
+dropshipping_system = None
+
+def get_dropshipping_system():
+    """Get or create dropshipping system"""
+    global dropshipping_system
+    if dropshipping_system is None:
+        dropshipping_system = create_dropshipping_system(
+            woo_client=get_woo_client(),
+            fal_client=get_fal_client(),
+            price_calculator=DropshippingPriceCalculator()
+        )
+    return dropshipping_system
+
+
+# FAL AI Endpoints
+@api_router.post("/ai/generate-image")
+async def generate_product_image(
+    prompt: str,
+    width: int = 1024,
+    height: int = 1024
+):
+    """Generate product image with FAL AI"""
+    try:
+        fal = get_fal_client()
+        result = await fal.text_to_image(prompt, width, height)
+        
+        return {
+            "success": True,
+            "request_id": result.get('request_id'),
+            "message": "Image generation started"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/ai/generate-video")
+async def generate_product_video(
+    prompt: str,
+    duration: int = 5,
+    resolution: str = "720p"
+):
+    """Generate product video with FAL AI"""
+    try:
+        fal = get_fal_client()
+        result = await fal.text_to_video(prompt, duration, resolution)
+        
+        return {
+            "success": True,
+            "request_id": result.get('request_id'),
+            "message": "Video generation started"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/ai/status/{request_id}")
+async def check_generation_status(request_id: str):
+    """Check FAL AI generation status"""
+    try:
+        fal = get_fal_client()
+        status = await fal.get_status(request_id)
+        return status
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Pricing Endpoints
+@api_router.post("/dropshipping/calculate-price")
+async def calculate_selling_price(
+    supplier_price: float,
+    currency: str = "EUR"
+):
+    """Calculate selling price with profit margin"""
+    try:
+        calculator = DropshippingPriceCalculator()
+        pricing = calculator.calculate_selling_price(supplier_price, currency)
+        return pricing
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@api_router.get("/dropshipping/margin-rules")
+async def get_margin_rules():
+    """Get profit margin rules"""
+    calculator = DropshippingPriceCalculator()
+    return {
+        "margin_rules": calculator.get_margin_info(),
+        "description": "Profit margins by price range"
+    }
+
+
+# WooCommerce Product Management
+@api_router.get("/woocommerce/products")
+async def get_woo_products(
+    per_page: int = 20,
+    page: int = 1,
+    search: str = None
+):
+    """Get products from WooCommerce store"""
+    try:
+        woo = get_woo_client()
+        products = woo.get_products(per_page, page, search)
+        return {"products": products}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/woocommerce/products/{product_id}")
+async def get_woo_product(product_id: int):
+    """Get single product from WooCommerce"""
+    try:
+        woo = get_woo_client()
+        product = woo.get_product(product_id)
+        return product
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@api_router.put("/woocommerce/products/{product_id}/price")
+async def update_product_price(
+    product_id: int,
+    regular_price: float,
+    sale_price: float = None
+):
+    """Update product price"""
+    try:
+        woo = get_woo_client()
+        result = woo.update_product_price(product_id, regular_price, sale_price)
+        return {"success": True, "product": result}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/woocommerce/stats")
+async def get_store_stats():
+    """Get store sales statistics"""
+    try:
+        woo = get_woo_client()
+        stats = woo.get_sales_stats(days=30)
+        return stats
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Automated Dropshipping System
+@api_router.post("/dropshipping/process-product/{product_id}")
+async def process_dropshipping_product(
+    product_id: int,
+    supplier_price: float,
+    generate_content: bool = False
+):
+    """Process new dropshipping product"""
+    try:
+        system = get_dropshipping_system()
+        result = await system.process_new_product(
+            product_id,
+            supplier_price,
+            generate_content
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/dropshipping/process-all")
+async def process_all_products(generate_content: bool = False):
+    """Process all products in store"""
+    try:
+        system = get_dropshipping_system()
+        result = await system.process_all_products(generate_content)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/dropshipping/generate-content/{product_id}")
+async def generate_product_content(product_id: int):
+    """Generate AI images and videos for product"""
+    try:
+        woo = get_woo_client()
+        product = woo.get_product(product_id)
+        
+        system = get_dropshipping_system()
+        result = await system.generate_product_content(
+            product_id,
+            product.get('name', ''),
+            product.get('description', '')
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/dropshipping/social-media/{product_id}")
+async def generate_social_media_content(
+    product_id: int,
+    platforms: List[str] = None
+):
+    """Generate social media content for product"""
+    try:
+        system = get_dropshipping_system()
+        result = await system.generate_social_media_content(product_id, platforms)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.get("/dropshipping/stats")
+async def get_dropshipping_stats():
+    """Get dropshipping processing statistics"""
+    try:
+        system = get_dropshipping_system()
+        stats = system.get_processing_stats()
+        return stats
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# =========================
 # ROOT ROUTE
 # =========================
 
