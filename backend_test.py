@@ -148,53 +148,58 @@ class AIAgentTester:
             self.log_test("Agent Execute Simple", False, f"Exception: {str(e)}")
             return False
 
-    def test_product_checkout(self):
-        """Test POST /api/payments/checkout/session for product"""
-        print("🔍 Testing Product Checkout...")
-        
-        if not self.products:
-            self.log_test("Product Checkout", False, "No products available for testing")
-            return False
-            
+    def test_agent_memory_get(self):
+        """Test GET /api/agent/memory/{user_id} - Verificar memoria guardada"""
+        print("🔍 Testing Agent Memory Retrieval...")
         try:
-            product = self.products[0]  # Use first product
-            
-            checkout_data = {
-                "payment_type": "product",
-                "product_id": product["id"],
-                "user_email": TEST_EMAIL,
-                "origin_url": ORIGIN_URL
-            }
-            
-            response = self.session.post(
-                f"{BASE_URL}/payments/checkout/session",
-                json=checkout_data,
-                headers={"Content-Type": "application/json"}
-            )
+            response = self.session.get(f"{BASE_URL}/agent/memory/{TEST_USER_ID}?limit=5")
             
             if response.status_code == 200:
-                result = response.json()
+                memory_data = response.json()
                 
-                # Verify response structure
-                if "url" not in result or "session_id" not in result:
-                    self.log_test("Product Checkout Response", False, "Missing url or session_id in response", result)
+                # Verificar campos requeridos
+                required_fields = ["success", "user_id", "total", "memories"]
+                missing_fields = [field for field in required_fields if field not in memory_data]
+                if missing_fields:
+                    self.log_test("Agent Memory Structure", False, f"Missing fields: {missing_fields}", memory_data)
                     return False
                 
-                # Verify URL contains Stripe
-                if "stripe" not in result["url"].lower():
-                    self.log_test("Product Checkout URL", False, "URL doesn't appear to be a Stripe URL", result["url"])
+                # Verificar success
+                if not memory_data.get("success"):
+                    self.log_test("Agent Memory Success", False, "success should be true", memory_data)
                     return False
                 
-                self.log_test("Product Checkout", True, 
-                            f"Checkout session created for product '{product['name']}' (${product['price']})", 
-                            {"session_id": result["session_id"], "has_stripe_url": True})
+                # Verificar user_id
+                if memory_data.get("user_id") != TEST_USER_ID:
+                    self.log_test("Agent Memory User ID", False, f"Expected user_id {TEST_USER_ID}, got {memory_data.get('user_id')}", memory_data)
+                    return False
+                
+                # Verificar memories es array
+                if not isinstance(memory_data.get("memories"), list):
+                    self.log_test("Agent Memory Array", False, "memories should be an array", type(memory_data.get("memories")))
+                    return False
+                
+                # Si hay memorias, verificar estructura
+                memories = memory_data.get("memories", [])
+                if memories:
+                    memory = memories[0]
+                    memory_fields = ["command", "response", "timestamp"]
+                    missing_memory_fields = [field for field in memory_fields if field not in memory]
+                    if missing_memory_fields:
+                        self.log_test("Agent Memory Item Structure", False,
+                                    f"Missing memory fields: {missing_memory_fields}", memory)
+                        return False
+                
+                self.log_test("Agent Memory Get", True, 
+                            f"Retrieved {len(memories)} memories for user {TEST_USER_ID}", 
+                            {"total": memory_data.get("total"), "memories_count": len(memories)})
                 return True
             else:
-                self.log_test("Product Checkout", False, f"HTTP {response.status_code}", response.text)
+                self.log_test("Agent Memory Get", False, f"HTTP {response.status_code}", response.text)
                 return False
                 
         except Exception as e:
-            self.log_test("Product Checkout", False, f"Exception: {str(e)}")
+            self.log_test("Agent Memory Get", False, f"Exception: {str(e)}")
             return False
 
     def test_subscription_checkout(self):
