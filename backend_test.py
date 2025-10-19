@@ -254,46 +254,72 @@ class AIAgentTester:
             self.log_test("Agent Chat", False, f"Exception: {str(e)}")
             return False
 
-    def test_revenue_analytics(self):
-        """Test GET /api/analytics/revenue"""
-        print("🔍 Testing Revenue Analytics...")
+    def test_agent_search_memory(self):
+        """Test POST /api/agent/search-memory - Búsqueda semántica"""
+        print("🔍 Testing Agent Search Memory...")
         try:
-            response = self.session.get(f"{BASE_URL}/analytics/revenue")
+            search_data = {
+                "command": "estadísticas",
+                "user_id": TEST_USER_ID
+            }
+            
+            response = self.session.post(
+                f"{BASE_URL}/agent/search-memory",
+                json=search_data,
+                headers={"Content-Type": "application/json"}
+            )
             
             if response.status_code == 200:
-                analytics = response.json()
+                result = response.json()
                 
-                # Verify required fields
-                required_fields = [
-                    "total_revenue", "product_revenue", "subscription_revenue", 
-                    "total_transactions", "product_sales", "subscription_sales",
-                    "active_subscriptions", "mrr", "discount_code_tracking", "currency"
-                ]
-                
-                missing_fields = [field for field in required_fields if field not in analytics]
+                # Verificar campos requeridos
+                required_fields = ["success", "query", "resultados", "memories"]
+                missing_fields = [field for field in required_fields if field not in result]
                 if missing_fields:
-                    self.log_test("Revenue Analytics Structure", False, 
-                                f"Missing fields: {missing_fields}", analytics)
+                    self.log_test("Agent Search Memory Structure", False, f"Missing fields: {missing_fields}", result)
                     return False
                 
-                # Verify data types
-                numeric_fields = ["total_revenue", "product_revenue", "subscription_revenue", "mrr"]
-                for field in numeric_fields:
-                    if not isinstance(analytics[field], (int, float)):
-                        self.log_test("Revenue Analytics Data Types", False,
-                                    f"Field {field} should be numeric, got {type(analytics[field])}", analytics[field])
+                # Verificar success
+                if not result.get("success"):
+                    self.log_test("Agent Search Memory Success", False, "success should be true", result)
+                    return False
+                
+                # Verificar query
+                if result.get("query") != "estadísticas":
+                    self.log_test("Agent Search Memory Query", False, f"Expected query 'estadísticas', got '{result.get('query')}'", result)
+                    return False
+                
+                # Verificar memories es array
+                if not isinstance(result.get("memories"), list):
+                    self.log_test("Agent Search Memory Array", False, "memories should be an array", type(result.get("memories")))
+                    return False
+                
+                # Verificar resultados count
+                memories = result.get("memories", [])
+                if result.get("resultados") != len(memories):
+                    self.log_test("Agent Search Memory Count", False, f"resultados count {result.get('resultados')} doesn't match memories length {len(memories)}", result)
+                    return False
+                
+                # Si hay memorias, verificar estructura
+                if memories:
+                    memory = memories[0]
+                    memory_fields = ["command", "response", "timestamp", "similarity"]
+                    missing_memory_fields = [field for field in memory_fields if field not in memory]
+                    if missing_memory_fields:
+                        self.log_test("Agent Search Memory Item Structure", False,
+                                    f"Missing memory fields: {missing_memory_fields}", memory)
                         return False
                 
-                self.log_test("Revenue Analytics", True, 
-                            f"Total Revenue: ${analytics['total_revenue']}, MRR: ${analytics['mrr']}", 
-                            {k: v for k, v in analytics.items() if k != "discount_code_tracking"})
+                self.log_test("Agent Search Memory", True, 
+                            f"Search returned {len(memories)} similar memories for query 'estadísticas'", 
+                            {"query": result.get("query"), "results_count": len(memories)})
                 return True
             else:
-                self.log_test("Revenue Analytics", False, f"HTTP {response.status_code}", response.text)
+                self.log_test("Agent Search Memory", False, f"HTTP {response.status_code}", response.text)
                 return False
                 
         except Exception as e:
-            self.log_test("Revenue Analytics", False, f"Exception: {str(e)}")
+            self.log_test("Agent Search Memory", False, f"Exception: {str(e)}")
             return False
 
     def test_campaign_roi(self):
