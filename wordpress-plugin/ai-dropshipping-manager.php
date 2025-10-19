@@ -192,19 +192,39 @@ class AI_Dropshipping_Manager {
             </p>
             
             <div class="ai-dropship-actions" style="margin-top: 15px;">
-                <button type="button" class="button button-primary button-large ai-process-product" data-product-id="<?php echo esc_attr($post->ID); ?>" style="width: 100%; margin-bottom: 8px;">
-                    <span class="dashicons dashicons-update"></span>
-                    <?php _e('Calcular Precio Óptimo', 'ai-dropshipping'); ?>
+                <button type="button" class="button button-primary button-large ai-complete-process" data-product-id="<?php echo esc_attr($post->ID); ?>" style="width: 100%; margin-bottom: 8px;">
+                    <span class="dashicons dashicons-superhero"></span>
+                    <?php _e('🚀 PROCESAMIENTO COMPLETO AI', 'ai-dropshipping'); ?>
                 </button>
                 
-                <button type="button" class="button button-secondary button-large ai-generate-content" data-product-id="<?php echo esc_attr($post->ID); ?>" style="width: 100%;">
+                <button type="button" class="button button-secondary ai-generate-description" data-product-id="<?php echo esc_attr($post->ID); ?>" style="width: 100%; margin-bottom: 8px;">
+                    <span class="dashicons dashicons-edit"></span>
+                    <?php _e('📝 Descripción SEO', 'ai-dropshipping'); ?>
+                </button>
+                
+                <button type="button" class="button button-secondary ai-generate-images-btn" data-product-id="<?php echo esc_attr($post->ID); ?>" style="width: 100%; margin-bottom: 8px;">
                     <span class="dashicons dashicons-format-image"></span>
-                    <?php _e('Generar Contenido IA', 'ai-dropshipping'); ?>
+                    <?php _e('🖼️ Generar Imágenes', 'ai-dropshipping'); ?>
+                </button>
+                
+                <button type="button" class="button button-secondary ai-optimal-pricing" data-product-id="<?php echo esc_attr($post->ID); ?>" style="width: 100%; margin-bottom: 8px;">
+                    <span class="dashicons dashicons-chart-line"></span>
+                    <?php _e('💰 Precio Óptimo', 'ai-dropshipping'); ?>
+                </button>
+                
+                <button type="button" class="button button-secondary ai-market-analysis" data-product-id="<?php echo esc_attr($post->ID); ?>" style="width: 100%; margin-bottom: 8px;">
+                    <span class="dashicons dashicons-analytics"></span>
+                    <?php _e('📊 Análisis de Mercado', 'ai-dropshipping'); ?>
+                </button>
+                
+                <button type="button" class="button button-secondary ai-social-content" data-product-id="<?php echo esc_attr($post->ID); ?>" style="width: 100%; margin-bottom: 8px;">
+                    <span class="dashicons dashicons-share"></span>
+                    <?php _e('📱 Contenido Social', 'ai-dropshipping'); ?>
                 </button>
             </div>
             
             <p style="margin-top: 12px; font-size: 11px; color: #666;">
-                <?php _e('💡 El sistema calcula automáticamente el precio de venta con margen del 50% y genera imágenes profesionales con IA.', 'ai-dropshipping'); ?>
+                <?php _e('🤖 Procesamiento completo incluye: descripción SEO, imágenes AI, precio óptimo, análisis de mercado y contenido social.', 'ai-dropshipping'); ?>
             </p>
         </div>
         <style>
