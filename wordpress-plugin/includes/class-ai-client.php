@@ -89,12 +89,20 @@ class AI_SuperPowered_Client {
      * Crea imágenes profesionales con Fal AI o DALL-E
      */
     public function generate_images($product_name, $category, $style = 'professional product photo', $num_images = 1) {
-        return $this->request('POST', 'ai/product/images', array(
+        $custom_prompt = get_option('ai_dropship_prompt_images', '');
+        
+        $data = array(
             'product_name' => $product_name,
             'category' => $category,
             'style' => $style,
             'num_images' => $num_images
-        ));
+        );
+        
+        if (!empty($custom_prompt)) {
+            $data['custom_prompt'] = $custom_prompt;
+        }
+        
+        return $this->request('POST', 'ai/product/images', $data);
     }
     
     /**
@@ -102,10 +110,18 @@ class AI_SuperPowered_Client {
      * Investiga competencia y tendencias en tiempo real
      */
     public function analyze_market($product_name, $category) {
-        return $this->request('POST', 'ai/product/market-analysis', array(
+        $custom_prompt = get_option('ai_dropship_prompt_market', '');
+        
+        $data = array(
             'product_name' => $product_name,
             'category' => $category
-        ));
+        );
+        
+        if (!empty($custom_prompt)) {
+            $data['custom_prompt'] = $custom_prompt;
+        }
+        
+        return $this->request('POST', 'ai/product/market-analysis', $data);
     }
     
     /**
