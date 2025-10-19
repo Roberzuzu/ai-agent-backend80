@@ -6300,6 +6300,27 @@ async def get_dropshipping_stats():
         raise HTTPException(status_code=500, detail=str(e))
 
 # =========================
+# DOWNLOAD ENDPOINT
+# =========================
+
+@api_router.get("/download/sistema-completo")
+async def download_sistema_completo():
+    """Download complete system package"""
+    from fastapi.responses import FileResponse
+    import os
+    
+    file_path = "/tmp/sistema-dropshipping-ia.tar.gz"
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    return FileResponse(
+        path=file_path,
+        filename="sistema-dropshipping-ia.tar.gz",
+        media_type="application/gzip"
+    )
+
+# =========================
 # ROOT ROUTE
 # =========================
 
