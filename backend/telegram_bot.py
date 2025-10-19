@@ -287,12 +287,22 @@ def main():
                 elif text == '/ayuda' or text == '/start':
                     send_telegram_message(
                         "🤖 *Bot AI - Comandos disponibles*\n\n"
+                        "*Comandos básicos:*\n"
                         "• `/procesar [ID]` - Procesar producto con AI\n"
                         "• `/ayuda` - Ver esta ayuda\n\n"
-                        "*Ejemplo:*\n"
-                        "`/procesar 4146`\n\n"
-                        "_El bot procesará el producto automáticamente_"
+                        "*Comandos en lenguaje natural:*\n"
+                        "También puedes escribir en lenguaje natural:\n\n"
+                        "• 'Busca 10 herramientas eléctricas tendencia'\n"
+                        "• 'Analiza la competencia de sierras'\n"
+                        "• 'Crea una campaña para el producto 4146'\n"
+                        "• 'Muéstrame los productos sin precio'\n"
+                        "• 'Optimiza el SEO del producto 4124'\n\n"
+                        "*El bot entenderá y ejecutará tu solicitud* 🧠"
                     )
+                
+                # Comando en lenguaje natural (cualquier otro texto)
+                elif not text.startswith('/'):
+                    process_natural_command(text, chat_id)
             
             time.sleep(2)  # Esperar 2 segundos entre checks
             
