@@ -779,11 +779,12 @@ Formato: Análisis estructurado"""
                 productos = productos_response.json() if productos_response.status_code == 200 else []
                 ordenes = ordenes_response.json() if ordenes_response.status_code == 200 else []
                 
-                # Calcular estadísticas
+                # Calcular estadísticas de productos
                 total_productos = len(productos)
-                productos_sin_stock = sum(1 for p in productos if p.get("stock_quantity", 0) <= 0)
+                productos_sin_stock = sum(1 for p in productos if (p.get("stock_quantity") or 0) <= 0)
                 productos_en_oferta = sum(1 for p in productos if p.get("on_sale", False))
                 
+                # Calcular estadísticas de ventas
                 total_ventas = len([o for o in ordenes if o.get("status") == "completed"])
                 ingresos_totales = sum(float(o.get("total", 0)) for o in ordenes if o.get("status") == "completed")
                 
