@@ -375,6 +375,15 @@ Formato de respuesta:
                     parametros.get("filtros", {})
                 )
             
+            elif herramienta == "buscar_google":
+                return await self._buscar_google(parametros.get("query"))
+            
+            elif herramienta == "scraping_web":
+                return await self._scraping_web(
+                    parametros.get("url"),
+                    parametros.get("selector")
+                )
+            
             # MARKETING
             elif herramienta == "crear_campana":
                 return await self._crear_campana(
