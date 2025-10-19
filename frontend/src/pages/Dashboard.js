@@ -13,10 +13,36 @@ function Dashboard() {
 
   const loadAnalytics = async () => {
     try {
-      const response = await axios.get(`${API}/analytics/dashboard`);
-      setAnalytics(response.data);
+      // Load counts from different endpoints
+      const [trendsRes, contentRes, productsRes, socialRes, campaignsRes] = await Promise.all([
+        axios.get(`${API}/trends`).catch(() => ({ data: [] })),
+        axios.get(`${API}/content`).catch(() => ({ data: [] })),
+        axios.get(`${API}/products`).catch(() => ({ data: [] })),
+        axios.get(`${API}/social`).catch(() => ({ data: [] })),
+        axios.get(`${API}/campaigns`).catch(() => ({ data: [] })),
+      ]);
+      
+      setAnalytics({
+        totals: {
+          trends: trendsRes.data.length || 0,
+          content: contentRes.data.length || 0,
+          products: productsRes.data.length || 0,
+          posts: socialRes.data.length || 0,
+          campaigns: campaignsRes.data.length || 0,
+        }
+      });
     } catch (error) {
       console.error('Error loading analytics:', error);
+      // Set default values if error
+      setAnalytics({
+        totals: {
+          trends: 0,
+          content: 0,
+          products: 0,
+          posts: 0,
+          campaigns: 0,
+        }
+      });
     } finally {
       setLoading(false);
     }
@@ -31,11 +57,11 @@ function Dashboard() {
   }
 
   const statCards = [
-    { label: 'Trends', value: analytics?.totals.trends || 0, icon: TrendingUp, color: 'blue' },
-    { label: 'Content Ideas', value: analytics?.totals.content || 0, icon: FileText, color: 'purple' },
-    { label: 'Products', value: analytics?.totals.products || 0, icon: Package, color: 'green' },
-    { label: 'Social Posts', value: analytics?.totals.posts || 0, icon: MessageSquare, color: 'pink' },
-    { label: 'Campaigns', value: analytics?.totals.campaigns || 0, icon: Target, color: 'orange' },
+    { label: 'Trends', value: analytics?.totals?.trends || 0, icon: TrendingUp, color: 'blue' },
+    { label: 'Content Ideas', value: analytics?.totals?.content || 0, icon: FileText, color: 'purple' },
+    { label: 'Products', value: analytics?.totals?.products || 0, icon: Package, color: 'green' },
+    { label: 'Social Posts', value: analytics?.totals?.posts || 0, icon: MessageSquare, color: 'pink' },
+    { label: 'Campaigns', value: analytics?.totals?.campaigns || 0, icon: Target, color: 'orange' },
   ];
 
   const colorClasses = {
