@@ -7012,6 +7012,9 @@ async def agent_status():
         total_conversations = await db["conversations"].count_documents({})
         total_memories = await db["agent_memory"].count_documents({})
         
+        # Verificar si OpenAI key está disponible
+        openai_key_available = bool(os.environ.get('OPENAI_API_KEY'))
+        
         return {
             "success": True,
             "agente_activo": True,
@@ -7020,9 +7023,9 @@ async def agent_status():
             "herramientas_disponibles": 18,
             "caracteristicas": {
                 "memoria_persistente": True,
-                "busqueda_semantica": True,
-                "rag_enabled": True,
-                "embeddings": bool(OPENAI_KEY)
+                "busqueda_semantica": openai_key_available,
+                "rag_enabled": openai_key_available,
+                "embeddings": openai_key_available
             }
         }
     except Exception as e:
