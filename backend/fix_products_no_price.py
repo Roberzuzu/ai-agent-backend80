@@ -2,7 +2,6 @@
 """
 Script para arreglar productos sin precio en WooCommerce
 """
-import asyncio
 import sys
 import os
 from pathlib import Path
@@ -57,7 +56,7 @@ def extract_name_from_slug(slug: str) -> str:
     
     return name
 
-async def fix_products_without_price():
+def fix_products_without_price():
     """Arregla todos los productos sin precio"""
     print("🔧 Iniciando reparación de productos sin precio...\n")
     
@@ -70,7 +69,7 @@ async def fix_products_without_price():
     
     # Obtener todos los productos
     print("📦 Obteniendo productos de WooCommerce...")
-    products = await wc.get_products()
+    products = wc.get_products()
     
     # Filtrar productos sin precio
     no_price_products = [
@@ -125,7 +124,7 @@ async def fix_products_without_price():
             if not product.get('name') or product.get('name').strip() == '':
                 update_data['name'] = name
             
-            result = await wc.update_product(product_id, update_data)
+            result = wc.update_product(product_id, update_data)
             
             if result:
                 print(f"   ✅ Producto actualizado exitosamente")
@@ -164,4 +163,4 @@ if __name__ == "__main__":
     load_dotenv()
     
     # Ejecutar reparación
-    asyncio.run(fix_products_without_price())
+    fix_products_without_price()
