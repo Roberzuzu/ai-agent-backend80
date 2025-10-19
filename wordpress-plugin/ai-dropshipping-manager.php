@@ -261,6 +261,10 @@ class AI_Dropshipping_Manager {
         include AI_DROPSHIP_PATH . 'admin/dashboard.php';
     }
     
+    public function render_prompts_page() {
+        include AI_DROPSHIP_PATH . 'admin/prompts.php';
+    }
+    
     public function render_settings_page() {
         include AI_DROPSHIP_PATH . 'admin/settings.php';
     }
