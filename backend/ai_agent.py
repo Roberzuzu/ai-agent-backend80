@@ -42,11 +42,122 @@ WP_URL = "https://herramientasyaccesorios.store/wp-json/wp/v2"
 
 
 class AIAgent:
-    """Agente inteligente que interpreta y ejecuta comandos"""
+    """Agente inteligente que interpreta y ejecuta comandos con memoria persistente"""
     
     def __init__(self):
         self.openrouter_url = "https://openrouter.ai/api/v1/chat/completions"
-        self.conversation_history = {}
+        self.conversations_collection = db["conversations"]
+        self.memory_collection = db["agent_memory"]
+    
+    async def get_embedding(self, text: str) -> List[float]:
+        """Genera embedding de un texto usando OpenAI"""
+        if not openai_client:
+            return []
+        
+        try:
+            response = openai_client.embeddings.create(
+                model="text-embedding-3-small",
+                input=text
+            )
+            return response.data[0].embedding
+        except Exception as e:
+            print(f"Error generando embedding: {e}")
+            return []
+    
+    async def save_to_memory(self, user_id: str, command: str, response: str, plan: Dict[str, Any]):
+        """Guarda interacción en memoria con embedding para búsqueda"""
+        try:
+            # Generar embedding del comando y respuesta
+            combined_text = f"{command} {response}"
+            embedding = await self.get_embedding(combined_text)
+            
+            memory_entry = {
+                "user_id": user_id,
+                "command": command,
+                "response": response,
+                "plan": plan,
+                "embedding": embedding,
+                "timestamp": datetime.utcnow()
+            }
+            
+            await self.memory_collection.insert_one(memory_entry)
+        except Exception as e:
+            print(f"Error guardando memoria: {e}")
+    
+    async def search_relevant_memories(self, user_id: str, query: str, limit: int = 5) -> List[Dict[str, Any]]:
+        """Busca memorias relevantes usando similaridad semántica (RAG)"""
+        try:
+            # Generar embedding de la query
+            query_embedding = await self.get_embedding(query)
+            if not query_embedding:
+                return []
+            
+            # Obtener todas las memorias del usuario
+            memories = await self.memory_collection.find(
+                {"user_id": user_id, "embedding": {"$exists": True, "$ne": []}}
+            ).sort("timestamp", -1).limit(50).to_list(50)
+            
+            if not memories:
+                return []
+            
+            # Calcular similaridad
+            memories_with_similarity = []
+            query_vec = np.array(query_embedding).reshape(1, -1)
+            
+            for memory in memories:
+                memory_vec = np.array(memory["embedding"]).reshape(1, -1)
+                similarity = cosine_similarity(query_vec, memory_vec)[0][0]
+                
+                memories_with_similarity.append({
+                    "command": memory["command"],
+                    "response": memory["response"],
+                    "timestamp": memory["timestamp"],
+                    "similarity": float(similarity)
+                })
+            
+            # Ordenar por similaridad y retornar top N
+            memories_with_similarity.sort(key=lambda x: x["similarity"], reverse=True)
+            return memories_with_similarity[:limit]
+        
+        except Exception as e:
+            print(f"Error buscando memorias: {e}")
+            return []
+    
+    async def get_conversation_history(self, user_id: str, limit: int = 10) -> List[Dict[str, str]]:
+        """Obtiene el historial reciente de conversación"""
+        try:
+            conversations = await self.conversations_collection.find(
+                {"user_id": user_id}
+            ).sort("timestamp", -1).limit(limit).to_list(limit)
+            
+            # Invertir para orden cronológico
+            conversations.reverse()
+            
+            history = []
+            for conv in conversations:
+                history.append({"role": "user", "content": conv["command"]})
+                if conv.get("response"):
+                    history.append({"role": "assistant", "content": conv["response"]})
+            
+            return history
+        except Exception as e:
+            print(f"Error obteniendo historial: {e}")
+            return []
+    
+    async def save_conversation(self, user_id: str, command: str, response: str, plan: Dict[str, Any]):
+        """Guarda conversación en MongoDB"""
+        try:
+            conversation_entry = {
+                "user_id": user_id,
+                "command": command,
+                "response": response,
+                "plan": plan,
+                "timestamp": datetime.utcnow()
+            }
+            
+            await self.conversations_collection.insert_one(conversation_entry)
+        except Exception as e:
+            print(f"Error guardando conversación: {e}")
     
     async def think(self, command: str, user_id: str) -> Dict[str, Any]:
         """
