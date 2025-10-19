@@ -6954,10 +6954,6 @@ async def download_wordpress_plugin_fixed():
         media_type="application/zip"
     )
 
-        filename="ai-dropshipping-super-powered-v2.0.zip",
-        media_type="application/zip"
-    )
-
 
 
 # Include the router in the main app
