@@ -27,8 +27,10 @@ ABACUS_KEY = os.getenv("ABACUS_API_KEY")
 if FAL_KEY:
     os.environ["FAL_KEY"] = FAL_KEY
 
-# Cliente OpenAI
-openai_client = AsyncOpenAI(api_key=OPENAI_KEY)
+# Cliente OpenAI - solo si la key existe
+openai_client = None
+if OPENAI_KEY:
+    openai_client = AsyncOpenAI(api_key=OPENAI_KEY)
 
 
 class OpenRouterClient:
