@@ -63,7 +63,7 @@ async def fix_products_without_price():
     
     # Inicializar cliente WooCommerce
     wc = WooCommerceClient(
-        url=os.getenv('WORDPRESS_URL'),
+        store_url=os.getenv('WORDPRESS_URL'),
         consumer_key=os.getenv('WC_CONSUMER_KEY'),
         consumer_secret=os.getenv('WC_CONSUMER_SECRET')
     )
