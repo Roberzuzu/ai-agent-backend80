@@ -7020,12 +7020,15 @@ async def agent_status():
             "agente_activo": True,
             "conversaciones_totales": total_conversations,
             "memorias_guardadas": total_memories,
-            "herramientas_disponibles": 18,
+            "herramientas_disponibles": 22,
             "caracteristicas": {
                 "memoria_persistente": True,
                 "busqueda_semantica": openai_key_available,
                 "rag_enabled": openai_key_available,
-                "embeddings": openai_key_available
+                "embeddings": openai_key_available,
+                "serp_api": bool(os.environ.get('SERP_API_KEY')),
+                "apify": bool(os.environ.get('APIFY_TOKEN')),
+                "google_cloud": bool(os.environ.get('GOOGLE_CLIENT_ID'))
             }
         }
     except Exception as e:
