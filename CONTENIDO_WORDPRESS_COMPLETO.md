@@ -1,4 +1,26 @@
 # 📄 Contenido Completo para WordPress - Listo para Copiar y Pegar
+# 📄 CONTENIDO COMPLETO PARA WORDPRESS - COPIAR Y PEGAR
+
+## ⚡ INSTRUCCIONES RÁPIDAS
+
+Ya que WordPress tiene un problema con Application Passwords, aquí está TODO el contenido listo para copiar y pegar manualmente.
+
+### 🔥 ACCESO RÁPIDO A WORDPRESS:
+```
+URL: https://herramientasyaccesorios.store/wp-admin
+Usuario: Agente web
+Contraseña: E(5Cz2^gOnM4HQf(p^Dox#op
+```
+
+### 📝 PARA CREAR CADA PÁGINA:
+1. WordPress → **Páginas → Añadir nueva**
+2. Copia el **TÍTULO** de abajo
+3. Pega el **CONTENIDO HTML** (cambia a modo HTML/Código si es necesario)
+4. Click en **"Publicar"**
+
+---
+
+
 
 ## 🚀 INSTRUCCIONES DE USO
 
