@@ -12,9 +12,9 @@ from datetime import datetime
 from typing import Dict, Any, List
 
 # Configuration
-BASE_URL = "https://agente90.preview.emergentagent.com/api"
+BASE_URL = "https://wp-pro-helper-1.preview.emergentagent.com/api"
 TEST_EMAIL = "usuario.test@example.com"
-ORIGIN_URL = "https://agente90.preview.emergentagent.com"
+ORIGIN_URL = "https://wp-pro-helper-1.preview.emergentagent.com"
 
 class PaymentSystemTester:
     def __init__(self):
