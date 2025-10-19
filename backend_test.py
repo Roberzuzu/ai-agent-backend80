@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Comprehensive Backend Testing for Database Optimization and Payment System
-Tests database optimization endpoints (indexes, backups, migrations) and payment functionality
-Priority: Database optimization system testing as requested
+Comprehensive Backend Testing for AI Agent System (Cerebro AI)
+Tests the AI Agent endpoints as requested in the review
+Priority: HIGH - Testing the new AI Agent system with Claude 3.5 Sonnet
 """
 
 import requests
@@ -13,7 +13,7 @@ from typing import Dict, Any, List
 
 # Configuration
 BASE_URL = "https://cerebro-ai-agent.preview.emergentagent.com/api"
-TEST_EMAIL = "usuario.test@example.com"
+TEST_USER_ID = "test_user_backend"
 ORIGIN_URL = "https://cerebro-ai-agent.preview.emergentagent.com"
 
 class PaymentSystemTester:
