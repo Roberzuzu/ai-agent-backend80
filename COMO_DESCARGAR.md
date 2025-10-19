@@ -181,7 +181,7 @@ TRUSTED_IPS=127.0.0.1,tu.ip.aqui
 ADMIN_WHITELIST_IPS=127.0.0.1,tu.ip.admin
 
 # FAL AI (Para generar contenido)
-FAL_API_KEY=5b756394-7beb-4a8b-bda2-dd53dc9a374f:228b46f927a226c270ece128bfeb95db
+FAL_API_KEY=agente90:228b46f927a226c270ece128bfeb95db
 
 # STRIPE (Para pagos)
 STRIPE_API_KEY=sk_test_tu_clave
