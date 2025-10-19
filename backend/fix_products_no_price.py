@@ -11,7 +11,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from integrations.woocommerce import WooCommerceClient
-from integrations.dropshipping_pricing import calculate_selling_price
+from integrations.dropshipping_pricing import calculate_price
 
 # Precios base estimados según categoría (precio de proveedor estimado)
 CATEGORY_BASE_PRICES = {
