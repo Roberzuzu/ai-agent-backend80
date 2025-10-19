@@ -89,6 +89,7 @@ const OnboardingFlow = ({ onComplete }) => {
           <button
             onClick={handleSkip}
             className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 z-10"
+            aria-label="Cerrar tutorial"
           >
             <X className="w-6 h-6" />
           </button>
@@ -102,7 +103,7 @@ const OnboardingFlow = ({ onComplete }) => {
           </div>
 
           {/* Content */}
-          <div className="p-8 pt-12">
+          <div className="p-8 pt-12" key={currentStep}>
             {/* Icon */}
             <div className="text-center mb-6">
               <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full text-5xl mb-4 animate-bounce">
@@ -117,8 +118,8 @@ const OnboardingFlow = ({ onComplete }) => {
             </div>
 
             {/* Screenshot placeholder */}
-            {step.highlight && (
-              <div className="mt-8 rounded-xl overflow-hidden border-4 border-gray-200 dark:border-gray-700 shadow-xl">
+            {step.highlight ? (
+              <div key={`highlight-${step.highlight}`} className="mt-8 rounded-xl overflow-hidden border-4 border-gray-200 dark:border-gray-700 shadow-xl">
                 <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-800 h-64 flex items-center justify-center">
                   <div className="text-center">
                     <div className="text-6xl mb-4">{step.icon}</div>
@@ -130,7 +131,7 @@ const OnboardingFlow = ({ onComplete }) => {
                   </div>
                 </div>
               </div>
-            )}
+            ) : null}
 
             {/* Steps indicator */}
             <div className="flex justify-center gap-2 mt-8">
