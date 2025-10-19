@@ -1,6 +1,6 @@
 """
 AI Agent - Cerebro Central del Sistema
-Usa Claude 3.5 Sonnet para interpretar comandos y ejecutar acciones
+Usa Perplexity Pro para interpretar comandos y ejecutar acciones
 Sistema de Memoria con RAG para recordar y buscar contexto
 """
 
