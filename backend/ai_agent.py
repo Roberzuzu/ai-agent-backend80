@@ -7,9 +7,10 @@ Sistema de Memoria con RAG para recordar y buscar contexto
 import os
 import json
 import asyncio
+import uuid
 from typing import Dict, List, Any, Optional
 import httpx
-from datetime import datetime
+from datetime import datetime, timedelta
 from motor.motor_asyncio import AsyncIOMotorClient
 from openai import OpenAI
 import numpy as np
