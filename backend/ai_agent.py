@@ -49,10 +49,10 @@ WP_URL = "https://herramientasyaccesorios.store/wp-json/wp/v2"
 
 
 class AIAgent:
-    """Agente inteligente que interpreta y ejecuta comandos con memoria persistente"""
+    """Agente inteligente que interpreta y ejecuta comandos con memoria persistente usando Perplexity Pro"""
     
     def __init__(self):
-        self.openrouter_url = "https://openrouter.ai/api/v1/chat/completions"
+        self.perplexity_url = "https://api.perplexity.ai/chat/completions"
         self.conversations_collection = db["conversations"]
         self.memory_collection = db["agent_memory"]
     
