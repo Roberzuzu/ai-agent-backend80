@@ -405,6 +405,9 @@ Formato de respuesta:
                     parametros.get("tema")
                 )
             
+            elif herramienta == "analizar_keywords":
+                return await self._analizar_keywords(parametros.get("tema"))
+            
             # CREATIVIDAD
             elif herramienta == "generar_imagenes":
                 return await self._generar_imagenes(
