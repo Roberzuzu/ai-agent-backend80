@@ -682,29 +682,18 @@ class AIAgentTester:
             return False
 
     def run_all_tests(self):
-        """Run all payment system and database optimization tests"""
-        print("🚀 Starting Comprehensive Backend Testing (Payment System + Database Optimization)")
+        """Run all AI Agent system tests"""
+        print("🚀 Starting AI Agent System Testing (Cerebro AI)")
         print("=" * 80)
         
-        # Test sequence - Database tests first as requested
+        # Test sequence - AI Agent tests as requested
         tests = [
-            # Database Optimization Tests (Priority)
-            ("Database Info", self.test_database_info),
-            ("Database Backups List", self.test_database_backups_list),
-            ("Database Backup Create", self.test_database_backup_create),
-            ("Payment Transactions Indexes", self.test_database_indexes_payment_transactions),
-            ("Notifications Indexes", self.test_database_indexes_notifications),
-            
-            # Payment System Tests
-            ("Subscription Plans", self.test_subscription_plans),
-            ("Get Products", self.get_products),
-            ("Product Checkout", self.test_product_checkout),
-            ("Subscription Checkout", self.test_subscription_checkout),
-            ("Revenue Analytics", self.test_revenue_analytics),
-            ("Campaign ROI", self.test_campaign_roi),
-            ("Affiliate Commissions", self.test_affiliate_commissions),
-            ("Advanced Dashboard", self.test_advanced_dashboard),
-            ("Payment History", self.test_payment_history)
+            # AI Agent Core Tests (Priority: HIGH)
+            ("Agent Status", self.test_agent_status),
+            ("Agent Execute Simple", self.test_agent_execute_simple),
+            ("Agent Memory Get", self.test_agent_memory_get),
+            ("Agent Chat", self.test_agent_chat),
+            ("Agent Search Memory", self.test_agent_search_memory)
         ]
         
         passed = 0
@@ -721,7 +710,7 @@ class AIAgentTester:
         print(f"🏁 TESTING COMPLETE: {passed}/{total} tests passed")
         
         if passed == total:
-            print("🎉 ALL TESTS PASSED! Payment system is working correctly.")
+            print("🎉 ALL TESTS PASSED! AI Agent system is working correctly.")
         else:
             print("⚠️  Some tests failed. Check details above.")
         
