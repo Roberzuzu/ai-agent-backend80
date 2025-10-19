@@ -718,11 +718,11 @@ class AIAgentTester:
 
 def main():
     """Main testing function"""
-    tester = PaymentSystemTester()
+    tester = AIAgentTester()
     passed, total, results = tester.run_all_tests()
     
     # Save detailed results
-    with open("/app/payment_test_results.json", "w") as f:
+    with open("/app/ai_agent_test_results.json", "w") as f:
         json.dump({
             "summary": {
                 "passed": passed,
@@ -733,7 +733,7 @@ def main():
             "detailed_results": results
         }, f, indent=2)
     
-    print(f"\n📄 Detailed results saved to: /app/payment_test_results.json")
+    print(f"\n📄 Detailed results saved to: /app/ai_agent_test_results.json")
     
     return passed == total
 
