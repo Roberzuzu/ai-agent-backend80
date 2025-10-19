@@ -243,7 +243,7 @@ Formato de respuesta:
 }
 """
         
-        # Crear el prompt para Claude con contexto completo
+        # Crear el prompt para Perplexity Pro con contexto completo
         messages = recent_history + [
             {
                 "role": "user",
@@ -254,13 +254,13 @@ Formato de respuesta:
         try:
             async with httpx.AsyncClient(timeout=60.0) as client:
                 response = await client.post(
-                    self.openrouter_url,
+                    "https://api.perplexity.ai/chat/completions",
                     headers={
-                        "Authorization": f"Bearer {OPENROUTER_KEY}",
+                        "Authorization": f"Bearer {PERPLEXITY_KEY}",
                         "Content-Type": "application/json",
                     },
                     json={
-                        "model": "anthropic/claude-3.5-sonnet",
+                        "model": "sonar-pro",  # Perplexity Pro
                         "messages": messages,
                         "temperature": 0.7,
                         "max_tokens": 2000
