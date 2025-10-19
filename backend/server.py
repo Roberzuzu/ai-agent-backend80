@@ -6933,6 +6933,25 @@ async def download_wordpress_plugin():
     
     return FileResponse(
         path=file_path,
+
+
+@api_router.get("/download/wordpress-plugin-fixed")
+async def download_wordpress_plugin_fixed():
+    """Descarga el plugin de WordPress CORREGIDO (nombre de carpeta correcto)"""
+    from fastapi.responses import FileResponse
+    import os
+    
+    file_path = "/app/ai-dropshipping-manager-fixed.zip"
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Plugin ZIP not found")
+    
+    return FileResponse(
+        path=file_path,
+        filename="ai-dropshipping-manager.zip",
+        media_type="application/zip"
+    )
+
         filename="ai-dropshipping-super-powered-v2.0.zip",
         media_type="application/zip"
     )
