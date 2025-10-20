@@ -11,6 +11,7 @@ import json
 import requests
 import logging
 from datetime import datetime
+from google_analytics import track_telegram_event, track_ai_event
 
 # Configuración
 TELEGRAM_TOKEN = "7708509018:AAErAOblRAlC587j1QB4k19PAfDgoiZ3kWk"
