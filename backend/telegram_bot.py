@@ -11,7 +11,17 @@ import json
 import requests
 import logging
 from datetime import datetime
-from google_analytics import track_telegram_event, track_ai_event
+
+# Añadir el directorio actual al path para imports
+sys.path.insert(0, os.path.dirname(__file__))
+
+# Import asíncrono de Google Analytics
+try:
+    from google_analytics import track_telegram_event, track_ai_event
+    GA_AVAILABLE = True
+except ImportError:
+    GA_AVAILABLE = False
+    print("⚠️ Google Analytics no disponible")
 
 # Configuración
 TELEGRAM_TOKEN = "7708509018:AAErAOblRAlC587j1QB4k19PAfDgoiZ3kWk"
