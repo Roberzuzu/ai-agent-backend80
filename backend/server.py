@@ -3245,11 +3245,14 @@ async def get_campaign_roi():
     
     campaign_roi = []
     for campaign in campaigns:
-        budget = campaign['budget']
+        budget = campaign.get('budget', 0)
         
         # Calculate revenue during campaign period
-        campaign_start = campaign['start_date']
-        campaign_end = campaign['end_date']
+        campaign_start = campaign.get('start_date')
+        campaign_end = campaign.get('end_date')
+        
+        if not campaign_start or not campaign_end:
+            continue
         
         if isinstance(campaign_start, str):
             campaign_start = datetime.fromisoformat(campaign_start)
