@@ -1524,11 +1524,11 @@ async def get_campaigns(status: Optional[str] = None):
     campaigns = await db.campaigns.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
     
     for campaign in campaigns:
-        if isinstance(campaign['created_at'], str):
+        if 'created_at' in campaign and isinstance(campaign['created_at'], str):
             campaign['created_at'] = datetime.fromisoformat(campaign['created_at'])
-        if isinstance(campaign['start_date'], str):
+        if 'start_date' in campaign and isinstance(campaign['start_date'], str):
             campaign['start_date'] = datetime.fromisoformat(campaign['start_date'])
-        if isinstance(campaign['end_date'], str):
+        if 'end_date' in campaign and isinstance(campaign['end_date'], str):
             campaign['end_date'] = datetime.fromisoformat(campaign['end_date'])
     
     return campaigns
