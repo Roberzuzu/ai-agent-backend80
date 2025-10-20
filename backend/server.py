@@ -1517,7 +1517,7 @@ async def create_campaign(input: CampaignCreate):
     await db.campaigns.insert_one(doc)
     return campaign_obj
 
-@api_router.get("/campaigns", response_model=List[Campaign])
+@api_router.get("/campaigns")
 async def get_campaigns(status: Optional[str] = None):
     """Get all campaigns"""
     query = {} if not status else {"status": status}
