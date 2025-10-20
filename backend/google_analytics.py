@@ -10,7 +10,7 @@ from datetime import datetime
 import uuid
 
 MEASUREMENT_ID = os.getenv("GOOGLE_ANALYTICS_MEASUREMENT_ID", "G-EMQDLMQ0S3")
-API_SECRET = os.getenv("GOOGLE_ANALYTICS_API_SECRET", "")  # Necesitarás generar esto
+API_SECRET = os.getenv("GOOGLE_ANALYTICS_API_SECRET", "XhMFvYRHQ8q3HGPo1l5pJw")  # Necesitarás generar esto
 
 class GoogleAnalytics:
     """Cliente para Google Analytics 4 Measurement Protocol"""
