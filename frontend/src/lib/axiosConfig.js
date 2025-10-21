@@ -1,7 +1,9 @@
 import axios from 'axios';
 import { toast } from 'sonner';
 
-const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001/api';
+const API_BASE_URL = process.env.REACT_APP_BACKEND_URL 
+  ? `${process.env.REACT_APP_BACKEND_URL}/api`
+  : 'http://localhost:8001/api';
 
 // Create axios instance
 const axiosInstance = axios.create({
