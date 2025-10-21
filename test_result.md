@@ -216,7 +216,7 @@ backend:
           
           🎯 CONCLUSIÓN: Sistema Cerebro AI 100% funcional y listo para producción con Perplexity como cerebro primario y OpenAI como backup.
 
-  - task: "18 Herramientas del Agente AI"
+  - task: "22 Herramientas del Agente AI"
     implemented: true
     working: true
     file: "backend/ai_agent.py"
