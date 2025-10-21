@@ -24,7 +24,10 @@ function CerebroAIPage() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [agentStatus, setAgentStatus] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [filePreview, setFilePreview] = useState(null);
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
   const userId = 'web_user_' + Date.now(); // En producción, usar el ID del usuario logueado
 
   useEffect(() => {
