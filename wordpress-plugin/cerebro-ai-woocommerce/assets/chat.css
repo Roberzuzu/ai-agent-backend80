@@ -1,0 +1,395 @@
+/**
+ * Cerebro AI - Chat Widget Styles
+ */
+
+/* Widget Container */
+.cerebro-chat-widget {
+    position: fixed;
+    z-index: 999999;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.cerebro-position-bottom-right {
+    bottom: 20px;
+    right: 20px;
+}
+
+.cerebro-position-bottom-left {
+    bottom: 20px;
+    left: 20px;
+}
+
+/* Toggle Button */
+.cerebro-chat-button {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    transition: all 0.3s ease;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cerebro-chat-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.cerebro-chat-button .cerebro-icon-close {
+    display: none;
+}
+
+.cerebro-chat-open ~ .cerebro-chat-button .cerebro-icon-open {
+    display: none;
+}
+
+.cerebro-chat-open ~ .cerebro-chat-button .cerebro-icon-close {
+    display: block;
+}
+
+.cerebro-notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ef4444;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Chat Window */
+.cerebro-chat-window {
+    position: absolute;
+    bottom: 80px;
+    width: 380px;
+    height: 600px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+.cerebro-position-bottom-right .cerebro-chat-window {
+    right: 0;
+}
+
+.cerebro-position-bottom-left .cerebro-chat-window {
+    left: 0;
+}
+
+.cerebro-chat-window.cerebro-chat-open {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+}
+
+/* Header */
+.cerebro-chat-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 16px 16px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cerebro-chat-header-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cerebro-chat-avatar {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cerebro-chat-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.cerebro-chat-header p {
+    margin: 0;
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+.cerebro-close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.cerebro-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Messages Area */
+.cerebro-chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #f8f9fa;
+}
+
+.cerebro-message {
+    margin-bottom: 16px;
+    animation: cerebroMessageSlide 0.3s ease;
+}
+
+@keyframes cerebroMessageSlide {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.cerebro-message-content {
+    padding: 12px 16px;
+    border-radius: 12px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.cerebro-message-user .cerebro-message-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    margin-left: auto;
+}
+
+.cerebro-message-bot .cerebro-message-content {
+    background: white;
+    color: #1f2937;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.cerebro-message-bot .cerebro-message-content ul {
+    margin: 8px 0;
+    padding-left: 20px;
+}
+
+.cerebro-message-bot .cerebro-message-content li {
+    margin: 4px 0;
+}
+
+.cerebro-message-error .cerebro-message-content {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.cerebro-message-time {
+    font-size: 11px;
+    color: #9ca3af;
+    margin-top: 4px;
+    text-align: right;
+}
+
+.cerebro-message-user .cerebro-message-time {
+    text-align: right;
+}
+
+.cerebro-message-bot .cerebro-message-time {
+    text-align: left;
+}
+
+/* Welcome Message */
+.cerebro-welcome-message {
+    text-align: center;
+}
+
+/* Input Area */
+.cerebro-chat-input-area {
+    border-top: 1px solid #e5e7eb;
+    background: white;
+    padding: 16px;
+    border-radius: 0 0 16px 16px;
+}
+
+.cerebro-file-preview {
+    background: #f3f4f6;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cerebro-file-preview-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.cerebro-file-remove {
+    background: #ef4444;
+    color: white;
+    border: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cerebro-chat-input-wrapper {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.cerebro-attach-btn {
+    background: #f3f4f6;
+    border: none;
+    color: #6b7280;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.cerebro-attach-btn:hover {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+#cerebro-chat-input {
+    flex: 1;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+#cerebro-chat-input:focus {
+    border-color: #667eea;
+}
+
+.cerebro-send-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+.cerebro-send-btn:hover {
+    transform: scale(1.05);
+}
+
+.cerebro-send-btn:active {
+    transform: scale(0.95);
+}
+
+/* Typing Indicator */
+.cerebro-typing-indicator {
+    display: flex;
+    gap: 4px;
+    padding: 8px 0;
+}
+
+.cerebro-typing-indicator span {
+    width: 8px;
+    height: 8px;
+    background: #9ca3af;
+    border-radius: 50%;
+    animation: cerebroTyping 1.4s infinite;
+}
+
+.cerebro-typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.cerebro-typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes cerebroTyping {
+    0%, 60%, 100% {
+        transform: translateY(0);
+        opacity: 0.4;
+    }
+    30% {
+        transform: translateY(-10px);
+        opacity: 1;
+    }
+}
+
+/* Scrollbar */
+.cerebro-chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.cerebro-chat-messages::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.cerebro-chat-messages::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+.cerebro-chat-messages::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .cerebro-chat-window {
+        width: calc(100vw - 40px);
+        height: calc(100vh - 100px);
+        max-height: 600px;
+    }
+}
