@@ -76,38 +76,111 @@ function CerebroAIPage() {
     }
   };
 
+  const handleFileSelect = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      
+      // Crear preview para imágenes
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFilePreview(reader.result);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setFilePreview(null);
+      }
+      
+      toast.success(`Archivo seleccionado: ${file.name}`);
+    }
+  };
+
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    setFilePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleSend = async () => {
-    if (!input.trim() || loading) return;
+    if ((!input.trim() && !selectedFile) || loading) return;
 
     const userMessage = {
       type: 'user',
-      content: input,
-      timestamp: new Date().toISOString()
+      content: input || (selectedFile ? `📎 ${selectedFile.name}` : ''),
+      timestamp: new Date().toISOString(),
+      hasFile: !!selectedFile,
+      fileName: selectedFile?.name,
+      filePreview: filePreview
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = input;
+    const currentFile = selectedFile;
     setInput('');
+    setSelectedFile(null);
+    setFilePreview(null);
     setLoading(true);
 
     try {
-      const response = await axiosInstance.post('/agent/execute', {
-        command: input,
-        user_id: userId
-      });
+      let response;
+      
+      // Si hay archivo, usar endpoint de upload
+      if (currentFile) {
+        const formData = new FormData();
+        formData.append('file', currentFile);
+        formData.append('user_id', userId);
+        if (currentInput.trim()) {
+          formData.append('command', currentInput);
+        }
 
-      if (response.data.success) {
-        const botMessage = {
-          type: 'bot',
-          content: response.data.mensaje,
-          timestamp: new Date().toISOString(),
-          plan: response.data.plan,
-          resultados: response.data.resultados,
-          provider: response.data.provider
-        };
-        setMessages(prev => [...prev, botMessage]);
-        toast.success('Comando ejecutado correctamente');
+        response = await axiosInstance.post('/agent/upload', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+        
+        // Estructura de respuesta diferente con archivos
+        if (response.data.success) {
+          let botContent = response.data.message || 'Archivo procesado';
+          
+          // Si hay respuesta del agente
+          if (response.data.agent_response) {
+            botContent = response.data.agent_response.mensaje;
+          }
+          
+          const botMessage = {
+            type: 'bot',
+            content: botContent,
+            timestamp: new Date().toISOString(),
+            file_info: response.data.file_info,
+            resultados: response.data.agent_response?.resultados,
+            provider: 'perplexity'
+          };
+          setMessages(prev => [...prev, botMessage]);
+          toast.success('Archivo procesado correctamente');
+        }
       } else {
-        throw new Error(response.data.error || 'Error desconocido');
+        // Sin archivo, usar endpoint normal
+        response = await axiosInstance.post('/agent/execute', {
+          command: currentInput,
+          user_id: userId
+        });
+
+        if (response.data.success) {
+          const botMessage = {
+            type: 'bot',
+            content: response.data.mensaje,
+            timestamp: new Date().toISOString(),
+            plan: response.data.plan,
+            resultados: response.data.resultados,
+            provider: response.data.provider
+          };
+          setMessages(prev => [...prev, botMessage]);
+          toast.success('Comando ejecutado correctamente');
+        }
       }
     } catch (error) {
       console.error('Error sending message:', error);
@@ -121,6 +194,9 @@ function CerebroAIPage() {
       toast.error('Error al ejecutar comando');
     } finally {
       setLoading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
