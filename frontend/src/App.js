@@ -32,7 +32,7 @@ import NotificationPreferencesPage from './pages/NotificationPreferencesPage';
 import RecommendationsPage from './pages/RecommendationsPage';
 import WooCommercePage from './pages/WooCommercePage';
 import NotificationBell from './components/NotificationBell';
-import { TrendingUp, Sparkles, DollarSign, Share2, Megaphone, LayoutDashboard, CreditCard, BarChart3, Users, Zap, Target, LogOut, User, Activity, Gauge, Store } from 'lucide-react';
+import { TrendingUp, Sparkles, DollarSign, Share2, Megaphone, LayoutDashboard, CreditCard, BarChart3, Users, Zap, Target, LogOut, User, Activity, Gauge, Store, Brain } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API = `${BACKEND_URL}/api`;
