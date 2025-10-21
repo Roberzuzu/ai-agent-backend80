@@ -270,34 +270,54 @@ function CerebroAIPage() {
                   ¡Hola! Soy Cerebro AI
                 </h3>
                 <p className="text-slate-600 max-w-md">
-                  Puedo ayudarte con análisis, productos, marketing y mucho más.
-                  Escribe tu comando abajo para comenzar.
+                  Soy tu experto en WooCommerce. Puedo ayudarte a gestionar productos, 
+                  optimizar ventas, analizar tu tienda y mucho más.
+                  Escribe tu comando o sube un archivo para comenzar.
                 </p>
                 <div className="mt-6 grid grid-cols-2 gap-3 max-w-2xl">
                   <button
-                    onClick={() => setInput('Dame las estadísticas del sitio')}
+                    onClick={() => setInput('Dame las estadísticas completas de mi tienda')}
                     className="p-3 bg-blue-50 hover:bg-blue-100 rounded-lg text-sm text-left transition-colors"
                   >
-                    📊 Ver estadísticas
+                    📊 Ver estadísticas de tienda
                   </button>
                   <button
-                    onClick={() => setInput('¿Cuántos productos tengo?')}
+                    onClick={() => setInput('Optimiza todos mis productos para mejorar las ventas')}
                     className="p-3 bg-purple-50 hover:bg-purple-100 rounded-lg text-sm text-left transition-colors"
                   >
-                    🛍️ Ver productos
+                    🚀 Optimizar catálogo completo
                   </button>
                   <button
-                    onClick={() => setInput('Analiza las tendencias de mercado')}
+                    onClick={() => setInput('Busca productos tendencia en herramientas que pueda vender')}
                     className="p-3 bg-green-50 hover:bg-green-100 rounded-lg text-sm text-left transition-colors"
                   >
-                    📈 Analizar tendencias
+                    🔥 Encontrar productos tendencia
                   </button>
                   <button
-                    onClick={() => setInput('Genera contenido para redes sociales')}
+                    onClick={() => setInput('Crea una oferta flash para los productos más vendidos')}
                     className="p-3 bg-orange-50 hover:bg-orange-100 rounded-lg text-sm text-left transition-colors"
                   >
-                    ✨ Crear contenido
+                    💰 Crear oferta flash
                   </button>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="p-3 bg-pink-50 hover:bg-pink-100 rounded-lg text-sm text-left transition-colors border-2 border-dashed border-pink-300"
+                  >
+                    📸 Subir foto de producto
+                  </button>
+                  <button
+                    onClick={() => setInput('Analiza mi competencia y dame recomendaciones de precios')}
+                    className="p-3 bg-indigo-50 hover:bg-indigo-100 rounded-lg text-sm text-left transition-colors"
+                  >
+                    🎯 Análisis de competencia
+                  </button>
+                </div>
+                <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm">
+                  <p className="text-yellow-800 font-medium mb-1">💡 Consejo Pro:</p>
+                  <p className="text-yellow-700">
+                    Sube una foto de cualquier producto y crearé automáticamente la ficha completa 
+                    con descripción optimizada SEO, precio sugerido y categoría.
+                  </p>
                 </div>
               </div>
             ) : (
