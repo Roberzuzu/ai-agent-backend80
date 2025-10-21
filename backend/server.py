@@ -6934,6 +6934,110 @@ class AgentExecuteRequest(BaseModel):
     command: str
     user_id: str = "default"
 
+@api_router.post("/agent/upload")
+async def agent_upload_file(
+    file: UploadFile = File(...),
+    user_id: str = Form(...),
+    command: Optional[str] = Form(None)
+):
+    """
+    Upload y procesa archivos para el agente
+    Soporta: imágenes, PDFs, DOCX, Excel, CSV
+    """
+    try:
+        from file_processor import FileProcessor
+        
+        # Validar tipo de archivo
+        if not FileProcessor.is_supported(file.filename):
+            return {
+                "success": False,
+                "error": f"Tipo de archivo no soportado: {file.filename}"
+            }
+        
+        # Leer contenido del archivo
+        file_content = await file.read()
+        
+        # Procesar archivo
+        file_info = await FileProcessor.process_file(
+            file_content, 
+            file.filename, 
+            file.content_type
+        )
+        
+        if not file_info.get("success"):
+            return file_info
+        
+        # Guardar información del archivo en MongoDB para referencia futura
+        file_record = {
+            "user_id": user_id,
+            "filename": file.filename,
+            "content_type": file.content_type,
+            "size_bytes": len(file_content),
+            "processed_info": file_info,
+            "uploaded_at": datetime.utcnow(),
+            "command": command  # Comando asociado si existe
+        }
+        
+        # Guardar en colección de archivos
+        result = await db.uploaded_files.insert_one(file_record)
+        file_id = str(result.inserted_id)
+        
+        # Si hay un comando, ejecutarlo con el contexto del archivo
+        response = {
+            "success": True,
+            "file_id": file_id,
+            "file_info": file_info,
+            "message": f"Archivo {file.filename} procesado correctamente"
+        }
+        
+        # Si el usuario envió un comando junto con el archivo
+        if command:
+            # Crear contexto mejorado con la información del archivo
+            enhanced_command = f"""
+            ARCHIVO SUBIDO: {file.filename}
+            TIPO: {file_info.get('type')}
+            
+            {command}
+            
+            INFORMACIÓN DEL ARCHIVO:
+            {str(file_info)}
+            """
+            
+            # Ejecutar el comando del agente con contexto
+            think_result = await agent.think(enhanced_command, user_id)
+            
+            if think_result.get("success"):
+                plan = think_result.get("plan", {})
+                acciones = plan.get("acciones", [])
+                
+                # Ejecutar acciones si las hay
+                if acciones:
+                    resultados = []
+                    for accion in sorted(acciones, key=lambda x: x.get("orden", 0)):
+                        # Pasar contexto del archivo a las acciones
+                        if 'file_info' not in accion.get('parametros', {}):
+                            accion['parametros'] = accion.get('parametros', {})
+                            accion['parametros']['file_info'] = file_info
+                            accion['parametros']['file_id'] = file_id
+                        
+                        resultado = await agent.execute_action(accion)
+                        resultados.append({
+                            "herramienta": accion.get("herramienta"),
+                            "resultado": resultado
+                        })
+                    
+                    response["agent_response"] = {
+                        "mensaje": plan.get("respuesta_usuario", ""),
+                        "plan": plan.get("plan", ""),
+                        "resultados": resultados
+                    }
+        
+        return response
+    
+    except Exception as e:
+        logger.error(f"Error en upload: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @api_router.post("/agent/execute")
 async def agent_execute_command(request: AgentExecuteRequest):
     """
