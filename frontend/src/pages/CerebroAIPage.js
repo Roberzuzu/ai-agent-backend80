@@ -8,7 +8,13 @@ import {
   Sparkles,
   AlertCircle,
   CheckCircle2,
-  Clock
+  Clock,
+  Paperclip,
+  X,
+  FileText,
+  Image as ImageIcon,
+  FileSpreadsheet,
+  Download
 } from 'lucide-react';
 import axiosInstance from '../lib/axiosConfig';
 import { toast } from 'sonner';
