@@ -1,0 +1,44 @@
+/**
+ * Cerebro AI - Admin Styles
+ */
+
+.cerebro-ai-admin {
+    max-width: 1400px;
+}
+
+.cerebro-ai-admin h1 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.cerebro-ai-admin .card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.cerebro-ai-admin .card h2 {
+    margin-top: 0;
+    font-size: 18px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.cerebro-ai-admin .form-table th {
+    width: 200px;
+}
+
+.cerebro-ai-admin .button-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    text-shadow: none;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+}
+
+.cerebro-ai-admin .button-primary:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #63408b 100%);
+}
