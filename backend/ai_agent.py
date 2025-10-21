@@ -251,63 +251,144 @@ Formato de respuesta:
             }
         ]
         
-        try:
-            async with httpx.AsyncClient(timeout=60.0) as client:
-                response = await client.post(
-                    "https://api.perplexity.ai/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {PERPLEXITY_KEY}",
-                        "Content-Type": "application/json",
-                    },
-                    json={
-                        "model": "sonar-pro",  # Perplexity Pro
-                        "messages": messages,
-                        "temperature": 0.7,
-                        "max_tokens": 2000
-                    }
+        # 🧠 SISTEMA DE FALLBACK: Perplexity (primario) → OpenAI (backup)
+        perplexity_error = None
+        
+        # INTENTO 1: Usar Perplexity como cerebro principal
+        if PERPLEXITY_KEY:
+            try:
+                print("🔵 Intentando con Perplexity (cerebro primario)...")
+                async with httpx.AsyncClient(timeout=60.0) as client:
+                    response = await client.post(
+                        "https://api.perplexity.ai/chat/completions",
+                        headers={
+                            "Authorization": f"Bearer {PERPLEXITY_KEY}",
+                            "Content-Type": "application/json",
+                        },
+                        json={
+                            "model": "sonar-pro",  # Perplexity Pro
+                            "messages": messages,
+                            "temperature": 0.7,
+                            "max_tokens": 2000
+                        }
+                    )
+                    
+                    if response.status_code == 200:
+                        data = response.json()
+                        assistant_message = data["choices"][0]["message"]["content"]
+                        print("✅ Perplexity respondió exitosamente")
+                        
+                        # Extraer JSON del mensaje
+                        try:
+                            # Buscar JSON en el texto
+                            json_start = assistant_message.find("{")
+                            json_end = assistant_message.rfind("}") + 1
+                            if json_start >= 0 and json_end > json_start:
+                                plan_json = json.loads(assistant_message[json_start:json_end])
+                                
+                                # Guardar en memoria
+                                await self.save_conversation(user_id, command, assistant_message, plan_json)
+                                await self.save_to_memory(user_id, command, assistant_message, plan_json)
+                                
+                                return {
+                                    "success": True,
+                                    "plan": plan_json,
+                                    "provider": "perplexity"
+                                }
+                        except:
+                            pass
+                        
+                        # Guardar incluso si no hay JSON
+                        plan_fallback = {
+                            "plan": "Ejecutar comando",
+                            "respuesta_usuario": assistant_message,
+                            "acciones": []
+                        }
+                        await self.save_conversation(user_id, command, assistant_message, plan_fallback)
+                        await self.save_to_memory(user_id, command, assistant_message, plan_fallback)
+                        
+                        return {
+                            "success": True,
+                            "plan": plan_fallback,
+                            "provider": "perplexity"
+                        }
+                    else:
+                        perplexity_error = f"Perplexity error: HTTP {response.status_code}"
+                        print(f"⚠️ {perplexity_error}")
+            
+            except Exception as e:
+                perplexity_error = f"Perplexity exception: {str(e)}"
+                print(f"⚠️ {perplexity_error}")
+        else:
+            perplexity_error = "Perplexity API key no configurada"
+            print(f"⚠️ {perplexity_error}")
+        
+        # INTENTO 2: Fallback a OpenAI si Perplexity falla
+        if OPENAI_KEY:
+            try:
+                print("🟢 Usando OpenAI como backup...")
+                from openai import OpenAI as OpenAIClient
+                
+                openai_backup = OpenAIClient(api_key=OPENAI_KEY)
+                
+                # Llamar a OpenAI
+                completion = openai_backup.chat.completions.create(
+                    model="gpt-4o",  # Modelo más reciente de OpenAI
+                    messages=messages,
+                    temperature=0.7,
+                    max_tokens=2000
                 )
                 
-                if response.status_code == 200:
-                    data = response.json()
-                    assistant_message = data["choices"][0]["message"]["content"]
-                    
-                    # Extraer JSON del mensaje
-                    try:
-                        # Buscar JSON en el texto
-                        json_start = assistant_message.find("{")
-                        json_end = assistant_message.rfind("}") + 1
-                        if json_start >= 0 and json_end > json_start:
-                            plan_json = json.loads(assistant_message[json_start:json_end])
-                            
-                            # Guardar en memoria
-                            await self.save_conversation(user_id, command, assistant_message, plan_json)
-                            await self.save_to_memory(user_id, command, assistant_message, plan_json)
-                            
-                            return {
-                                "success": True,
-                                "plan": plan_json
-                            }
-                    except:
-                        pass
-                    
-                    # Guardar incluso si no hay JSON
-                    plan_fallback = {
-                        "plan": "Ejecutar comando",
-                        "respuesta_usuario": assistant_message,
-                        "acciones": []
-                    }
-                    await self.save_conversation(user_id, command, assistant_message, plan_fallback)
-                    await self.save_to_memory(user_id, command, assistant_message, plan_fallback)
-                    
-                    return {
-                        "success": True,
-                        "plan": plan_fallback
-                    }
+                assistant_message = completion.choices[0].message.content
+                print("✅ OpenAI respondió exitosamente (backup usado)")
                 
-                return {"success": False, "error": f"Error: {response.status_code}"}
-        
-        except Exception as e:
-            return {"success": False, "error": str(e)}
+                # Extraer JSON del mensaje
+                try:
+                    json_start = assistant_message.find("{")
+                    json_end = assistant_message.rfind("}") + 1
+                    if json_start >= 0 and json_end > json_start:
+                        plan_json = json.loads(assistant_message[json_start:json_end])
+                        
+                        # Guardar en memoria
+                        await self.save_conversation(user_id, command, assistant_message, plan_json)
+                        await self.save_to_memory(user_id, command, assistant_message, plan_json)
+                        
+                        return {
+                            "success": True,
+                            "plan": plan_json,
+                            "provider": "openai_backup",
+                            "perplexity_error": perplexity_error
+                        }
+                except:
+                    pass
+                
+                # Guardar incluso si no hay JSON
+                plan_fallback = {
+                    "plan": "Ejecutar comando",
+                    "respuesta_usuario": assistant_message,
+                    "acciones": []
+                }
+                await self.save_conversation(user_id, command, assistant_message, plan_fallback)
+                await self.save_to_memory(user_id, command, assistant_message, plan_fallback)
+                
+                return {
+                    "success": True,
+                    "plan": plan_fallback,
+                    "provider": "openai_backup",
+                    "perplexity_error": perplexity_error
+                }
+            
+            except Exception as e:
+                print(f"❌ OpenAI también falló: {str(e)}")
+                return {
+                    "success": False, 
+                    "error": f"Ambos proveedores fallaron. Perplexity: {perplexity_error}, OpenAI: {str(e)}"
+                }
+        else:
+            return {
+                "success": False,
+                "error": f"Perplexity falló y no hay API key de OpenAI configurada como backup. Error: {perplexity_error}"
+            }
     
     async def execute_action(self, action: Dict[str, Any]) -> Dict[str, Any]:
         """Ejecuta una acción específica usando las herramientas disponibles"""
