@@ -227,7 +227,7 @@ O lenguaje natural:
 
 **Backend:**
 ```bash
-curl https://cerebro-ai-agent.preview.emergentagent.com/api/agent/status
+curl https://api-switcher.preview.emergentagent.com/api/agent/status
 ```
 
 **Debe retornar:**

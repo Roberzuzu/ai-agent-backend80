@@ -9,7 +9,7 @@
 
 ### 1. BACKEND (CEREBRO AI)
 **URL Local:** http://localhost:8001
-**URL Pública:** https://cerebro-ai-agent.preview.emergentagent.com
+**URL Pública:** https://api-switcher.preview.emergentagent.com
 
 **Estado:** ✅ FUNCIONANDO
 ```json
@@ -74,9 +74,9 @@
 - ✅ 📤 Send Result
 
 **URLs configuradas:**
-- ✅ https://cerebro-ai-agent.preview.emergentagent.com/api/agent/status
-- ✅ https://cerebro-ai-agent.preview.emergentagent.com/api/agent/memory/{user_id}
-- ✅ https://cerebro-ai-agent.preview.emergentagent.com/api/agent/execute
+- ✅ https://api-switcher.preview.emergentagent.com/api/agent/status
+- ✅ https://api-switcher.preview.emergentagent.com/api/agent/memory/{user_id}
+- ✅ https://api-switcher.preview.emergentagent.com/api/agent/execute
 
 ---
 
