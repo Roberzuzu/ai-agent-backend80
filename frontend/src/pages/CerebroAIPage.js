@@ -468,10 +468,11 @@ function CerebroAIPage() {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={loading}
-                className="px-4 py-3 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                className="px-4 py-3 bg-blue-50 border border-blue-300 rounded-xl hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
                 title="Adjuntar archivo"
               >
-                <Paperclip className="w-5 h-5 text-slate-600" />
+                <Paperclip className="w-5 h-5 text-blue-600" />
+                <span className="text-sm font-medium text-blue-600">Archivo</span>
               </button>
               
               <input
