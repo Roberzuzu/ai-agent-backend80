@@ -3,6 +3,12 @@ Script de prueba para verificar el sistema de fallback Perplexity → OpenAI
 """
 import asyncio
 import sys
+import os
+from dotenv import load_dotenv
+
+# Cargar variables de entorno
+load_dotenv('/app/backend/.env')
+
 sys.path.append('/app/backend')
 
 from ai_agent import AIAgent
