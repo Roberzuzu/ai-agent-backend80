@@ -379,7 +379,6 @@ function CerebroAIPage() {
                                 <pre className="text-xs text-slate-600 overflow-x-auto">
                                   {JSON.stringify(resultado.resultado, null, 2)}
                                 </pre>
-                                </pre>
                               </div>
                             ))}
                           </div>
