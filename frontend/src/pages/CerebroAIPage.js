@@ -324,7 +324,48 @@ function CerebroAIPage() {
                             : 'bg-slate-100 text-slate-800'
                         }`}
                       >
+                        {/* Show file preview for user messages with files */}
+                        {message.hasFile && message.filePreview && (
+                          <div className="mb-2">
+                            <img 
+                              src={message.filePreview} 
+                              alt="Uploaded" 
+                              className="max-w-xs rounded-lg"
+                            />
+                          </div>
+                        )}
+                        
                         <p className="whitespace-pre-wrap">{message.content}</p>
+                        
+                        {/* Show file info from bot response */}
+                        {message.file_info && (
+                          <div className="mt-3 pt-3 border-t border-slate-200">
+                            <p className="text-xs font-semibold mb-2 text-slate-600">📄 Información del archivo:</p>
+                            <div className="p-2 bg-white rounded-lg text-sm">
+                              <p className="text-slate-700">
+                                <strong>Tipo:</strong> {message.file_info.type}
+                              </p>
+                              {message.file_info.analysis && (
+                                <div className="mt-2">
+                                  <p className="text-slate-700 font-medium">Análisis:</p>
+                                  <p className="text-slate-600 text-xs mt-1">{message.file_info.analysis}</p>
+                                </div>
+                              )}
+                              {message.file_info.summary && (
+                                <div className="mt-2">
+                                  <p className="text-slate-700 font-medium">Resumen:</p>
+                                  <p className="text-slate-600 text-xs mt-1">{message.file_info.summary}</p>
+                                </div>
+                              )}
+                              {message.file_info.ai_analysis && (
+                                <div className="mt-2">
+                                  <p className="text-slate-700 font-medium">Análisis IA:</p>
+                                  <p className="text-slate-600 text-xs mt-1">{message.file_info.ai_analysis}</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
                         
                         {/* Show results if available */}
                         {message.resultados && message.resultados.length > 0 && (
@@ -337,6 +378,7 @@ function CerebroAIPage() {
                                 </p>
                                 <pre className="text-xs text-slate-600 overflow-x-auto">
                                   {JSON.stringify(resultado.resultado, null, 2)}
+                                </pre>
                                 </pre>
                               </div>
                             ))}
