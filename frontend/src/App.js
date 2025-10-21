@@ -45,6 +45,7 @@ function Navigation() {
   
   const navItems = [
     { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/cerebro-ai', icon: Brain, label: 'Cerebro AI' },
     { path: '/woocommerce', icon: Store, label: 'WooCommerce' },
     { path: '/dashboard-enhanced', icon: Gauge, label: 'Analytics' },
     { path: '/trends', icon: TrendingUp, label: 'Growth Hacker' },
