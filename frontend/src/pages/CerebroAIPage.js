@@ -258,9 +258,9 @@ function CerebroAIPage() {
         </div>
 
         {/* Chat Container */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden" style={{ height: 'calc(100vh - 280px)' }}>
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           {/* Messages */}
-          <div className="h-full overflow-y-auto p-6 space-y-4">
+          <div className="overflow-y-auto p-6 space-y-4" style={{ height: 'calc(100vh - 400px)' }}>
             {messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center">
                 <div className="p-4 bg-gradient-to-br from-blue-50 to-purple-50 rounded-full mb-4">
