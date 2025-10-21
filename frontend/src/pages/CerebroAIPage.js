@@ -380,19 +380,71 @@ function CerebroAIPage() {
 
           {/* Input */}
           <div className="border-t border-slate-200 p-4 bg-slate-50">
+            {/* File preview if selected */}
+            {selectedFile && (
+              <div className="mb-3 p-3 bg-white border border-slate-200 rounded-lg flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {filePreview ? (
+                    <img src={filePreview} alt="Preview" className="w-12 h-12 object-cover rounded" />
+                  ) : (
+                    <div className="w-12 h-12 bg-slate-100 rounded flex items-center justify-center">
+                      {selectedFile.type.includes('pdf') ? (
+                        <FileText className="w-6 h-6 text-red-500" />
+                      ) : selectedFile.type.includes('sheet') || selectedFile.type.includes('excel') || selectedFile.name.endsWith('.csv') ? (
+                        <FileSpreadsheet className="w-6 h-6 text-green-500" />
+                      ) : selectedFile.type.includes('document') ? (
+                        <FileText className="w-6 h-6 text-blue-500" />
+                      ) : (
+                        <FileText className="w-6 h-6 text-slate-500" />
+                      )}
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-medium text-slate-800">{selectedFile.name}</p>
+                    <p className="text-xs text-slate-500">
+                      {(selectedFile.size / 1024).toFixed(2)} KB
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleRemoveFile}
+                  className="p-1 hover:bg-slate-100 rounded transition-colors"
+                >
+                  <X className="w-5 h-5 text-slate-500" />
+                </button>
+              </div>
+            )}
+            
             <div className="flex gap-3">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileSelect}
+                className="hidden"
+                accept="image/*,.pdf,.docx,.xlsx,.xls,.csv,.txt"
+              />
+              
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={loading}
+                className="px-4 py-3 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                title="Adjuntar archivo"
+              >
+                <Paperclip className="w-5 h-5 text-slate-600" />
+              </button>
+              
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Escribe tu comando aquí... (Ej: Dame las estadísticas)"
+                placeholder={selectedFile ? "Escribe un comando para el archivo..." : "Escribe tu comando aquí..."}
                 className="flex-1 px-4 py-3 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 disabled={loading}
               />
               <button
                 onClick={handleSend}
-                disabled={loading || !input.trim()}
+                disabled={loading || (!input.trim() && !selectedFile)}
                 className="px-6 py-3 bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 font-medium"
               >
                 {loading ? (
@@ -404,7 +456,7 @@ function CerebroAIPage() {
               </button>
             </div>
             <p className="text-xs text-slate-500 mt-2">
-              💡 Tip: Puedes pedir estadísticas, análisis de productos, crear campañas y mucho más
+              💡 Tip: Sube una imagen de producto para analizarla y crear el producto automáticamente
             </p>
           </div>
         </div>
