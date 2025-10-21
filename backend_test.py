@@ -64,8 +64,8 @@ class AIAgentTester:
                     self.log_test("Agent Status Active", False, "agente_activo should be true", status)
                     return False
                 
-                if status.get("herramientas_disponibles") != 18:
-                    self.log_test("Agent Status Tools", False, f"Expected 18 tools, got {status.get('herramientas_disponibles')}", status)
+                if status.get("herramientas_disponibles") != 22:
+                    self.log_test("Agent Status Tools", False, f"Expected 22 tools, got {status.get('herramientas_disponibles')}", status)
                     return False
                 
                 # Verificar características
