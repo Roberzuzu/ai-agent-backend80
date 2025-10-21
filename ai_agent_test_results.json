@@ -3,38 +3,39 @@
     "passed": 5,
     "total": 5,
     "success_rate": "100.0%",
-    "timestamp": "2025-10-19T21:09:38.104627"
+    "timestamp": "2025-10-21T05:29:06.492915"
   },
   "detailed_results": [
     {
       "test": "Agent Status",
       "success": true,
-      "details": "Agent active with 18 tools, memory and RAG enabled",
-      "timestamp": "2025-10-19T21:09:18.479327",
+      "details": "Agent active with 22 tools, memory and RAG enabled",
+      "timestamp": "2025-10-21T05:28:55.982238",
       "response_data": {
         "success": true,
         "agente_activo": true,
-        "conversaciones_totales": 2,
-        "memorias_guardadas": 2,
-        "herramientas_disponibles": 18
+        "conversaciones_totales": 3,
+        "memorias_guardadas": 3,
+        "herramientas_disponibles": 22,
+        "modelo": "Perplexity Pro (sonar-pro)"
       }
     },
     {
       "test": "Agent Execute Simple",
       "success": true,
-      "details": "Command executed successfully with 2 results",
-      "timestamp": "2025-10-19T21:09:27.971678",
+      "details": "Command executed successfully with 1 results",
+      "timestamp": "2025-10-21T05:29:02.703967",
       "response_data": {
         "has_message": true,
         "has_plan": true,
-        "results_count": 2
+        "results_count": 1
       }
     },
     {
       "test": "Agent Memory Get",
       "success": true,
       "details": "Retrieved 1 memories for user test_user_backend",
-      "timestamp": "2025-10-19T21:09:27.986710",
+      "timestamp": "2025-10-21T05:29:02.716503",
       "response_data": {
         "total": 1,
         "memories_count": 1
@@ -43,8 +44,8 @@
     {
       "test": "Agent Chat",
       "success": true,
-      "details": "Chat response received with 0 suggested actions",
-      "timestamp": "2025-10-19T21:09:36.063852",
+      "details": "Chat response received with 1 suggested actions",
+      "timestamp": "2025-10-21T05:29:06.241022",
       "response_data": {
         "has_response": true,
         "has_plan": true
@@ -54,7 +55,7 @@
       "test": "Agent Search Memory",
       "success": true,
       "details": "Search returned 2 similar memories for query 'estad\u00edsticas'",
-      "timestamp": "2025-10-19T21:09:38.104471",
+      "timestamp": "2025-10-21T05:29:06.492746",
       "response_data": {
         "query": "estad\u00edsticas",
         "results_count": 2
