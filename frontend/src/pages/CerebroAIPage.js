@@ -418,8 +418,10 @@ function CerebroAIPage() {
               </>
             )}
           </div>
+        </div>
 
-          {/* Input */}
+        {/* Input Section - Always visible at bottom */}
+        <div className="bg-white rounded-xl shadow-sm mt-4">
           <div className="border-t border-slate-200 p-4 bg-slate-50">
             {/* File preview if selected */}
             {selectedFile && (
