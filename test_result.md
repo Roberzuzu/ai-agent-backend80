@@ -105,39 +105,63 @@
 user_problem_statement: |
   "Optimización de base de datos: Implementar sistema completo con índices, schema validation, migraciones automáticas y backups"
   
-  "NUEVO: Agregar 'Cerebro AI' a la app existente - Sistema de Agente Inteligente con Claude 3.5 Sonnet"
+  "ACTUALIZACIÓN: Migración del Cerebro AI de Claude 3.5 Sonnet a Perplexity con fallback a OpenAI"
   
   Implementación completa:
   1. Endpoint POST /api/agent/execute para interpretar comandos en lenguaje natural
-  2. Integración con Claude 3.5 Sonnet para toma de decisiones
-  3. Sistema de memoria persistente con MongoDB
-  4. Búsqueda semántica con RAG (Retrieval-Augmented Generation)
-  5. 18 herramientas integradas (productos, análisis, marketing, creatividad, integraciones)
-  6. Bot de Telegram funcionando como mensajero
-  7. Historial completo de conversaciones
-  8. Embeddings con OpenAI para búsqueda contextual
+  2. Integración con Perplexity (sonar-pro) como cerebro primario
+  3. Sistema de fallback automático a OpenAI (gpt-4o) si Perplexity falla
+  4. Sistema de memoria persistente con MongoDB
+  5. Búsqueda semántica con RAG (Retrieval-Augmented Generation)
+  6. 22 herramientas integradas (productos, análisis, marketing, creatividad, integraciones)
+  7. Bot de Telegram funcionando como mensajero
+  8. Historial completo de conversaciones
+  9. Embeddings con OpenAI para búsqueda contextual
 
 backend:
-  - task: "Cerebro AI - Agente Inteligente con Claude 3.5 Sonnet"
+  - task: "Cerebro AI - Sistema con Perplexity + OpenAI Fallback"
     implemented: true
     working: true
     file: "backend/ai_agent.py, backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: true
         agent: "main"
         comment: |
-          ✅ Sistema completo implementado:
-          - AIAgent con Claude 3.5 Sonnet para interpretar comandos
-          - 18 herramientas integradas (productos, análisis, marketing, creatividad)
+          ✅ ACTUALIZACIÓN COMPLETADA - SISTEMA DE FALLBACK IMPLEMENTADO:
+          
+          🔄 CAMBIO PRINCIPAL:
+          - Migración de Claude 3.5 Sonnet a Perplexity (sonar-pro)
+          - Sistema de fallback automático a OpenAI (gpt-4o)
+          
+          🔑 API KEYS ACTUALIZADAS:
+          - PERPLEXITY_API_KEY: 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
+          - OPENAI_API_KEY: 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
+          
+          🧠 LÓGICA DE FALLBACK:
+          1. PRIMARIO: Intenta con Perplexity (sonar-pro)
+          2. BACKUP: Si Perplexity falla (error, timeout, etc), usa OpenAI (gpt-4o)
+          3. Logging completo de intentos y errores
+          4. Retorna información del provider usado
+          
+          ✅ TESTS REALIZADOS:
+          - Test 1: Perplexity funcionando correctamente ✅
+          - Test 2: Fallback a OpenAI cuando Perplexity falla ✅
+          - Sistema de memoria y RAG funcionando ✅
+          - 22 herramientas integradas funcionando ✅
+          
+          📊 CARACTERÍSTICAS:
+          - AIAgent con Perplexity para interpretar comandos
+          - 22 herramientas integradas (productos, análisis, marketing, creatividad, scraping, SEO)
           - Sistema de memoria persistente en MongoDB (colecciones: conversations, agent_memory)
           - Búsqueda semántica con RAG usando embeddings de OpenAI
           - Embeddings vectoriales con similaridad de coseno
           - Endpoints: /api/agent/execute, /api/agent/chat, /api/agent/status
           - Gestión de memoria: GET/DELETE /api/agent/memory/{user_id}
           - Búsqueda semántica: POST /api/agent/search-memory
+          
       - working: true
         agent: "testing"
         comment: |
