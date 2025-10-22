@@ -301,28 +301,48 @@ class AI_WooCommerce_Agent {
      * Render dashboard page
      */
     public function render_dashboard_page() {
-        include AIWCA_PLUGIN_DIR . 'templates/admin/dashboard.php';
+        $file = AIWCA_PLUGIN_DIR . 'templates/admin/dashboard.php';
+        if (file_exists($file)) {
+            include $file;
+        } else {
+            echo '<div class="wrap"><h1>Dashboard</h1><p>Template file not found.</p></div>';
+        }
     }
     
     /**
      * Render commands page
      */
     public function render_commands_page() {
-        include AIWCA_PLUGIN_DIR . 'templates/admin/commands.php';
+        $file = AIWCA_PLUGIN_DIR . 'templates/admin/commands.php';
+        if (file_exists($file)) {
+            include $file;
+        } else {
+            echo '<div class="wrap"><h1>Commands</h1><p>Template file not found.</p></div>';
+        }
     }
     
     /**
      * Render telegram page
      */
     public function render_telegram_page() {
-        include AIWCA_PLUGIN_DIR . 'templates/admin/telegram.php';
+        $file = AIWCA_PLUGIN_DIR . 'templates/admin/telegram.php';
+        if (file_exists($file)) {
+            include $file;
+        } else {
+            echo '<div class="wrap"><h1>Telegram Bot</h1><p>Template file not found.</p></div>';
+        }
     }
     
     /**
      * Render settings page
      */
     public function render_settings_page() {
-        include AIWCA_PLUGIN_DIR . 'templates/admin/settings.php';
+        $file = AIWCA_PLUGIN_DIR . 'templates/admin/settings.php';
+        if (file_exists($file)) {
+            include $file;
+        } else {
+            echo '<div class="wrap"><h1>Settings</h1><p>Template file not found.</p></div>';
+        }
     }
     
     /**
