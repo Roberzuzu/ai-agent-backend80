@@ -23,16 +23,16 @@ except ImportError:
     GA_AVAILABLE = False
     print("⚠️ Google Analytics no disponible")
 
-# Configuración
-TELEGRAM_TOKEN = "7708509018:AAErAOblRAlC587j1QB4k19PAfDgoiZ3kWk"
-TELEGRAM_CHAT_ID = 7202793910
-BACKEND_URL = "https://plugin-stability.preview.emergentagent.com/api"
-WC_URL = "https://herramientasyaccesorios.store/wp-json/wc/v3"
-WC_KEY = "ck_4f50637d85ec404fff441fceb7b113b5050431ea"
-WC_SECRET = "cs_e59ef18ea20d80ffdf835803ad2fdd834a4ba19f"
-WP_URL = "https://herramientasyaccesorios.store/wp-json/wp/v2"
-WP_USER = "agenteweb@herramientasyaccesorios.store"
-WP_PASS = "RWWLW1eVi8whOS5OsUosb5AU"
+# STANDALONE CONFIGURATION - Load from environment
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "7708509018:AAErAOblRAlC587j1QB4k19PAfDgoiZ3kWk")
+TELEGRAM_CHAT_ID = int(os.getenv("TELEGRAM_CHAT_ID", "7202793910"))
+BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8001/api")
+WC_URL = os.getenv("WC_URL", "https://herramientasyaccesorios.store/wp-json/wc/v3")
+WC_KEY = os.getenv("WC_KEY", "ck_4f50637d85ec404fff441fceb7b113b5050431ea")
+WC_SECRET = os.getenv("WC_SECRET", "cs_e59ef18ea20d80ffdf835803ad2fdd834a4ba19f")
+WP_URL = os.getenv("WP_URL", "https://herramientasyaccesorios.store/wp-json/wp/v2")
+WP_USER = os.getenv("WP_USER", "agenteweb@herramientasyaccesorios.store")
+WP_PASS = os.getenv("WP_PASS", "RWWLW1eVi8whOS5OsUosb5AU")
 
 # Logging
 logging.basicConfig(
