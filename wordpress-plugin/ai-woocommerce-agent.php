@@ -487,6 +487,10 @@ class AI_WooCommerce_Agent {
      * Handle Telegram webhook
      */
     public function handle_telegram_webhook($request) {
+        if (!class_exists('AIWCA_Telegram_Bot')) {
+            return new WP_REST_Response(array('status' => 'error', 'message' => 'Telegram bot not loaded'), 500);
+        }
+        
         $telegram = new AIWCA_Telegram_Bot();
         return $telegram->handle_webhook($request);
     }
@@ -496,6 +500,10 @@ class AI_WooCommerce_Agent {
      */
     public function process_telegram_updates() {
         if (get_option('aiwca_enable_telegram_bot') !== 'yes') {
+            return;
+        }
+        
+        if (!class_exists('AIWCA_Telegram_Bot')) {
             return;
         }
         
