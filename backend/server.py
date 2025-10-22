@@ -13,8 +13,9 @@ import uuid
 import secrets
 import string
 from datetime import datetime, timezone, timedelta
-from emergentintegrations.llm.chat import LlmChat, UserMessage
-from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
+# STANDALONE VERSION - No Emergent dependencies
+from llm_client import LlmChat, UserMessage
+from stripe_client import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
 import asyncio
 from social_integrations import SocialMediaPublisher
 from wordpress_integration import WordPressIntegration
