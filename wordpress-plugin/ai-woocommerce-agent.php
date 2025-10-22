@@ -507,6 +507,13 @@ class AI_WooCommerce_Agent {
      * Process product with AI
      */
     private function process_product_with_ai($product_id) {
+        if (!class_exists('AIWCA_Product_Processor')) {
+            return array(
+                'success' => false,
+                'message' => 'Product processor class not loaded'
+            );
+        }
+        
         $processor = new AIWCA_Product_Processor();
         return $processor->process($product_id);
     }
