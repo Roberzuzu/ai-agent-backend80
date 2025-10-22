@@ -90,11 +90,20 @@ class AI_WooCommerce_Agent {
      * Load dependencies
      */
     private function load_dependencies() {
-        require_once AIWCA_PLUGIN_DIR . 'includes/class-ai-client.php';
-        require_once AIWCA_PLUGIN_DIR . 'includes/class-telegram-bot.php';
-        require_once AIWCA_PLUGIN_DIR . 'includes/class-product-processor.php';
-        require_once AIWCA_PLUGIN_DIR . 'includes/class-agent-executor.php';
-        require_once AIWCA_PLUGIN_DIR . 'includes/functions.php';
+        $files = array(
+            'includes/class-ai-client.php',
+            'includes/class-telegram-bot.php',
+            'includes/class-product-processor.php',
+            'includes/class-agent-executor.php',
+            'includes/functions.php'
+        );
+        
+        foreach ($files as $file) {
+            $path = AIWCA_PLUGIN_DIR . $file;
+            if (file_exists($path)) {
+                require_once $path;
+            }
+        }
     }
     
     /**
