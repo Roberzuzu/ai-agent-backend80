@@ -39,7 +39,7 @@ $auto_generate_content = get_option('ai_dropship_auto_generate_content', 'no') =
                 <td>
                     <input type="url" id="api_url" name="api_url" value="<?php echo esc_attr($api_url); ?>" class="regular-text" required>
                     <p class="description">
-                        <?php _e('URL del backend de procesamiento (ej: https://plugin-stability.preview.emergentagent.com/api)', 'ai-dropshipping'); ?>
+                        <?php _e('URL del backend de procesamiento (ej: https://backend-verify-6.preview.emergentagent.com/api)', 'ai-dropshipping'); ?>
                     </p>
                 </td>
             </tr>

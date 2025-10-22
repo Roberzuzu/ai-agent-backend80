@@ -149,7 +149,7 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "https://plugin-stability.preview.emergentagent.com/api/agent/status",
+        "url": "https://backend-verify-6.preview.emergentagent.com/api/agent/status",
         "options": {}
       },
       "id": "get-status",
@@ -175,7 +175,7 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "=https://plugin-stability.preview.emergentagent.com/api/agent/memory/{{ $json.user_id }}?limit=5",
+        "url": "=https://backend-verify-6.preview.emergentagent.com/api/agent/memory/{{ $json.user_id }}?limit=5",
         "options": {}
       },
       "id": "get-memory",
@@ -276,7 +276,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://plugin-stability.preview.emergentagent.com/api/agent/execute",
+        "url": "https://backend-verify-6.preview.emergentagent.com/api/agent/execute",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ command: $json.command, user_id: $json.user_id }) }}",

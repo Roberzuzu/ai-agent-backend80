@@ -57,7 +57,7 @@ Cerebro AI es un plugin revolucionario para WordPress que integra inteligencia a
 1. Ve a **Cerebro AI** en el menú de WordPress
 2. Configura la **URL de la API**: 
    ```
-   https://plugin-stability.preview.emergentagent.com/api
+   https://backend-verify-6.preview.emergentagent.com/api
    ```
    (O tu URL personalizada si tienes tu propia instalación)
 3. Activa el **Chat flotante**

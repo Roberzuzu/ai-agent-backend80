@@ -33,7 +33,7 @@
     },
     {
       "parameters": {
-        "url": "https://plugin-stability.preview.emergentagent.com/api/ai/product/complete",
+        "url": "https://backend-verify-6.preview.emergentagent.com/api/ai/product/complete",
         "method": "POST",
         "sendBody": true,
         "bodyParameters": {
