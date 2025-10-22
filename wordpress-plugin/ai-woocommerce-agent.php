@@ -415,6 +415,10 @@ class AI_WooCommerce_Agent {
             wp_send_json_error('Empty command');
         }
         
+        if (!class_exists('AIWCA_Agent_Executor')) {
+            wp_send_json_error('Agent executor not loaded');
+        }
+        
         $executor = new AIWCA_Agent_Executor();
         $result = $executor->execute($command, get_current_user_id());
         
