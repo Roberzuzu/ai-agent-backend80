@@ -1,245 +1,262 @@
-# AI Dropshipping Manager - Super Powered v2.0
+# AI WooCommerce Agent - WordPress Plugin
 
-Plugin de WordPress con **SUPER PODERES AI** para gestión automática de productos de dropshipping.
+## 🚀 Descripción
 
-## 🚀 Características Principales
+Plugin de WordPress que integra un agente AI potente para WooCommerce con Perplexity, OpenAI, bot de Telegram y 22+ herramientas integradas.
 
-### ✨ PROCESAMIENTO COMPLETO AI
-Un solo click para procesar productos con todas las funcionalidades AI:
-- **Descripción SEO Profesional** - OpenRouter (Claude 3.5 Sonnet)
-- **Análisis de Mercado en Tiempo Real** - Perplexity
-- **Precio Óptimo Calculado** - Abacus AI
-- **Generación de Imágenes** - Fal AI (Flux) + OpenAI DALL-E
-- **Contenido para Redes Sociales** - Instagram, Facebook, Twitter
-- **Campañas de Email Marketing** - Asuntos, contenido HTML, segmentación
+## ✨ Características Principales
 
-### 📝 A) GENERACIÓN DE CONTENIDO
-- ✅ Descripciones profesionales optimizadas para SEO
-- ✅ Meta títulos y descripciones automáticas
-- ✅ Keywords relevantes para posicionamiento
-- ✅ Blogs y artículos sobre productos
-- ✅ Contenido multilenguaje (ES/EN)
+- 🤖 **Agente AI con Perplexity y OpenAI**
+- 📝 **Optimización automática de productos**
+- 📱 **Bot de Telegram integrado**
+- 🗣️ **Comandos en lenguaje natural**
+- 📊 **Análisis y reportes inteligentes**
+- 🔧 **22+ herramientas integradas**
+- 🧠 **Sistema de memoria con RAG**
+- ⚡ **Workflows automatizados**
 
-### 🖼️ B) GENERACIÓN DE IMÁGENES
-- ✅ Imágenes realistas de productos con IA
-- ✅ Banners promocionales automáticos
-- ✅ Infografías de características
-- ✅ Múltiples variaciones de imágenes
-- ✅ Upload automático a WordPress Media Library
+## 💻 Requisitos
 
-### 📊 C) ANÁLISIS DE MERCADO
-- ✅ Investigación de competencia en tiempo real
-- ✅ Análisis de precios óptimos
-- ✅ Tendencias de búsqueda y keywords
-- ✅ Predicciones de demanda
-- ✅ Sugerencias de pricing strategy
-
-### 🤖 D) AUTOMATIZACIÓN COMPLETA
-- ✅ Procesamiento batch de múltiples productos
-- ✅ Cola de trabajos con prioridades
-- ✅ Generación de posts para redes sociales
-- ✅ Templates de email marketing
-- ✅ Dashboard avanzado con estadísticas
+- WordPress 6.0+
+- WooCommerce 7.0+
+- PHP 7.4+
+- Al menos una API key (Perplexity u OpenAI)
 
 ## 📦 Instalación
 
-### Requisitos Previos
-- WordPress 5.8 o superior
-- WooCommerce 5.0 o superior
-- PHP 7.4 o superior
-- Backend FastAPI corriendo (incluido en el proyecto)
+### Opción 1: Desde ZIP
 
-### Pasos de Instalación
+1. Descarga `ai-woocommerce-agent.zip`
+2. Ve a **Plugins > Añadir nuevo > Subir plugin**
+3. Selecciona el archivo ZIP
+4. Haz clic en "Instalar ahora"
+5. Activa el plugin
 
-1. **Subir Plugin a WordPress**
-   - Comprimir la carpeta `wordpress-plugin` en un archivo ZIP
-   - Ir a WordPress Admin → Plugins → Añadir Nuevo
-   - Click en "Subir Plugin" → Seleccionar el archivo ZIP
-   - Click en "Instalar Ahora"
-   - Activar el plugin
+### Opción 2: Manual
 
-2. **Configurar Backend API**
-   - Ir a AI Dropshipping → Configuración
-   - Configurar URL del backend FastAPI
-   - Por defecto: `https://plugin-stability.preview.emergentagent.com/api`
+1. Descomprime el archivo
+2. Sube la carpeta `ai-woocommerce-agent` a `/wp-content/plugins/`
+3. Activa el plugin desde el menú Plugins
 
-3. **Verificar Conexión**
-   - El plugin verificará automáticamente que todas las APIs AI estén disponibles
-   - Verás un indicador de estado en el dashboard
+## ⚙️ Configuración
 
-## 🎯 Uso del Plugin
+### 1. Obtener API Keys
 
-### En la Edición de Productos
+**Perplexity (Recomendado):**
+- Visita: https://perplexity.ai
+- Crea una cuenta
+- Genera tu API key
 
-Cuando edites un producto en WooCommerce, verás un nuevo meta box "🤖 AI Dropshipping" con los siguientes botones:
+**OpenAI (Alternativa):**
+- Visita: https://platform.openai.com
+- Crea una cuenta
+- Genera tu API key
 
-1. **🚀 PROCESAMIENTO COMPLETO AI**
-   - Ejecuta todas las funcionalidades en un solo click
-   - Genera descripción SEO + imágenes + precio óptimo + contenido social
-   - Proceso tarda 2-3 minutos
+**Telegram Bot (Opcional):**
+- Abre Telegram
+- Busca @BotFather
+- Envía `/newbot`
+- Sigue las instrucciones
+- Guarda el token
 
-2. **📝 Descripción SEO**
-   - Genera descripción profesional optimizada
-   - Incluye meta tags y keywords
-   - Proceso tarda ~30 segundos
+### 2. Configurar Plugin
 
-3. **🖼️ Generar Imágenes**
-   - Crea 2 imágenes profesionales del producto
-   - Las descarga y aplica automáticamente
-   - Proceso tarda 1-2 minutos
+1. Ve a **AI Agent > Settings**
+2. Ingresa tus API keys:
+   - Perplexity API Key (recomendado)
+   - OpenAI API Key (backup)
+   - Telegram Bot Token (opcional)
+   - Telegram Chat ID (opcional)
+3. Selecciona tu proveedor AI preferido
+4. Habilita funciones automáticas si lo deseas
+5. Guarda los cambios
+6. Haz clic en "Test Connection" para verificar
 
-4. **💰 Precio Óptimo**
-   - Calcula precio basado en análisis de mercado
-   - Aplica automáticamente al producto
-   - Proceso tarda ~10 segundos
+## 📚 Uso
 
-5. **📊 Análisis de Mercado**
-   - Investiga competencia y tendencias
-   - Muestra rangos de precios y keywords
-   - Proceso tarda ~30 segundos
+### Dashboard
 
-6. **📱 Contenido Social**
-   - Genera posts para Instagram, Facebook, Twitter
-   - Incluye hashtags y mejores horarios
-   - Proceso tarda ~20 segundos
+- Ve a **AI Agent > Dashboard**
+- Ver estadísticas en tiempo real
+- Acciones rápidas
+- Actividad reciente
 
-### En el Dashboard
+### Command Center
 
-- **Vista de productos sin precio**: Procesa múltiples productos de una vez
-- **Estadísticas de uso**: Ve cuántos productos has procesado
-- **Historial de generaciones AI**: Revisa el contenido generado
+- Ve a **AI Agent > Command Center**
+- Escribe comandos en lenguaje natural:
+  - "Muéstrame productos sin precio"
+  - "Optimiza el producto 123"
+  - "Busca tendencias de herramientas"
+  - "Analiza la competencia"
 
-## 🔧 Configuración Avanzada
+### Procesar Productos
 
-### API Keys
+**Opción 1: Desde edición de producto**
+1. Edita cualquier producto
+2. Busca "AI Optimization"
+3. Clic en "Process with AI Agent"
+4. Espera a que el AI optimice:
+   - Descripción SEO
+   - Precio óptimo
+   - Imágenes (si configurado)
 
-El backend ya tiene configuradas todas las APIs:
-- ✅ OpenRouter (Claude 3.5 Sonnet)
-- ✅ Perplexity (Búsqueda en tiempo real)
-- ✅ OpenAI (GPT-4 + DALL-E 3)
-- ✅ Fal AI (Flux Wan 2.5)
-- ✅ Abacus AI (Análisis predictivo)
+**Opción 2: Desde Telegram**
+1. Envía: `/procesar 123` (reemplaza 123 con ID del producto)
+2. O en lenguaje natural: "Optimiza el producto de taladro"
 
-### Personalización
+**Opción 3: Procesamiento automático**
+1. Ve a Settings
+2. Activa "Auto-optimize Products"
+3. Todos los productos nuevos se procesaran automáticamente
 
-Puedes modificar el comportamiento editando los archivos:
-- `includes/class-ai-client.php` - Cliente API
-- `admin/dashboard.php` - Dashboard
-- `assets/js/admin.js` - Interacciones JavaScript
+### Telegram Bot
 
-## 📚 APIs Utilizadas
+**Configurar:**
+1. Ve a **AI Agent > Telegram Bot**
+2. Copia la Webhook URL
+3. Configura el webhook en Telegram:
+   ```
+   https://api.telegram.org/bot<TOKEN>/setWebhook?url=<WEBHOOK_URL>
+   ```
 
-### OpenRouter
-- **Modelo**: anthropic/claude-3.5-sonnet
-- **Uso**: Generación de contenido premium, descripciones SEO
-- **Ventaja**: Mejor calidad de texto, entendimiento contextual
+**Comandos disponibles:**
+- `/procesar [ID]` - Procesar producto
+- `/ayuda` - Ver ayuda
+- Lenguaje natural: "Muéstrame ventas de hoy"
 
-### Perplexity
-- **Modelo**: llama-3.1-sonar-large-128k-online
-- **Uso**: Investigación de mercado en tiempo real
-- **Ventaja**: Búsqueda web actualizada, datos actuales
+## 🔧 Herramientas Disponibles
+
+### Gestión de Productos
+- Obtener lista de productos
+- Procesar producto con AI
+- Actualizar producto
+- Buscar productos
+- Optimizar descripciones
+- Calcular precios óptimos
+- Generar imágenes con AI
+
+### Análisis
+- Estadísticas del sitio
+- Análisis de ventas
+- Reportes de rendimiento
+- Búsqueda de tendencias
+- Análisis de competencia
+- Investigación de mercado
+
+### Automatización
+- Procesamiento automático
+- Workflows personalizados
+- Notificaciones de Telegram
+- Tareas programadas
+
+## 💰 Costos de APIs
+
+### Perplexity (Recomendado)
+- Modelo: sonar-pro
+- Costo: ~$0.001 por 1K tokens
+- Acceso a web en tiempo real
+- Ideal para investigación de mercado
 
 ### OpenAI
-- **Modelos**: GPT-4 Turbo + DALL-E 3
-- **Uso**: Texto alternativo y generación de imágenes
-- **Ventaja**: Alta calidad, confiable
+- Modelo: GPT-4o
+- Costo: ~$2.50 por 1M tokens entrada
+- Excelente para generación de texto
+- Backup automático si Perplexity falla
 
-### Fal AI
-- **Modelo**: flux/dev (Wan 2.5)
-- **Uso**: Generación principal de imágenes
-- **Ventaja**: Imágenes ultra realistas, rápido
+### Telegram
+- **Gratis**
 
-### Abacus AI
-- **Uso**: Análisis predictivo de precios y demanda
-- **Ventaja**: Predicciones basadas en datos de mercado
+### Estimado Mensual
+- Uso ligero (10-20 productos/día): $5-10 USD
+- Uso medio (50-100 productos/día): $20-40 USD
+- Uso intensivo (200+ productos/día): $50-100 USD
 
-## 🎨 Ejemplos de Uso
+## 🔗 Integración con Backend Standalone
 
-### Ejemplo 1: Producto Nuevo
+Este plugin es compatible con el backend FastAPI standalone:
+
+1. Despliega el backend standalone en tu servidor
+2. En plugin settings, ingresa la Backend URL
+3. El plugin usará el backend si está disponible
+4. De lo contrario, usará APIs directas
+
+## ⚠️ Problemas Comunes
+
+### "Backend offline"
+- Verifica que el Backend URL sea correcto
+- O deja el campo vacío para usar APIs directas
+
+### "API key invalid"
+- Verifica que copiaste la key completa
+- Sin espacios al inicio o final
+- Verifica que la key no haya expirado
+
+### "Telegram Bot not responding"
+- Verifica el Bot Token
+- Configura el webhook correctamente
+- Verifica que el Chat ID sea correcto
+
+### "Product not optimized"
+- Verifica que tengas al menos una API key configurada
+- Revisa los logs en Settings
+- Intenta con otro proveedor AI
+
+## 📝 Logs y Debug
+
+Activar debug en WordPress:
+
+```php
+// En wp-config.php
+define('WP_DEBUG', true);
+define('WP_DEBUG_LOG', true);
 ```
-1. Crear producto en WooCommerce con solo el nombre
-2. Click en "🚀 PROCESAMIENTO COMPLETO AI"
-3. Esperar 2-3 minutos
-4. El producto ahora tiene:
-   - Descripción SEO completa
-   - 2 imágenes profesionales
-   - Precio óptimo calculado
-   - Meta tags configurados
-   - Keywords relevantes
-```
 
-### Ejemplo 2: Mejorar Producto Existente
-```
-1. Abrir producto en edición
-2. Click en "🖼️ Generar Imágenes"
-3. Esperar 1-2 minutos
-4. Las nuevas imágenes AI se aplican automáticamente
-```
+Logs estarán en: `/wp-content/debug.log`
 
-### Ejemplo 3: Análisis de Mercado
-```
-1. Abrir producto en edición
-2. Click en "📊 Análisis de Mercado"
-3. Ver resultados de:
-   - Rango de precios competitivos
-   - Tendencias actuales
-   - Keywords recomendadas
-```
+## 🔒 Privacidad y Seguridad
 
-## ⚠️ Notas Importantes
+- Las API keys se guardan encriptadas en la base de datos
+- Los datos de productos se envían a servicios externos (Perplexity/OpenAI)
+- Cumple con GDPR (si configuras correctamente)
+- Las imágenes generadas son almacenadas localmente
 
-1. **Tiempos de Procesamiento**
-   - Descripción: ~30 segundos
-   - Imágenes: 1-2 minutos
-   - Procesamiento completo: 2-3 minutos
-   - No cerrar la página durante el procesamiento
+## 🌐 Idiomas Soportados
 
-2. **Límites de Uso**
-   - Las APIs tienen límites de uso según el plan
-   - Evita procesar demasiados productos simultáneamente
-   - Usa "Procesamiento Completo" solo cuando sea necesario
+- 🇪🇸 Español (completo)
+- 🇬🇧 English (complete)
 
-3. **Calidad de Resultados**
-   - Mejores resultados con nombres de productos descriptivos
-   - Categorías bien definidas mejoran el análisis
-   - Revisa el contenido generado antes de publicar
+## 💬 Soporte
 
-## 🐛 Solución de Problemas
+- **Documentación**: Incluida en el plugin
+- **Issues**: Crea un issue en GitHub
+- **Email**: tu-email@dominio.com
 
-### El plugin no se conecta al backend
-- Verificar que el backend FastAPI esté corriendo
-- Verificar la URL en Configuración
-- Revisar que el puerto 8001 esté accesible
+## 🚀 Roadmap
 
-### Las imágenes no se generan
-- Verificar que el producto tenga un nombre descriptivo
-- Verificar que haya espacio en la media library
-- Revisar permisos de escritura en WordPress
+### v1.1.0 (Próximamente)
+- [ ] Integración con más proveedores AI
+- [ ] Generación de imágenes con Fal AI
+- [ ] Batch processing de productos
+- [ ] Dashboard avanzado con gráficas
+- [ ] Integración con WhatsApp
 
-### El procesamiento tarda mucho
-- Normal para "Procesamiento Completo" (2-3 minutos)
-- Si tarda más de 5 minutos, recargar la página
-- Verificar logs del backend para errores
+### v1.2.0
+- [ ] Marketplace de herramientas
+- [ ] Workflows visuales
+- [ ] Integración con Google Analytics
+- [ ] A/B testing automatizado
 
-## 📞 Soporte
-
-Para soporte técnico:
-- Revisar logs en: `/var/log/supervisor/backend.err.log`
-- Dashboard de FastAPI: `http://localhost:8001/docs`
-- Health check API: `http://localhost:8001/api/ai/health`
-
-## 📄 Licencia
+## 📝 Licencia
 
 GPL v2 or later
 
-## 👨‍💻 Autor
+## 👥 Créditos
 
-Agente Monetización
-- Web: https://emergentagent.com
-- Email: support@emergentagent.com
+- Desarrollado por: Tu Nombre
+- Basado en: AI WooCommerce Agent Standalone
+- Powered by: Perplexity AI, OpenAI, Telegram
 
 ---
 
-**Versión**: 2.0.0  
-**Última actualización**: Octubre 2024  
-**Compatible con**: WordPress 5.8+, WooCommerce 5.0+
+**¡Disfruta de tu agente AI para WooCommerce! 🎉**
