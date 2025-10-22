@@ -26,7 +26,7 @@ define('AI_DROPSHIP_URL', plugin_dir_url(__FILE__));
 define('AI_DROPSHIP_FILE', __FILE__);
 
 // API Configuration
-define('AI_DROPSHIP_API_URL', 'https://api-switcher.preview.emergentagent.com/api');
+define('AI_DROPSHIP_API_URL', 'https://plugin-stability.preview.emergentagent.com/api');
 
 // AI Super Powers - APIs Externas
 define('OPENROUTER_API_KEY', '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');

@@ -275,7 +275,7 @@ GET  /api/ai/health                     # Health check APIs
 2. **Configurar API Backend**
    ```
    AI Dropshipping → Configuración
-   → URL Backend: https://api-switcher.preview.emergentagent.com/api
+   → URL Backend: https://plugin-stability.preview.emergentagent.com/api
    → Guardar
    ```
 

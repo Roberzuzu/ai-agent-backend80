@@ -64,7 +64,7 @@ Cualquier texto que NO empiece con `/` se envía al Cerebro AI:
 En los nodos HTTP Request, verifica que la URL sea correcta:
 
 ```
-https://api-switcher.preview.emergentagent.com/api/agent/...
+https://plugin-stability.preview.emergentagent.com/api/agent/...
 ```
 
 Si tu dominio es diferente, actualiza en estos nodos:
@@ -209,7 +209,7 @@ TELEGRAM_BOT_TOKEN=7708509018:AAErAOblRAlC587j1QB4k19PAfDgoiZ3kWk
 TELEGRAM_CHAT_ID=7202793910
 
 # Backend URL
-BACKEND_URL=https://api-switcher.preview.emergentagent.com
+BACKEND_URL=https://plugin-stability.preview.emergentagent.com
 ```
 
 ---
@@ -346,7 +346,7 @@ db.agent_memory.find().limit(5).sort({timestamp: -1})
 
 - **Workflow File:** `/app/n8n-workflow-cerebro-ai-telegram.json`
 - **Documentación Completa:** `/app/CEREBRO_AI_SISTEMA_COMPLETO.md`
-- **Backend:** `https://api-switcher.preview.emergentagent.com`
+- **Backend:** `https://plugin-stability.preview.emergentagent.com`
 - **n8n Docs:** https://docs.n8n.io
 
 ---

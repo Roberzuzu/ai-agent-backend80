@@ -85,19 +85,19 @@ Los siguientes nodos tienen URLs del backend, verifica que sean correctas:
 
 #### Nodo: `📊 Get Agent Status`
 ```
-URL: https://api-switcher.preview.emergentagent.com/api/agent/status
+URL: https://plugin-stability.preview.emergentagent.com/api/agent/status
 Method: GET
 ```
 
 #### Nodo: `🧠 Get Memory`
 ```
-URL: https://api-switcher.preview.emergentagent.com/api/agent/memory/{{ $json.user_id }}?limit=5
+URL: https://plugin-stability.preview.emergentagent.com/api/agent/memory/{{ $json.user_id }}?limit=5
 Method: GET
 ```
 
 #### Nodo: `🤖 Execute Cerebro AI`
 ```
-URL: https://api-switcher.preview.emergentagent.com/api/agent/execute
+URL: https://plugin-stability.preview.emergentagent.com/api/agent/execute
 Method: POST
 Body: JSON
 Timeout: 180000ms (3 minutos)
@@ -312,7 +312,7 @@ Envía: /memoria
 
 **Verificar estado del backend:**
 ```bash
-curl https://api-switcher.preview.emergentagent.com/api/agent/status
+curl https://plugin-stability.preview.emergentagent.com/api/agent/status
 ```
 
 **Debe retornar:**

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BASE_URL="https://api-switcher.preview.emergentagent.com"
+BASE_URL="https://plugin-stability.preview.emergentagent.com"
 
 echo "================================================================"
 echo "🧪 PRUEBA DE APIS - CEREBRO AI"

@@ -2,7 +2,7 @@
 
 ## 📍 INFORMACIÓN BÁSICA
 
-**URL Base:** `https://api-switcher.preview.emergentagent.com`  
+**URL Base:** `https://plugin-stability.preview.emergentagent.com`  
 **Endpoint Principal:** `/api/agent/execute`  
 **Método:** POST  
 **Content-Type:** application/json
@@ -33,7 +33,7 @@ https://tu-n8n-instance.com/webhook/cerebro-ai
 
 ```
 Method: POST
-URL: https://api-switcher.preview.emergentagent.com/api/agent/execute
+URL: https://plugin-stability.preview.emergentagent.com/api/agent/execute
 Authentication: None
 Send Body: ✅ (activado)
 Body Content Type: JSON
@@ -253,12 +253,12 @@ tail -f /var/log/supervisor/backend.*.log | grep -E "(Perplexity|OpenAI|Error)"
 
 ### Verificar estado del agente:
 ```bash
-curl https://api-switcher.preview.emergentagent.com/api/agent/status | jq .
+curl https://plugin-stability.preview.emergentagent.com/api/agent/status | jq .
 ```
 
 ### Ver historial de un usuario:
 ```bash
-curl "https://api-switcher.preview.emergentagent.com/api/agent/memory/n8n_user?limit=10" | jq .
+curl "https://plugin-stability.preview.emergentagent.com/api/agent/memory/n8n_user?limit=10" | jq .
 ```
 
 ---
@@ -306,7 +306,7 @@ Importa este workflow directamente en n8n:
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api-switcher.preview.emergentagent.com/api/agent/execute",
+        "url": "https://plugin-stability.preview.emergentagent.com/api/agent/execute",
         "jsonParameters": true,
         "options": {},
         "bodyParametersJson": "={\n  \"command\": \"{{ $json.body.command }}\",\n  \"user_id\": \"{{ $json.body.user_id || 'n8n_user' }}\"\n}"

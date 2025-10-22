@@ -12,9 +12,9 @@ from datetime import datetime
 from typing import Dict, Any, List
 
 # Configuration
-BASE_URL = "https://api-switcher.preview.emergentagent.com/api"
+BASE_URL = "https://plugin-stability.preview.emergentagent.com/api"
 TEST_USER_ID = "test_user_backend"
-ORIGIN_URL = "https://api-switcher.preview.emergentagent.com"
+ORIGIN_URL = "https://plugin-stability.preview.emergentagent.com"
 
 class AIAgentTester:
     def __init__(self):
