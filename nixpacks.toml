@@ -1,14 +1,21 @@
+# Nixpacks configuration for Railway
+# Tells Railway to use Python and ignore Docker
+
 [phases.setup]
 nixPkgs = ["python310", "pip"]
 
 [phases.install]
 cmds = [
   "cd backend",
-  "pip install -r requirements_standalone.txt"
+  "pip install --no-cache-dir -r requirements_standalone.txt"
 ]
 
 [phases.build]
-cmds = ["echo 'Build complete'"]
+cmds = ["echo 'Build complete - Ready for deployment'"]
 
 [start]
-cmd = "cd backend && uvicorn server:app --host 0.0.0.0 --port $PORT"
+cmd = "cd backend && uvicorn server:app --host 0.0.0.0 --port $PORT --workers 1"
+
+[variables]
+PORT = "$PORT"
+PYTHONUNBUFFERED = "1"
