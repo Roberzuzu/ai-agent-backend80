@@ -1,3 +1,9 @@
+# Docker files (Railway no usa Docker)
+docker-compose.yml
+docker-compose.yaml
+Dockerfile
+.dockerignore
+
 # Frontend files (not needed for backend deployment)
 frontend/
 node_modules/
@@ -14,9 +20,10 @@ test_*.py
 # WordPress files
 wordpress-plugin/
 
-# Scripts
+# Scripts (except railway specific)
 scripts/
 *.sh
+!verify_railway_config.sh
 
 # Monitoring
 monitoring/
@@ -53,3 +60,6 @@ backups/
 tmp/
 temp/
 *.tmp
+
+# N8N workflows
+n8n-*.json
