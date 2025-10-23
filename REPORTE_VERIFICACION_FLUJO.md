@@ -9,7 +9,7 @@
 
 ### 1. BACKEND (CEREBRO AI)
 **URL Local:** http://localhost:8001
-**URL Pública:** https://backend-verify-6.preview.emergentagent.com
+**URL Pública:** https://railway-port-config.preview.emergentagent.com
 
 **Estado:** ✅ FUNCIONANDO
 ```json
@@ -74,9 +74,9 @@
 - ✅ 📤 Send Result
 
 **URLs configuradas:**
-- ✅ https://backend-verify-6.preview.emergentagent.com/api/agent/status
-- ✅ https://backend-verify-6.preview.emergentagent.com/api/agent/memory/{user_id}
-- ✅ https://backend-verify-6.preview.emergentagent.com/api/agent/execute
+- ✅ https://railway-port-config.preview.emergentagent.com/api/agent/status
+- ✅ https://railway-port-config.preview.emergentagent.com/api/agent/memory/{user_id}
+- ✅ https://railway-port-config.preview.emergentagent.com/api/agent/execute
 
 ---
 

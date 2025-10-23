@@ -2,7 +2,7 @@
 
 ## 📍 URL BASE
 ```
-https://backend-verify-6.preview.emergentagent.com
+https://railway-port-config.preview.emergentagent.com
 ```
 
 ---
@@ -14,7 +14,7 @@ https://backend-verify-6.preview.emergentagent.com
 
 **URL Completa:**
 ```
-https://backend-verify-6.preview.emergentagent.com/api/agent/execute
+https://railway-port-config.preview.emergentagent.com/api/agent/execute
 ```
 
 **Método:** POST  
@@ -30,7 +30,7 @@ https://backend-verify-6.preview.emergentagent.com/api/agent/execute
 
 **Ejemplo con curl:**
 ```bash
-curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/execute \
+curl -X POST https://railway-port-config.preview.emergentagent.com/api/agent/execute \
   -H "Content-Type: application/json" \
   -d '{
     "command": "Dame las estadísticas del sitio",
@@ -75,7 +75,7 @@ curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/execut
 
 **URL Completa:**
 ```
-https://backend-verify-6.preview.emergentagent.com/api/agent/chat
+https://railway-port-config.preview.emergentagent.com/api/agent/chat
 ```
 
 **Método:** POST  
@@ -91,7 +91,7 @@ https://backend-verify-6.preview.emergentagent.com/api/agent/chat
 
 **Ejemplo con curl:**
 ```bash
-curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/chat \
+curl -X POST https://railway-port-config.preview.emergentagent.com/api/agent/chat \
   -H "Content-Type: application/json" \
   -d '{
     "message": "¿Qué puedes hacer por mí?",
@@ -121,14 +121,14 @@ curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/chat \
 
 **URL Completa:**
 ```
-https://backend-verify-6.preview.emergentagent.com/api/agent/status
+https://railway-port-config.preview.emergentagent.com/api/agent/status
 ```
 
 **Método:** GET
 
 **Ejemplo con curl:**
 ```bash
-curl https://backend-verify-6.preview.emergentagent.com/api/agent/status
+curl https://railway-port-config.preview.emergentagent.com/api/agent/status
 ```
 
 **Respuesta Exitosa (200):**
@@ -160,7 +160,7 @@ curl https://backend-verify-6.preview.emergentagent.com/api/agent/status
 
 **URL Completa:**
 ```
-https://backend-verify-6.preview.emergentagent.com/api/agent/memory/{user_id}?limit=10
+https://railway-port-config.preview.emergentagent.com/api/agent/memory/{user_id}?limit=10
 ```
 
 **Método:** GET  
@@ -169,7 +169,7 @@ https://backend-verify-6.preview.emergentagent.com/api/agent/memory/{user_id}?li
 
 **Ejemplo con curl:**
 ```bash
-curl "https://backend-verify-6.preview.emergentagent.com/api/agent/memory/admin_wordpress?limit=5"
+curl "https://railway-port-config.preview.emergentagent.com/api/agent/memory/admin_wordpress?limit=5"
 ```
 
 **Respuesta Exitosa (200):**
@@ -195,7 +195,7 @@ curl "https://backend-verify-6.preview.emergentagent.com/api/agent/memory/admin_
 
 **URL Completa:**
 ```
-https://backend-verify-6.preview.emergentagent.com/api/agent/search-memory
+https://railway-port-config.preview.emergentagent.com/api/agent/search-memory
 ```
 
 **Método:** POST  
@@ -212,7 +212,7 @@ https://backend-verify-6.preview.emergentagent.com/api/agent/search-memory
 
 **Ejemplo con curl:**
 ```bash
-curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/search-memory \
+curl -X POST https://railway-port-config.preview.emergentagent.com/api/agent/search-memory \
   -H "Content-Type: application/json" \
   -d '{
     "user_id": "admin_wordpress",
@@ -230,7 +230,7 @@ curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/search
 1. **Nodo HTTP Request**
 2. **Configuración:**
    - Method: POST
-   - URL: `https://backend-verify-6.preview.emergentagent.com/api/agent/execute`
+   - URL: `https://railway-port-config.preview.emergentagent.com/api/agent/execute`
    - Authentication: None
    - Body Content Type: JSON
 
@@ -256,7 +256,7 @@ Webhook → HTTP Request (Cerebro AI) → Code → Send Response
 ```
 
 **Paso 2 - HTTP Request:**
-- URL: `https://backend-verify-6.preview.emergentagent.com/api/agent/execute`
+- URL: `https://railway-port-config.preview.emergentagent.com/api/agent/execute`
 - Method: POST
 - Body:
 ```json
@@ -318,7 +318,7 @@ Guarda esto como `test_cerebro_api.sh`:
 ```bash
 #!/bin/bash
 
-BASE_URL="https://backend-verify-6.preview.emergentagent.com"
+BASE_URL="https://railway-port-config.preview.emergentagent.com"
 
 echo "🧪 Testing Cerebro AI APIs..."
 echo ""

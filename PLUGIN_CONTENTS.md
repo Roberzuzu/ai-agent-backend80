@@ -275,7 +275,7 @@ GET  /api/ai/health                     # Health check APIs
 2. **Configurar API Backend**
    ```
    AI Dropshipping → Configuración
-   → URL Backend: https://backend-verify-6.preview.emergentagent.com/api
+   → URL Backend: https://railway-port-config.preview.emergentagent.com/api
    → Guardar
    ```
 

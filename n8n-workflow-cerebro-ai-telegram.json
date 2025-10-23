@@ -65,7 +65,7 @@
     },
     {
       "parameters": {
-        "url": "https://backend-verify-6.preview.emergentagent.com/api/agent/status",
+        "url": "https://railway-port-config.preview.emergentagent.com/api/agent/status",
         "options": {}
       },
       "name": "Get Agent Status",
@@ -94,7 +94,7 @@
     },
     {
       "parameters": {
-        "url": "https://backend-verify-6.preview.emergentagent.com/api/agent/memory/={{$node[\"Parse Command\"].json[\"user_id\"]}}?limit=5",
+        "url": "https://railway-port-config.preview.emergentagent.com/api/agent/memory/={{$node[\"Parse Command\"].json[\"user_id\"]}}?limit=5",
         "options": {}
       },
       "name": "Get User Memory",
@@ -160,7 +160,7 @@
     },
     {
       "parameters": {
-        "url": "https://backend-verify-6.preview.emergentagent.com/api/agent/execute",
+        "url": "https://railway-port-config.preview.emergentagent.com/api/agent/execute",
         "method": "POST",
         "sendBody": true,
         "specifyBody": "json",

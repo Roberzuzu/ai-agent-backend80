@@ -4,12 +4,12 @@
 
 ### 1. Ver Estado del Agente
 ```bash
-curl https://backend-verify-6.preview.emergentagent.com/api/agent/status
+curl https://railway-port-config.preview.emergentagent.com/api/agent/status
 ```
 
 ### 2. Ejecutar Comando - Estadísticas
 ```bash
-curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/execute \
+curl -X POST https://railway-port-config.preview.emergentagent.com/api/agent/execute \
   -H "Content-Type: application/json" \
   -d '{
     "command": "Dame las estadísticas del sitio",
@@ -19,7 +19,7 @@ curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/execut
 
 ### 3. Ejecutar Comando - Productos
 ```bash
-curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/execute \
+curl -X POST https://railway-port-config.preview.emergentagent.com/api/agent/execute \
   -H "Content-Type: application/json" \
   -d '{
     "command": "¿Cuántos productos tengo?",
@@ -29,7 +29,7 @@ curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/execut
 
 ### 4. Ejecutar Comando - Análisis
 ```bash
-curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/execute \
+curl -X POST https://railway-port-config.preview.emergentagent.com/api/agent/execute \
   -H "Content-Type: application/json" \
   -d '{
     "command": "Analiza las tendencias de productos",
@@ -39,12 +39,12 @@ curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/execut
 
 ### 5. Ver Historial
 ```bash
-curl "https://backend-verify-6.preview.emergentagent.com/api/agent/memory/mi_usuario?limit=5"
+curl "https://railway-port-config.preview.emergentagent.com/api/agent/memory/mi_usuario?limit=5"
 ```
 
 ### 6. Búsqueda Semántica
 ```bash
-curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/search-memory \
+curl -X POST https://railway-port-config.preview.emergentagent.com/api/agent/search-memory \
   -H "Content-Type: application/json" \
   -d '{
     "user_id": "mi_usuario",
@@ -73,7 +73,7 @@ curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/search
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "https://backend-verify-6.preview.emergentagent.com/api/agent/status",
+          "raw": "https://railway-port-config.preview.emergentagent.com/api/agent/status",
           "protocol": "https",
           "host": ["api-switcher", "preview", "emergentagent", "com"],
           "path": ["api", "agent", "status"]
@@ -95,7 +95,7 @@ curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/search
           "raw": "{\n  \"command\": \"Dame las estadísticas del sitio\",\n  \"user_id\": \"postman_user\"\n}"
         },
         "url": {
-          "raw": "https://backend-verify-6.preview.emergentagent.com/api/agent/execute",
+          "raw": "https://railway-port-config.preview.emergentagent.com/api/agent/execute",
           "protocol": "https",
           "host": ["api-switcher", "preview", "emergentagent", "com"],
           "path": ["api", "agent", "execute"]
@@ -117,7 +117,7 @@ curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/search
           "raw": "{\n  \"command\": \"¿Cuántos productos tengo?\",\n  \"user_id\": \"postman_user\"\n}"
         },
         "url": {
-          "raw": "https://backend-verify-6.preview.emergentagent.com/api/agent/execute",
+          "raw": "https://railway-port-config.preview.emergentagent.com/api/agent/execute",
           "protocol": "https",
           "host": ["api-switcher", "preview", "emergentagent", "com"],
           "path": ["api", "agent", "execute"]
@@ -130,7 +130,7 @@ curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/search
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "https://backend-verify-6.preview.emergentagent.com/api/agent/memory/postman_user?limit=5",
+          "raw": "https://railway-port-config.preview.emergentagent.com/api/agent/memory/postman_user?limit=5",
           "protocol": "https",
           "host": ["api-switcher", "preview", "emergentagent", "com"],
           "path": ["api", "agent", "memory", "postman_user"],
@@ -158,7 +158,7 @@ curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/search
           "raw": "{\n  \"user_id\": \"postman_user\",\n  \"query\": \"estadísticas\",\n  \"limit\": 3\n}"
         },
         "url": {
-          "raw": "https://backend-verify-6.preview.emergentagent.com/api/agent/search-memory",
+          "raw": "https://railway-port-config.preview.emergentagent.com/api/agent/search-memory",
           "protocol": "https",
           "host": ["api-switcher", "preview", "emergentagent", "com"],
           "path": ["api", "agent", "search-memory"]
@@ -176,17 +176,17 @@ curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/search
 ### Productos
 ```bash
 # Ver productos
-curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/execute \
+curl -X POST https://railway-port-config.preview.emergentagent.com/api/agent/execute \
   -H "Content-Type: application/json" \
   -d '{"command": "Muéstrame todos los productos", "user_id": "test"}'
 
 # Buscar productos
-curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/execute \
+curl -X POST https://railway-port-config.preview.emergentagent.com/api/agent/execute \
   -H "Content-Type: application/json" \
   -d '{"command": "Busca productos de herramientas", "user_id": "test"}'
 
 # Productos sin stock
-curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/execute \
+curl -X POST https://railway-port-config.preview.emergentagent.com/api/agent/execute \
   -H "Content-Type: application/json" \
   -d '{"command": "¿Qué productos están sin stock?", "user_id": "test"}'
 ```
@@ -194,17 +194,17 @@ curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/execut
 ### Estadísticas y Análisis
 ```bash
 # Estadísticas generales
-curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/execute \
+curl -X POST https://railway-port-config.preview.emergentagent.com/api/agent/execute \
   -H "Content-Type: application/json" \
   -d '{"command": "Dame las estadísticas completas", "user_id": "test"}'
 
 # Ventas del mes
-curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/execute \
+curl -X POST https://railway-port-config.preview.emergentagent.com/api/agent/execute \
   -H "Content-Type: application/json" \
   -d '{"command": "¿Cuántas ventas tuve este mes?", "user_id": "test"}'
 
 # Análisis de tendencias
-curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/execute \
+curl -X POST https://railway-port-config.preview.emergentagent.com/api/agent/execute \
   -H "Content-Type: application/json" \
   -d '{"command": "Analiza las tendencias de mercado", "user_id": "test"}'
 ```
@@ -212,12 +212,12 @@ curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/execut
 ### Marketing
 ```bash
 # Crear campaña
-curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/execute \
+curl -X POST https://railway-port-config.preview.emergentagent.com/api/agent/execute \
   -H "Content-Type: application/json" \
   -d '{"command": "Crea una campaña para promocionar herramientas", "user_id": "test"}'
 
 # Generar contenido
-curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/execute \
+curl -X POST https://railway-port-config.preview.emergentagent.com/api/agent/execute \
   -H "Content-Type: application/json" \
   -d '{"command": "Genera contenido para redes sociales", "user_id": "test"}'
 ```
@@ -231,7 +231,7 @@ curl -X POST https://backend-verify-6.preview.emergentagent.com/api/agent/execut
 import requests
 import json
 
-BASE_URL = "https://backend-verify-6.preview.emergentagent.com"
+BASE_URL = "https://railway-port-config.preview.emergentagent.com"
 
 def test_cerebro_ai():
     print("=" * 60)
@@ -278,7 +278,7 @@ python3 test_api.py
 ```javascript
 const axios = require('axios');
 
-const BASE_URL = 'https://backend-verify-6.preview.emergentagent.com';
+const BASE_URL = 'https://railway-port-config.preview.emergentagent.com';
 
 async function testCerebroAI() {
   console.log('🧠 Probando Cerebro AI...\n');
@@ -313,7 +313,7 @@ testCerebroAI();
 
 ```php
 <?php
-$base_url = 'https://backend-verify-6.preview.emergentagent.com';
+$base_url = 'https://railway-port-config.preview.emergentagent.com';
 
 // Ejecutar comando
 function cerebro_execute($command, $user_id) {

@@ -72,7 +72,7 @@ class Cerebro_AI_WooCommerce {
     public function activate() {
         // Configuración por defecto
         $defaults = array(
-            'api_url' => 'https://backend-verify-6.preview.emergentagent.com/api',
+            'api_url' => 'https://railway-port-config.preview.emergentagent.com/api',
             'chat_position' => 'bottom-right',
             'chat_enabled' => true,
             'admin_only' => true,
