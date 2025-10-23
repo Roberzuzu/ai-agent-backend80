@@ -1,0 +1,55 @@
+# Frontend files (not needed for backend deployment)
+frontend/
+node_modules/
+
+# Documentation
+*.md
+!README.md
+
+# Tests
+tests/
+test_*.py
+*_test.py
+
+# WordPress files
+wordpress-plugin/
+
+# Scripts
+scripts/
+*.sh
+
+# Monitoring
+monitoring/
+
+# Git
+.git/
+.gitignore
+
+# Environment examples
+.env.example
+
+# Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backups
+backups/
+*.backup
+
+# Temporary files
+tmp/
+temp/
+*.tmp
