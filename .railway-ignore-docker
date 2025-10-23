@@ -1,0 +1,12 @@
+# This file tells Railway to IGNORE Docker files
+# Railway will use Nixpacks with the Procfile instead
+
+# Do not use:
+# - docker-compose.yml
+# - Dockerfile
+# - docker-compose.yaml
+
+# Use instead:
+# - Procfile
+# - nixpacks.toml
+# - railway.json
