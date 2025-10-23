@@ -1,0 +1,21 @@
+# ================================================
+# VARIABLES DE ENTORNO PARA RAILWAY
+# Copia TODO esto en Railway → Variables → Raw Editor
+# ================================================
+
+MONGO_URL=mongodb+srv://bricospeed0_db_user:7uCqmOCzZsKBT3Uk@cluster0.5uxiix8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+DB_NAME=ai_agent_db
+SECRET_KEY=09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7
+CORS_ORIGINS=*
+OPENAI_API_KEY=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
+PERPLEXITY_API_KEY=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
+STRIPE_API_KEY=sk_test_51RLguuEIV37qlnK9Fm2mejxSRsSVtfLWRjDbLwTwuZ6vL2XNkjQ0FPWQMhq6LNqbOQ5qsJbhuGzA2tvrCjHf1mmT00AXLet9SG
+STRIPE_PUBLISHABLE_KEY=pk_test_51RLguuEIV37qlnK9dfwvGn6IN08Fv1tSKRXtrVv1bwEdiLNU4yQ1KzVOn1Jl0QgyAe96l4S6npdTFE9Bni9jDOI500i9CXuLfQ
+TELEGRAM_BOT_TOKEN=7708509018:AAErAOblRAlC587j1QB4k19PAfDgoiZ3kWk
+TELEGRAM_CHAT_ID=7202793910
+WORDPRESS_URL=https://herramientasyaccesorios.store
+WC_CONSUMER_KEY=ck_4f50637d85ec404fff441fceb7b113b5050431ea
+WC_CONSUMER_SECRET=cs_e59ef18ea20d80ffdf835803ad2fdd834a4ba19f
+FAL_API_KEY=railway-port-config:228b46f927a226c270ece128bfeb95db
+PORT=$PORT
+PYTHONUNBUFFERED=1
