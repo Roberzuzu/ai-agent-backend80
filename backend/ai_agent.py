@@ -38,14 +38,14 @@ db = mongo_client[os.getenv("DB_NAME", "social_media_monetization")]
 openai_client = OpenAI(api_key=OPENAI_KEY) if OPENAI_KEY else None
 
 # WooCommerce
-WC_KEY = "ck_4f50637d85ec404fff441fceb7b113b5050431ea"
-WC_SECRET = "cs_e59ef18ea20d80ffdf835803ad2fdd834a4ba19f"
-WC_URL = "https://herramientasyaccesorios.store/wp-json/wc/v3"
+WC_KEY = os.getenv("WC_CONSUMER_KEY", "")
+WC_SECRET = os.getenv("WC_CONSUMER_SECRET", "")
+WC_URL = os.getenv("WORDPRESS_URL", "https://herramientasyaccesorios.store") + "/wp-json/wc/v3"
 
 # WordPress
-WP_USER = "agenteweb@herramientasyaccesorios.store"
-WP_PASS = "RWWLW1eVi8whOS5OsUosb5AU"
-WP_URL = "https://herramientasyaccesorios.store/wp-json/wp/v2"
+WP_USER = os.getenv("WP_USER", "agenteweb@herramientasyaccesorios.store")
+WP_PASS = os.getenv("WP_PASS", "")
+WP_URL = os.getenv("WORDPRESS_URL", "https://herramientasyaccesorios.store") + "/wp-json/wp/v2"
 
 
 class AIAgent:
