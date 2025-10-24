@@ -47,6 +47,7 @@ async def root():
     return {"message": "AI Agent Backend API", "version": "1.0.0"}
 
 # Chat endpoint
+@app.post("/chat", response_model=ChatResponse)
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     try:
