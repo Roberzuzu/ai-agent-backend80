@@ -30,25 +30,34 @@ class ChatRequest(BaseModel):
 
 class UploadRequest(BaseModel):
     file_url: str
-    session_id: Optional[str] = None
+
+# Response models
+class ChatResponse(BaseModel):
+    response: str
+    session_id: str
 
 # Health check endpoint
 @app.get("/api/health")
 async def health_check():
-    return {
-        "status": "healthy",
-        "message": "Backend conectado"
-    }
+    return {"status": "healthy", "message": "AI Agent Backend is running"}
+
+# Root endpoint
+@app.get("/")
+async def root():
+    return {"message": "AI Agent Backend API", "version": "1.0.0"}
 
 # Chat endpoint
-@app.post("/api/chat")
+@app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     try:
         # Simple echo response for now
-        return {
-            "response": f"Recibí tu mensaje: {request.message}",
-            "session_id": request.session_id or "default"
-        }
+        response_text = f"Received your message: {request.message}"
+        session_id = request.session_id or "default_session"
+        
+        return ChatResponse(
+            response=response_text,
+            session_id=session_id
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -58,20 +67,12 @@ async def upload_file(request: UploadRequest):
     try:
         return {
             "status": "success",
-            "message": "Archivo recibido",
+            "message": "File uploaded successfully",
             "file_url": request.file_url
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# Root endpoint
-@app.get("/")
-async def root():
-    return {
-        "message": "AI Agent Backend is running",
-        "endpoints": [
-            "/api/health",
-            "/api/chat",
-            "/api/upload"
-        ]
-    }
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("ai_agent:app", host="0.0.0.0", port=port, reload=True)
