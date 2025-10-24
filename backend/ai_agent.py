@@ -1,12 +1,10 @@
 """AI Agent Backend - FastAPI Application"""
-
 import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
-import uvicorn
-from ai_integrations import OpenRouterClient
+from ai_integrations import AIRouter
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -53,9 +51,9 @@ async def root():
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     try:
-        # Generate AI response using OpenRouter (Claude)
-        client = OpenRouterClient()
-        ai_result = await client.generate_text(request.message)
+        # Generate AI response using AIRouter (multi-platform intelligent routing)
+        router = AIRouter()
+        ai_result = await router.generate_text(request.message)
         
         if ai_result["success"]:
             response_text = ai_result["text"]
@@ -64,6 +62,7 @@ async def chat(request: ChatRequest):
         
         session_id = request.session_id or "default_session"
         
-                return ChatResponse(response=response_text, session_id=session_id)
-            except Exception as e:
-                        raise HTTPException(status_code=500, detail=str(e))"
+        return ChatResponse(response=response_text, session_id=session_id)
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
