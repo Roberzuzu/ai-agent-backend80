@@ -1,46 +1,27 @@
-# Multi-stage build for optimized production image
+# syntax=docker/dockerfile:1
 
-# Stage 1: Builder
-FROM python:3.11-slim as builder
-
+FROM python:3.11-slim AS base
 WORKDIR /app
 
-# Install build dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    g++ \
-    make \
-    libffi-dev \
-    libssl-dev \
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy and install dependencies
-COPY requirements.txt .
-RUN pip install --user --no-cache-dir -r requirements.txt
-
-# Stage 2: Production
-FROM python:3.11-slim as production
-
-WORKDIR /app
-
-# Copy installed packages from builder
-COPY --from=builder /root/.local /root/.local
-
-# Make sure scripts in .local are usable
-ENV PATH=/root/.local/bin:$PATH
+# Copy and install Python dependencies
+COPY ./backend/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
 # Copy application code
-COPY . .
-
-# Create uploads directory
-RUN mkdir -p uploads
+COPY ./backend /app
 
 # Expose port
 EXPOSE 8000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=5s --retries=5 \
     CMD curl -f http://localhost:8000/api/health || exit 1
 
-# Start application
-CMD ["uvicorn", "ai_agent:app", "--host", "0.0.0.0", "--port", "8000"]
+# Start server with new entrypoint
+CMD ["uvicorn", "api_backend:app", "--host", "0.0.0.0", "--port", "8000"]
