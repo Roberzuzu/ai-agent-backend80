@@ -37,6 +37,7 @@ class ChatResponse(BaseModel):
     session_id: str
 
 # Health check endpoint
+@app.get("/health")
 @app.get("/api/health")
 async def health_check():
     return {"status": "healthy", "message": "AI Agent Backend is running"}
@@ -63,6 +64,7 @@ async def chat(request: ChatRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 # Upload endpoint
+@app.post("/upload")
 @app.post("/api/upload")
 async def upload_file(request: UploadRequest):
     try:
