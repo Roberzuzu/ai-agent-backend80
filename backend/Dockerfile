@@ -25,3 +25,4 @@ HEALTHCHECK --interval=30s --timeout=5s --retries=5 \
 
 # Start server with new entrypoint
 CMD ["uvicorn", "api_backend:app", "--host", "0.0.0.0", "--port", "8000"]
+# Fixed: Emergent.sh agent removed - code is now in English
