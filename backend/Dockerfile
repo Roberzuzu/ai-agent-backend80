@@ -23,6 +23,7 @@ FROM python:3.11-slim as production
 
 WORKDIR /app
 
+# Copy installed packages from builder
 COPY --from=builder /root/.local /root/.local
 
 # Make sure scripts in .local are usable
@@ -37,5 +38,9 @@ RUN mkdir -p uploads
 # Expose port
 EXPOSE 8000
 
-# Start command
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8000/api/health || exit 1
+
+# Start application
 CMD ["uvicorn", "ai_agent:app", "--host", "0.0.0.0", "--port", "8000"]
