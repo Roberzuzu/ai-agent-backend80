@@ -23,6 +23,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --retries=5 \
     CMD curl -f http://localhost:8000/api/health || exit 1
 
-# Start server with new entrypoint
-CMD ["uvicorn", "ai_agent:app", "--host", "0.0.0.0", "--port", "8000"]# Fixed: Emergent.sh agent 
-removed - code is now in English
+# Start server
+CMD ["uvicorn", "ai_agent:app", "--host", "0.0.0.0", "--port", "8000"]
