@@ -23,12 +23,6 @@ FROM python:3.11-slim as production
 
 WORKDIR /app
 
-# Install only runtime dependencies
-RUN apt-get update && apt-get install -y \
-    riza \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy installed packages from builder
 COPY --from=builder /root/.local /root/.local
 
 # Make sure scripts in .local are usable
