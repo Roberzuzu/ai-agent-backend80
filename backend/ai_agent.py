@@ -62,7 +62,7 @@ async def chat(request: ChatRequest):
         else:
             response_text = f"Error generating response: {ai_result.get('error', 'Unknown error')}"
         
-        session_id = request.session_id or "default_session
+        session_id = request.session_id or "default_session"
         
                 return ChatResponse(response=response_text, session_id=session_id)
             except Exception as e:
