@@ -1,3 +1,4 @@
+# Railway deployment - Updated dependencies
 aiohappyeyeballs==2.6.1
 aiohttp==3.13.1
 aiosignal==1.4.0
