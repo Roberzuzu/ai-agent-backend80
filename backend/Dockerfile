@@ -1,59 +1,47 @@
-# Compilación de varias etapas para una imagen de producción optimizada
+# Multi-stage build for optimized production image
 
-# Etapa 1: Constructor
-DESDE python:3.11-slim como constructor
+# Stage 1: Builder
+FROM python:3.11-slim as builder
 
-WORKDIR /aplicación
+WORKDIR /app
 
-# Instalar dependencias de compilación
-EJECUTAR apt-get update && apt-get install -y \
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
-    hacer \
+    make \
     libffi-dev \
     libssl-dev \
-    && rm -rf /var/lib/apt/listas/*
+    && rm -rf /var/lib/apt/lists/*
 
-# Copiar requisitos e instalar dependencias
-COPIA requisitos.txt .
-EJECUTAR pip install --user --no-cache-dir -r requirements.txt
+# Copy and install dependencies
+COPY requirements.txt .
+RUN pip install --user --no-cache-dir -r requirements.txt
 
-# Etapa 2: Producción
-DESDE python:3.11-slim como producción
+# Stage 2: Production
+FROM python:3.11-slim as production
 
-WORKDIR /aplicación
+WORKDIR /app
 
-# Instalar solo dependencias de tiempo de ejecución
-EJECUTAR apt-get update && apt-get install -y \
-    rizo \
-    && rm -rf /var/lib/apt/listas/*
+# Install only runtime dependencies
+RUN apt-get update && apt-get install -y \
+    riza \
+    && rm -rf /var/lib/apt/lists/*
 
-# Crear un usuario no root
-EJECUTAR useradd -m -u 1000 appuser && \
-    mkdir -p /var/log/app && \
-    chown -R appuser:appuser /var/log/app
+# Copy installed packages from builder
+COPY --from=builder /root/.local /root/.local
 
-# Copiar paquetes de Python desde el generador
-COPIA --from=builder /root/.local /home/appuser/.local
+# Make sure scripts in .local are usable
+ENV PATH=/root/.local/bin:$PATH
 
-# Copiar el código de la aplicación
-COPIA --chown=appuser:appuser . .
+# Copy application code
+COPY . .
 
-# Establecer variables de entorno
-RUTA DE ENV=/home/appuser/.local/bin:$RUTA \
-    PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    NIVEL_DE_REGISTRO=INFO
+# Create uploads directory
+RUN mkdir -p uploads
 
-# Cambiar a usuario no root
-USUARIO appuser
+# Expose port
+EXPOSE 8000
 
-# Exponer puerto
-EXPONER 8001
-
-# Chequeo de salud
-CONTROL DE ESTADO --intervalo=30s --tiempo de espera=10s --periodo de inicio=40s --reintentos=3 \
-    CMD curl -f http://localhost:8001/api/health/liveness || salida 1
-
-# Ejecutar aplicación
-CMD ["uvicorn", "servidor:app", "--host", "0.0.0.0", "--puerto", "8001", "--trabajadores", "4"]
+# Start command
+CMD ["uvicorn", "ai_agent:app", "--host", "0.0.0.0", "--port", "8000"]
