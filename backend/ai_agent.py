@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 import uvicorn
+from ai_integrations import OpenRouterClient
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -52,30 +53,13 @@ async def root():
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     try:
-        # Simple echo response for now
-        response_text = f"Received your message: {request.message}"
-        session_id = request.session_id or "default_session"
+        # Generate AI response using OpenRouter (Claude)
+        client = OpenRouterClient()
+        ai_result = await client.generate_text(request.message)
         
-        return ChatResponse(
-            response=response_text,
-            session_id=session_id
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-# Upload endpoint
-@app.post("/upload")
-@app.post("/api/upload")
-async def upload_file(request: UploadRequest):
-    try:
-        return {
-            "status": "success",
-            "message": "File uploaded successfully",
-            "file_url": request.file_url
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("ai_agent:app", host="0.0.0.0", port=port, reload=True)
+        if ai_result["success"]:
+            response_text = ai_result["text"]
+        else:
+            response_text = f"Error generating response: {ai_result.get('error', 'Unknown error')}"
+        
+        session_id = request.session_id or "default_session"
