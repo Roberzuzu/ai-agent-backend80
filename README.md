@@ -51,7 +51,7 @@ Un agente completo de monetización para redes sociales con generación de conte
 - **Routing**: React Router DOM v7
 - **Estilos**: Tailwind CSS
 - **UI Components**: Radix UI, Lucide Icons
-- **HTTP Client**: Axios
+- **HTTP Client**: Axios[](url)
 
 ## 📋 API Endpoints Principales
 
@@ -82,3 +82,6 @@ Un agente completo de monetización para redes sociales con generación de conte
 ## 🚀 Uso
 
 Todo está configurado y funcionando. Accede a la aplicación y comienza a usar los 5 módulos principales
+
+
+---
