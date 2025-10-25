@@ -4,7 +4,6 @@ on:
     branches:
       - main
   workflow_dispatch:
-
 jobs:
   generate-wrapper:
     runs-on: ubuntu-latest
@@ -19,10 +18,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           
-      - name: Generate Gradle Wrapper
+      - name: Download and Setup Gradle 8.2
         run: |
           cd android-app
-          gradle wrapper --gradle-version=8.2
+          wget https://services.gradle.org/distributions/gradle-8.2-bin.zip
+          unzip -q gradle-8.2-bin.zip
+          ./gradle-8.2/bin/gradle wrapper --gradle-version=8.2
+          rm -rf gradle-8.2 gradle-8.2-bin.zip
           
       - name: Commit and push wrapper files
         run: |
