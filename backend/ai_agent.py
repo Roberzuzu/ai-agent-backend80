@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 from ai_integrations import AIRouter
+from fastapi import Request
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -66,3 +67,18 @@ async def chat(request: ChatRequest):
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post('/chat')
+async def chat_endpoint(request: Request):
+    try:
+        data = await request.json()
+        message = data.get('message', '')
+        context = data.get('context', {})
+        router = AIRouter()
+        result = await router.generate_text(message, context)
+        if result.get('success'):
+            return {'success': True, 'response': result['text'], 'platform': result.get('platform_used')}
+        else:
+            return {'success': False, 'error': result.get('error', 'Unknown error')}
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
