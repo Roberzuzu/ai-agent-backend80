@@ -48,37 +48,22 @@ async def root():
     return {"message": "AI Agent Backend API", "version": "1.0.0"}
 
 # Chat endpoint
-@app.post("/chat", response_model=ChatResponse)
-@app.post("/api/chat", response_model=ChatResponse)
+@app.post('/chat', response_model=ChatResponse)
+@app.post('/api/chat', response_model=ChatResponse)
 async def chat(request: ChatRequest):
     try:
         # Generate AI response using AIRouter (multi-platform intelligent routing)
         router = AIRouter()
         ai_result = await router.generate_text(request.message)
         
-        if ai_result["success"]:
-            response_text = ai_result["text"]
+        if ai_result['success']:
+            response_text = ai_result['text']
         else:
             response_text = f"Error generating response: {ai_result.get('error', 'Unknown error')}"
         
-        session_id = request.session_id or "default_session"
+        session_id = request.session_id or 'default_session'
         
         return ChatResponse(response=response_text, session_id=session_id)
-    
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-@app.post('/chat')
-async def chat_endpoint(request: Request):
-    try:
-        data = await request.json()
-        message = data.get('message', '')
-        context = data.get('context', {})
-        router = AIRouter()
-        result = await router.generate_text(message, context)
-        if result.get('success'):
-            return {'success': True, 'response': result['text'], 'platform': result.get('platform_used')}
-        else:
-            return {'success': False, 'error': result.get('error', 'Unknown error')}
-    except Exception as e:
-        return {'success': False, 'error': str(e)}
