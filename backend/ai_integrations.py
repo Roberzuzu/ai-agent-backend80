@@ -27,11 +27,13 @@ if FAL_KEY:
 openai_client = None
 if OPENAI_KEY:
     openai_client = AsyncOpenAI(api_key=OPENAI_KEY)
+
 class OpenRouterClient:
     """Cliente para OpenRouter - Enrutamiento de LLMs"""
     def __init__(self):
         self.api_key = OPENROUTER_KEY
         self.base_url = "https://openrouter.ai/api/v1/chat/completions"
+
     async def generate_text(self, prompt: str, model: str = "anthropic/claude-3.5-sonnet", temperature: float = 0.7, max_tokens: int = 2000) -> Dict[str, Any]:
         """Genera texto usando el modelo especificado"""
         async with httpx.AsyncClient(timeout=60.0) as client:
@@ -52,12 +54,14 @@ class OpenRouterClient:
             data = response.json()
             content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
             return {"content": content, "raw": data}
+
 class PerplexityClient:
     """Cliente para Perplexity - Búsqueda de tiempo real"""
     def __init__(self):
         self.api_key = PERPLEXITY_KEY
         self.base_url = "https://api.perplexity.ai/chat/completions"
         self.model = "llama-3.1-sonar-large-128k-online"
+
     async def search(self, query: str, system_prompt: Optional[str] = None) -> Dict[str, Any]:
         if not self.api_key:
             return {"error": "PERPLEXITY_API_KEY no configurada"}
@@ -82,10 +86,12 @@ class PerplexityClient:
             data = resp.json()
             content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
             return {"content": content, "raw": data}
+
 class FalAIClient:
     """Cliente para generación de imágenes/video con FAL"""
     def __init__(self):
         self.available = bool(FAL_KEY)
+
     async def generate_image(self, prompt: str, num_images: int = 1) -> Dict[str, Any]:
         if not self.available:
             return {"error": "FAL_API_KEY no configurada"}
@@ -95,10 +101,12 @@ class FalAIClient:
             return {"images": result}
         except Exception as e:
             return {"error": str(e)}
+
 class OpenAIClient:
     """Cliente para GPT y herramientas de OpenAI"""
     def __init__(self):
         self.client = openai_client
+
     async def chat(self, prompt: str, model: str = "gpt-4o-mini", temperature: float = 0.7, max_tokens: int = 1500) -> Dict[str, Any]:
         if not self.client:
             return {"error": "OPENAI_API_KEY no configurada"}
@@ -113,10 +121,12 @@ class OpenAIClient:
             return {"content": msg, "raw": completion.model_dump()}
         except Exception as e:
             return {"error": str(e)}
+
 class AbacusAIClient:
     """Cliente para analítica predictiva (placeholder)"""
     def __init__(self):
         self.api_key = ABACUS_KEY
+
     async def forecast(self, series: List[float]) -> Dict[str, Any]:
         if not self.api_key:
             return {"error": "ABACUS_API_KEY no configurada"}
@@ -126,98 +136,7 @@ class AbacusAIClient:
             return {"forecast": [avg for _ in range(3)]}
         except Exception as e:
             return {"error": str(e)}
-# ===============================
-# AIRouter inteligente
-# ===============================
-class AIRouter:
-    """
-    Router inteligente que usa OpenRouter, Perplexity y OpenAI.
-    - Detecta tipo de consulta: e-commerce, factual (web), creativo/código, general.
-    - Respuestas contextuales para e-commerce: catálogo, fichas, comparativas, pricing, SEO, UX de compra.
-    """
-    def __init__(self):
-        self.openrouter = OpenRouterClient()
-        self.perplexity = PerplexityClient()
-        self.openai = OpenAIClient()
-    @staticmethod
-    def _classify(query: str) -> str:
-        q = (query or "").lower()
-        ecommerce_terms = [
-            "precio", "oferta", "comprar", "carrito", "stock", "envío", "devolución",
-            "producto", "catálogo", "inventario", "sku", "ecommerce", "tienda",
-            "ficha", "comparativa", "reseña", "opiniones", "descuento"
-        ]
-        factual_terms = ["qué es", "quien es", "fecha", "número", "estadística", "último", "noticia"]
-        code_terms = ["código", "snippet", "bug", "error", "stack", "api", "sdk", "python", "javascript"]
-        if any(t in q for t in ecommerce_terms):
-            return "ecommerce"
-        if any(t in q for t in factual_terms):
-            return "factual"
-        if any(t in q for t in code_terms) or q.strip().startswith(("def ", "class ")):
-            return "code"
-        return "general"
-    @staticmethod
-    def _ecommerce_system_prompt(context: Optional[Dict[str, Any]] = None) -> str:
-        ctx = context or {}
-        brand = ctx.get("brand") or ctx.get("store_name") or "la tienda"
-        currency = ctx.get("currency", "€")
-        locale = ctx.get("locale", "es-ES")
-        return (
-            f"Eres un asistente experto en e-commerce para {brand}. "
-            f"Responde en {locale} con tono claro y accionable. "
-            f"Incluye: intención de compra, atributos clave del producto, variantes, compatibilidades, "
-            f"políticas (envío/devoluciones), y precios en {currency}. "
-            f"Cuando sea útil, devuelve bloques estructurados (JSON) para catálogo/ficha/comparativa."
-        )
-    async def route(self, query: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """
-        Enruta la consulta al proveedor más adecuado y compone una respuesta útil.
-        context puede incluir: {brand, store_name, currency, locale, catalog (list), user_profile, constraints}
-        """
-        qtype = self._classify(query)
-        result: Dict[str, Any] = {"type": qtype}
-        # E-commerce: combinamos Perplexity (datos/competencia) + OpenRouter/OpenAI para redacción SEO/UX
-        if qtype == "ecommerce":
-            sys_prompt = self._ecommerce_system_prompt(context)
-            # 1) Buscar señales del mercado si hay intención de compra/comparativa
-            market_snippet = None
-            try:
-                px = await self.perplexity.search(query, system_prompt="Eres analista de mercado e-commerce. Resume fuentes.")
-                if not px.get("error"):
-                    market_snippet = px.get("content")
-            except Exception as e:
-                market_snippet = f"[perplexity_error]: {e}"
-            # 2) Generar respuesta rica con OpenRouter (o OpenAI fallback)
-            enriched_prompt = (
-                f"{sys_prompt}\n\nConsulta usuario: {query}\n\n"
-                f"Contexto disponible: {json.dumps(context or {}, ensure_ascii=False)[:2000]}\n\n"
-                f"Inteligencia de mercado: {market_snippet or 'N/A'}\n\n"
-                "Devuelve:\n- Resumen ejecutivo\n- Recomendación\n- Pros/Contras\n- Siguiente acción (CTA)\n- Si aplica, JSON con campos: {type: 'product|comparison|catalog', items: [...]}"
-            )
-            llm = await self.openrouter.generate_text(enriched_prompt)
-            if llm.get("error"):
-                llm = await self.openai.chat(enriched_prompt)
-            result.update({"content": llm.get("content"), "market": market_snippet, "raw": {"llm": llm}})
-            return result
-        # Factual/actualidad: Perplexity
-        if qtype == "factual":
-            px = await self.perplexity.search(query)
-            return {**result, **px}
-        # Código/técnico: OpenRouter por diversidad de modelos, fallback OpenAI
-        if qtype == "code":
-            prompt = (
-                "Actúa como senior engineer. Explica, propone alternativa y da snippet comentado.\n\n"
-                f"Pregunta: {query}"
-            )
-            llm = await self.openrouter.generate_text(prompt, model="qwen/qwen-2.5-coder-32b-instruct")
-            if llm.get("error"):
-                llm = await self.openai.chat(prompt, model="gpt-4o-mini")
-            return {**result, **llm}
-        # General: OpenRouter default, fallback OpenAI
-        llm = await self.openrouter.generate_text(query)
-        if llm.get("error"):
-            llm = await self.openai.chat(query)
-        return {**result, **llm}
+
 # ===============================
 # FUNCIONES DE NEGOCIO (existentes)
 # ===============================
@@ -230,6 +149,7 @@ async def generate_product_description(product_name: str, category: str, feature
         f"Características: {', '.join(features or [])}"
     )
     return await router.route(prompt, context={"type": "description", "category": category})
+
 async def analyze_market_competition(product_name: str, category: str) -> Dict[str, Any]:
     router = AIRouter()
     prompt = (
@@ -237,6 +157,7 @@ async def analyze_market_competition(product_name: str, category: str) -> Dict[s
         f"Producto: {product_name}\nCategoría: {category}"
     )
     return await router.route(prompt, context={"type": "market_analysis", "category": category})
+
 async def get_optimal_pricing(product_name: str, category: str, base_price: float) -> Dict[str, Any]:
     router = AIRouter()
     prompt = (
@@ -244,9 +165,11 @@ async def get_optimal_pricing(product_name: str, category: str, base_price: floa
         f"Producto: {product_name}\nCategoría: {category}\nPrecio base: {base_price}"
     )
     return await router.route(prompt, context={"type": "pricing", "currency": "€"})
+
 async def generate_product_images(product_name: str, category: str, num_images: int = 2) -> Dict[str, Any]:
     fal = FalAIClient()
     return await fal.generate_image(f"Fotografía de producto profesional: {product_name} ({category})", num_images=num_images)
+
 async def generate_social_media_content(product_name: str, description: str) -> Dict[str, Any]:
     router = AIRouter()
     prompt = (
@@ -254,6 +177,7 @@ async def generate_social_media_content(product_name: str, description: str) -> 
         f"Producto: {product_name}\nDescripción: {description}"
     )
     return await router.route(prompt, context={"type": "social"})
+
 # ===============================
 # PROCESAMIENTO COMPLETO
 # ===============================
@@ -304,3 +228,127 @@ async def process_product_complete(
         results["error"] = str(e)
         results["success"] = False
     return results
+
+
+
+# ====================================
+# AI ROUTER - INTELLIGENT CHAT ROUTING  
+# ====================================
+
+class AIRouter:
+    """
+    Intelligent AI Router for e-commerce chat
+    Routes queries to the best AI platform based on context
+    Provides detailed, professional responses
+    """
+    
+    def __init__(self):
+        """Initialize AI Router with all available clients"""
+        self.openrouter = OpenRouterClient()
+        self.perplexity = PerplexityClient()
+        self.openai = OpenAIClient() if OPENAI_KEY else None
+        self.abacus = AbacusAIClient()
+    
+    async def generate_text(self, message: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
+        """Main entry point for chat responses"""
+        context = context or {}
+        query_type = self._detect_query_type(message)
+        
+        system_context = """Eres Super Cerebro AI, un asistente experto en comercio electrónico especializado en herramientas y accesorios.
+
+🏪 **Tu tienda online es:** Herramientas y Accesorios Store (herramientasyaccesorios.store)
+
+📦 **CATÁLOGO:**
+- Herramientas eléctricas profesionales
+- Herramientas manuales de alta calidad
+- Accesorios y componentes
+- Equipos de seguridad
+- Sistemas de almacenamiento
+
+✨ **SERVICIOS:**
+- Envíos rápidos a toda España
+- Garantía oficial en todos los productos
+- Asesoramiento técnico profesional
+- Soporte post-venta especializado
+- Comparativas y recomendaciones personalizadas
+
+🎯 **TU MISIÓN:**
+1. Responder de forma profesional, útil y DETALLADA (mínimo 3-4 párrafos)
+2. Ofrecer recomendaciones concretas de productos cuando sea relevante
+3. Proporcionar información técnica precisa y completa
+4. Ayudar al cliente a tomar decisiones de compra informadas
+5. Ser proactivo sugiriendo productos complementarios
+6. Explicar beneficios, características y casos de uso
+
+💬 **ESTILO DE RESPUESTA:**
+- Profesional pero cercano y amigable
+- Detallado y muy bien estructurado (usa listas, secciones)
+- Usa emojis estratégicamente (🔧 🛠️ ⚡ ✨ 💪 🏆 ✅) para mejor legibilidad
+- Incluye llamadas a la acción suaves
+- Mínimo 200-300 palabras por respuesta
+- Proporciona ejemplos concretos y casos de uso
+
+📋 **FORMATO RECOMENDADO:**
+1. Saludo y confirmación de la pregunta
+2. Respuesta principal (2-3 párrafos explicativos)
+3. Recomendaciones específicas (si aplica)
+4. Consejos adicionales o información complementaria
+5. Cierre con pregunta abierta para continuar la conversación
+
+Responde SIEMPRE en español de España con un tono experto pero accesible."""
+
+        full_prompt = f"""{system_context}
+
+👤 **Usuario pregunta:** {message}
+
+🤖 **Super Cerebro AI responde (de forma DETALLADA y COMPLETA):**"""
+        
+        try:
+            if query_type == 'search' or query_type == 'market':
+                print(f"🔍 Routing to Perplexity for search query: {message[:50]}...")
+                result = await self.perplexity.search_market(message)
+                if result.get('success'):
+                    return {'success': True, 'text': result['content'], 'platform_used': 'perplexity-sonar', 'citations': result.get('citations', []), 'query_type': query_type}
+            
+            print(f"🤖 Routing to Claude 3.5 Sonnet for query: {message[:50]}...")
+            result = await self.openrouter.generate_text(full_prompt, model='anthropic/claude-3.5-sonnet', max_tokens=2500, temperature=0.7)
+            
+            if result.get('success'):
+                response_text = result['text']
+                if len(response_text) < 150:
+                    response_text += "\n\n💡 **¿Necesitas más información sobre este tema o algún producto en particular?** Estoy aquí para ayudarte a encontrar exactamente lo que necesitas. 😊"
+                elif not any(char in response_text[-50:] for char in ['?', '¿']):
+                    response_text += "\n\n¿Hay algo más en lo que pueda ayudarte? 😊"
+                return {'success': True, 'text': response_text, 'platform_used': 'claude-3.5-sonnet', 'model': result.get('model'), 'usage': result.get('usage', {}), 'query_type': query_type}
+            
+            if self.openai:
+                print(f"⚡ Fallback to OpenAI GPT-4 for query: {message[:50]}...")
+                result = await self.openai.generate_text(full_prompt, model='gpt-4-turbo-preview', max_tokens=2500, temperature=0.7)
+                if result.get('success'):
+                    return {'success': True, 'text': result['text'], 'platform_used': 'openai-gpt4', 'query_type': query_type}
+            
+            print(f"❌ All AI providers failed for query: {message[:50]}")
+            return {'success': False, 'error': 'No AI provider available or all failed', 'text': '''Lo siento mucho, estoy experimentando dificultades técnicas temporales. 😔
+
+Por favor, intenta de nuevo en unos momentos. Si el problema persiste, puedes:
+
+📧 Contactarnos directamente en: info@herramientasyaccesorios.store
+📞 Llamarnos para atención personalizada
+
+Disculpa las molestias. ¡Estamos trabajando para resolver esto lo antes posible!'''}
+            
+        except Exception as e:
+            print(f"❌ Exception in AIRouter: {str(e)}")
+            return {'success': False, 'error': str(e), 'text': f'''Ups, ha ocurrido un error al procesar tu consulta. 😔
+
+**Error técnico:** {str(e)}
+
+Por favor, intenta reformular tu pregunta o contáctanos directamente para ayudarte:
+📧 info@herramientasyaccesorios.store
+
+¡Gracias por tu paciencia!'''}
+    
+    def _detect_query_type(self, message: str) -> str:
+        """Detect query intent for intelligent routing"""
+        message_lower = message.lower()
+        search_keywords = ['buscar', 'search', 'precio', '
