@@ -80,6 +80,11 @@ class Cerebro_AI_WooCommerce {
         
         if (!get_option('cerebro_ai_settings')) {
             add_option('cerebro_ai_settings', $defaults);
+        } else {
+            // Actualizar API URL si existe configuración previa
+            $current_settings = get_option('cerebro_ai_settings');
+            $current_settings['api_url'] = 'https://ai-agent-backend80.onrender.com/api';
+            update_option('cerebro_ai_settings', $current_settings);
         }
     }
     
