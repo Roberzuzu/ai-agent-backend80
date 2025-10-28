@@ -1,0 +1,153 @@
+# ============================================
+# RENDER.COM DEPLOYMENT CONFIGURATION
+# ============================================
+# Configuración para despliegue en Render.com
+# Servicio: Cerebro AI Backend 24/7
+# ============================================
+
+services:
+  # Backend API Service
+  - type: web
+    name: cerebro-ai-backend
+    env: python
+    region: frankfurt  # Cambia según tu preferencia: oregon, frankfurt, singapore
+    plan: starter  # Plan gratuito, actualiza a standard/pro para producción
+    buildCommand: cd backend && pip install -r requirements_standalone.txt
+    startCommand: cd backend && uvicorn server:app --host 0.0.0.0 --port $PORT --workers 1
+    healthCheckPath: /api/health
+    autoDeploy: true
+    
+    envVars:
+      # =========================
+      # MONGODB (REQUERIDO)
+      # =========================
+      - key: MONGO_URL
+        sync: false
+      
+      - key: DB_NAME
+        value: social_media_monetization
+      
+      # =========================
+      # AI APIs (REQUERIDAS)
+      # =========================
+      - key: OPENROUTER_API_KEY
+        sync: false
+      
+      - key: OPENAI_API_KEY
+        sync: false
+      
+      - key: PERPLEXITY_API_KEY
+        sync: false
+      
+      - key: FAL_API_KEY
+        sync: false
+      
+      - key: ABACUS_API_KEY
+        sync: false
+      
+      # =========================
+      # WOOCOMMERCE (REQUERIDO)
+      # =========================
+      - key: WC_URL
+        sync: false
+      
+      - key: WC_KEY
+        sync: false
+      
+      - key: WC_SECRET
+        sync: false
+      
+      # =========================
+      # WORDPRESS (REQUERIDO)
+      # =========================
+      - key: WP_URL
+        sync: false
+      
+      - key: WP_USER
+        sync: false
+      
+      - key: WP_PASS
+        sync: false
+      
+      # =========================
+      # TELEGRAM (OPCIONAL)
+      # =========================
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+      
+      # =========================
+      # SECURITY (REQUERIDO)
+      # =========================
+      - key: SECRET_KEY
+        generateValue: true
+      
+      - key: ENVIRONMENT
+        value: production
+      
+      # =========================
+      # STRIPE (OPCIONAL)
+      # =========================
+      - key: STRIPE_API_KEY
+        sync: false
+      
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      
+      # =========================
+      # SOCIAL MEDIA (OPCIONAL)
+      # =========================
+      - key: INSTAGRAM_TOKEN
+        sync: false
+      
+      - key: FACEBOOK_TOKEN
+        sync: false
+      
+      # =========================
+      # MONITORING (OPCIONAL)
+      # =========================
+      - key: SENTRY_DSN
+        sync: false
+
+# ============================================
+# NOTAS DE CONFIGURACIÓN
+# ============================================
+# 
+# 1. MONGODB:
+#    - Usa MongoDB Atlas (gratis): https://cloud.mongodb.com
+#    - Formato: mongodb+srv://username:password@cluster.mongodb.net
+#    - O despliega MongoDB como servicio privado en Render
+# 
+# 2. VARIABLES OBLIGATORIAS:
+#    - MONGO_URL
+#    - OPENROUTER_API_KEY (Claude 3.5 Sonnet)
+#    - WC_URL, WC_KEY, WC_SECRET (WooCommerce)
+#    - WP_URL, WP_USER, WP_PASS (WordPress)
+# 
+# 3. DEPLOYMENT:
+#    - Render detecta automáticamente cambios en GitHub
+#    - Se despliega automáticamente en cada push
+#    - URL generada: https://cerebro-ai-backend.onrender.com
+# 
+# 4. HEALTH CHECK:
+#    - Endpoint: /api/health
+#    - Render reinicia automáticamente si falla
+# 
+# 5. ESCALADO:
+#    - Plan starter: 512MB RAM, suficiente para inicio
+#    - Plan standard: 2GB RAM, recomendado para producción
+#    - Plan pro: 4GB RAM, para alto tráfico
+# 
+# ============================================
+
+databases:
+  # MongoDB Private Service (Opcional)
+  # Si prefieres MongoDB en Render en lugar de Atlas
+  # Descomentar esto y comentar MONGO_URL arriba
+  
+  # - name: cerebro-mongodb
+  #   plan: starter
+  #   region: frankfurt
+  #   postgresMajorVersion: 15  # Render no ofrece MongoDB, usar Atlas en su lugar
