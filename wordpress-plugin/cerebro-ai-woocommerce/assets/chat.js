@@ -129,35 +129,42 @@
                     response = await this.sendCommand(message);
                 }
                 
-                console.log('Response completa:', response);
+                console.log('📡 Respuesta completa:', JSON.stringify(response, null, 2));
                 
-                // WordPress wp_send_json_success devuelve {success: true, data: {...}}
-                if (response.success && response.data) {
-                    // Los datos del backend están en response.data
+                // Manejo robusto de la respuesta
+                let botMessage = 'Error procesando respuesta';
+                
+                if (response && response.success) {
+                    // WordPress AJAX wrappea en {success: true, data: {...}}
                     const backendData = response.data;
-                    let botMessage = backendData.mensaje || backendData.message || 'Comando ejecutado';
                     
-                    // Si hay análisis de archivo
-                    if (backendData.file_info && backendData.file_info.analysis) {
-                        botMessage += '\n\n📄 Análisis:\n' + backendData.file_info.analysis;
+                    if (backendData) {
+                        // El backend responde con {success: true, mensaje: "..."}
+                        botMessage = backendData.mensaje || backendData.message || backendData.respuesta_usuario || 'Comando ejecutado';
+                        
+                        // Si hay análisis de archivo
+                        if (backendData.file_info && backendData.file_info.analysis) {
+                            botMessage += '\n\n📄 Análisis:\n' + backendData.file_info.analysis;
+                        }
+                        
+                        // Si hay resultados
+                        if (backendData.resultados && backendData.resultados.length > 0) {
+                            botMessage += '\n\n🛠️ Herramientas ejecutadas: ' + backendData.resultados.length;
+                        }
+                        
+                        this.addMessage('bot', botMessage);
+                    } else {
+                        this.addMessage('bot', '❌ Error: Respuesta vacía del servidor', true);
                     }
-                    
-                    // Si hay resultados
-                    if (backendData.resultados && backendData.resultados.length > 0) {
-                        botMessage += '\n\n🛠️ Herramientas ejecutadas: ' + backendData.resultados.length;
-                    }
-                    
-                    this.addMessage('bot', botMessage);
-                } else if (response.mensaje || response.message) {
-                    // Respuesta directa del backend (sin WordPress wrapper)
-                    this.addMessage('bot', response.mensaje || response.message);
                 } else {
-                    const errorMsg = response.data?.error || response.error || response.message || 'Error desconocido';
+                    // Error del servidor
+                    const errorMsg = response?.data?.error || response?.error || response?.message || 'Error desconocido';
                     this.addMessage('bot', '❌ Error: ' + errorMsg, true);
+                    console.error('❌ Error en respuesta:', response);
                 }
             } catch (error) {
-                console.error('Error completo:', error);
-                this.addMessage('bot', '❌ Error de conexión: ' + error.message, true);
+                console.error('❌ Error capturado:', error);
+                this.addMessage('bot', '❌ Error de conexión: ' + error.message + '\n\nVerifica la consola (F12) para más detalles.', true);
             } finally {
                 this.$typing.hide();
                 this.removeFile();
