@@ -93,7 +93,8 @@
                 }
                 
                 if (response.success) {
-                    const data = response.data;
+                    // WordPress AJAX devuelve response.data que ya contiene los datos del backend
+                    const data = response.data || response;
                     let botMessage = data.mensaje || data.message || 'Comando ejecutado';
                     
                     // Si hay análisis de archivo
@@ -108,7 +109,8 @@
                     
                     this.addMessage('bot', botMessage);
                 } else {
-                    this.addMessage('bot', '❌ Error: ' + (response.data?.error || 'Error desconocido'), true);
+                    const errorMsg = response.data?.error || response.error || response.message || 'Error desconocido';
+                    this.addMessage('bot', '❌ Error: ' + errorMsg, true);
                 }
             } catch (error) {
                 console.error('Error:', error);
