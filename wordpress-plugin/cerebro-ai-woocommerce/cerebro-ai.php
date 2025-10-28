@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Constantes del plugin
-define('CEREBRO_AI_VERSION', '1.2.0');
+define('CEREBRO_AI_VERSION', '2.0.0');
 define('CEREBRO_AI_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CEREBRO_AI_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('CEREBRO_AI_PLUGIN_FILE', __FILE__);
