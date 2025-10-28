@@ -445,15 +445,7 @@ async def get_conversations(user_id: str):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", 8000)))
-AHORA ACTUALIZA requirements.txt con:
-fastapi==0.104.1
-uvicorn==0.24.0
-httpx==0.25.1
-asyncpg==0.29.0
-boto3==1.29.7
-python-multipart==0.0.6
-pydantic==2.5.0
-python-dotenv==1.0.0
+"""
 Integrations package
 FAL AI, WooCommerce, Dropshipping automation
 """
