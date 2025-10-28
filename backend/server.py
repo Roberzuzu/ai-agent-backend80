@@ -6718,15 +6718,16 @@ async def root():
 # AI SUPER POWERS - ENDPOINTS FOR WORDPRESS PLUGIN
 # =====================================================
 
-from ai_integrations import (
-    generate_product_description,
-    generate_product_images,
-    analyze_market_competition,
-    get_optimal_pricing,
-    generate_social_media_content,
-    generate_email_campaign,
-    process_product_complete
-)
+# TODO: Uncomment when ai_integrations functions are implemented
+# from ai_integrations import (
+#     generate_product_description,
+#     generate_product_images,
+#     analyze_market_competition,
+#     get_optimal_pricing,
+#     generate_social_media_content,
+#     generate_email_campaign,
+#     process_product_complete
+# )
 
 class AIProductRequest(BaseModel):
     """Request para procesar producto con AI"""
