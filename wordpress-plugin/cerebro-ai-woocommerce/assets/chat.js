@@ -160,28 +160,18 @@
         },
         
         async sendCommand(command) {
-            // Llamada DIRECTA al backend - sin WordPress proxy
             const apiUrl = cerebroAI.apiUrl;
             
-            try {
-                const response = await fetch(apiUrl + '/agent/execute', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        command: command,
-                        user_id: cerebroAI.userId
-                    })
-                });
-                
-                const data = await response.json();
-                return data; // Retorna directamente la respuesta del backend
-                
-            } catch (error) {
-                console.error('Error directo al backend:', error);
-                throw error;
-            }
+            const response = await fetch(apiUrl + '/agent/execute', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    command: command,
+                    user_id: cerebroAI.userId || 'wp_user'
+                })
+            });
+            
+            return await response.json();
         },
         
         async sendWithFile(command) {
