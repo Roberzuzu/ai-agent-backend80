@@ -6852,132 +6852,134 @@ class AIEmailRequest(BaseModel):
     target_audience: str = "general"
     custom_prompt: Optional[str] = None
 
-@api_router.post("/ai/product/complete")
-async def ai_process_product_complete(request: AIProductRequest):
-    """
-    Procesa producto completo con todas las integraciones AI
-    - Descripción SEO optimizada
-    - Análisis de mercado
-    - Precio óptimo
-    - Generación de imágenes
-    - Contenido de redes sociales
-    """
-    try:
-        result = await process_product_complete(
-            product_name=request.product_name,
-            category=request.category,
-            features=request.features,
-            base_price=request.base_price,
-            generate_images=request.generate_images
-        )
-        return result
-    except Exception as e:
-        logger.error(f"Error processing product: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@api_router.post("/ai/product/description")
-async def ai_generate_description(request: AIDescriptionRequest):
-    """
-    Genera descripción profesional con SEO
-    Usa OpenRouter (Claude 3.5 Sonnet)
-    """
-    try:
-        result = await generate_product_description(
-            product_name=request.product_name,
-            category=request.category,
-            features=request.features,
-            language=request.language,
-            custom_prompt=request.custom_prompt
-        )
-        return result
-    except Exception as e:
-        logger.error(f"Error generating description: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@api_router.post("/ai/product/images")
-async def ai_generate_images(request: AIImageRequest):
-    """
-    Genera imágenes profesionales del producto
-    Usa Fal AI (Flux) o DALL-E como respaldo
-    """
-    try:
-        result = await generate_product_images(
-            product_name=request.product_name,
-            category=request.category,
-            style=request.style,
-            num_images=request.num_images
-        )
-        return result
-    except Exception as e:
-        logger.error(f"Error generating images: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@api_router.post("/ai/product/market-analysis")
-async def ai_market_analysis(request: AIMarketRequest):
-    """
-    Analiza mercado y competencia en tiempo real
-    Usa Perplexity para búsqueda web actualizada
-    """
-    try:
-        result = await analyze_market_competition(
-            product_name=request.product_name,
-            category=request.category
-        )
-        return result
-    except Exception as e:
-        logger.error(f"Error analyzing market: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@api_router.post("/ai/product/optimal-pricing")
-async def ai_optimal_pricing(request: AIPricingRequest):
-    """
-    Calcula precio óptimo basado en mercado
-    Usa Abacus AI para análisis predictivo
-    """
-    try:
-        result = await get_optimal_pricing(
-            product_name=request.product_name,
-            category=request.category,
-            base_price=request.base_price
-        )
-        return result
-    except Exception as e:
-        logger.error(f"Error calculating pricing: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@api_router.post("/ai/content/social-media")
-async def ai_social_media_content(request: AISocialMediaRequest):
-    """
-    Genera contenido optimizado para redes sociales
-    Posts, hashtags, mejores horarios
-    """
-    try:
-        result = await generate_social_media_content(
-            product_name=request.product_name,
-            description=request.description,
-            platforms=request.platforms
-        )
-        return result
-    except Exception as e:
-        logger.error(f"Error generating social media content: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@api_router.post("/ai/content/email-campaign")
-async def ai_email_campaign(request: AIEmailRequest):
-    """
-    Genera campaña completa de email marketing
-    Asuntos, contenido HTML, segmentación
-    """
-    try:
-        result = await generate_email_campaign(
-            product_name=request.product_name,
-            description=request.description,
-            target_audience=request.target_audience
-        )
-        return result
-    except Exception as e:
-        logger.error(f"Error generating email campaign: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+# TODO: Uncomment these endpoints when ai_integrations functions are fully implemented
+# 
+# @api_router.post("/ai/product/complete")
+# async def ai_process_product_complete(request: AIProductRequest):
+#     """
+#     Procesa producto completo con todas las integraciones AI
+#     - Descripción SEO optimizada
+#     - Análisis de mercado
+#     - Precio óptimo
+#     - Generación de imágenes
+#     - Contenido de redes sociales
+#     """
+#     try:
+#         result = await process_product_complete(
+#             product_name=request.product_name,
+#             category=request.category,
+#             features=request.features,
+#             base_price=request.base_price,
+#             generate_images=request.generate_images
+#         )
+#         return result
+#     except Exception as e:
+#         logger.error(f"Error processing product: {str(e)}")
+#         raise HTTPException(status_code=500, detail=str(e))
+# 
+# @api_router.post("/ai/product/description")
+# async def ai_generate_description(request: AIDescriptionRequest):
+#     """
+#     Genera descripción profesional con SEO
+#     Usa OpenRouter (Claude 3.5 Sonnet)
+#     """
+#     try:
+#         result = await generate_product_description(
+#             product_name=request.product_name,
+#             category=request.category,
+#             features=request.features,
+#             language=request.language,
+#             custom_prompt=request.custom_prompt
+#         )
+#         return result
+#     except Exception as e:
+#         logger.error(f"Error generating description: {str(e)}")
+#         raise HTTPException(status_code=500, detail=str(e))
+# 
+# @api_router.post("/ai/product/images")
+# async def ai_generate_images(request: AIImageRequest):
+#     """
+#     Genera imágenes profesionales del producto
+#     Usa Fal AI (Flux) o DALL-E como respaldo
+#     """
+#     try:
+#         result = await generate_product_images(
+#             product_name=request.product_name,
+#             category=request.category,
+#             style=request.style,
+#             num_images=request.num_images
+#         )
+#         return result
+#     except Exception as e:
+#         logger.error(f"Error generating images: {str(e)}")
+#         raise HTTPException(status_code=500, detail=str(e))
+# 
+# @api_router.post("/ai/product/market-analysis")
+# async def ai_market_analysis(request: AIMarketRequest):
+#     """
+#     Analiza mercado y competencia en tiempo real
+#     Usa Perplexity para búsqueda web actualizada
+#     """
+#     try:
+#         result = await analyze_market_competition(
+#             product_name=request.product_name,
+#             category=request.category
+#         )
+#         return result
+#     except Exception as e:
+#         logger.error(f"Error analyzing market: {str(e)}")
+#         raise HTTPException(status_code=500, detail=str(e))
+# 
+# @api_router.post("/ai/product/optimal-pricing")
+# async def ai_optimal_pricing(request: AIPricingRequest):
+#     """
+#     Calcula precio óptimo basado en mercado
+#     Usa Abacus AI para análisis predictivo
+#     """
+#     try:
+#         result = await get_optimal_pricing(
+#             product_name=request.product_name,
+#             category=request.category,
+#             base_price=request.base_price
+#         )
+#         return result
+#     except Exception as e:
+#         logger.error(f"Error calculating pricing: {str(e)}")
+#         raise HTTPException(status_code=500, detail=str(e))
+# 
+# @api_router.post("/ai/content/social-media")
+# async def ai_social_media_content(request: AISocialMediaRequest):
+#     """
+#     Genera contenido optimizado para redes sociales
+#     Posts, hashtags, mejores horarios
+#     """
+#     try:
+#         result = await generate_social_media_content(
+#             product_name=request.product_name,
+#             description=request.description,
+#             platforms=request.platforms
+#         )
+#         return result
+#     except Exception as e:
+#         logger.error(f"Error generating social media content: {str(e)}")
+#         raise HTTPException(status_code=500, detail=str(e))
+# 
+# @api_router.post("/ai/content/email-campaign")
+# async def ai_email_campaign(request: AIEmailRequest):
+#     """
+#     Genera campaña completa de email marketing
+#     Asuntos, contenido HTML, segmentación
+#     """
+#     try:
+#         result = await generate_email_campaign(
+#             product_name=request.product_name,
+#             description=request.description,
+#             target_audience=request.target_audience
+#         )
+#         return result
+#     except Exception as e:
+#         logger.error(f"Error generating email campaign: {str(e)}")
+#         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/ai/health")
 async def ai_health_check():
