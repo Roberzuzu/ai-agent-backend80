@@ -227,7 +227,7 @@ O lenguaje natural:
 
 **Backend:**
 ```bash
-curl https://backend-connect-21.preview.emergentagent.com/api/agent/status
+curl https://wpmoneyhub.preview.emergentagent.com/api/agent/status
 ```
 
 **Debe retornar:**

@@ -149,7 +149,7 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "https://backend-connect-21.preview.emergentagent.com/api/agent/status",
+        "url": "https://wpmoneyhub.preview.emergentagent.com/api/agent/status",
         "options": {}
       },
       "id": "get-status",
@@ -175,7 +175,7 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "=https://backend-connect-21.preview.emergentagent.com/api/agent/memory/{{ $json.user_id }}?limit=5",
+        "url": "=https://wpmoneyhub.preview.emergentagent.com/api/agent/memory/{{ $json.user_id }}?limit=5",
         "options": {}
       },
       "id": "get-memory",
@@ -276,7 +276,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://backend-connect-21.preview.emergentagent.com/api/agent/execute",
+        "url": "https://wpmoneyhub.preview.emergentagent.com/api/agent/execute",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ command: $json.command, user_id: $json.user_id }) }}",

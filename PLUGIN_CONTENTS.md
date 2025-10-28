@@ -275,7 +275,7 @@ GET  /api/ai/health                     # Health check APIs
 2. **Configurar API Backend**
    ```
    AI Dropshipping → Configuración
-   → URL Backend: https://backend-connect-21.preview.emergentagent.com/api
+   → URL Backend: https://wpmoneyhub.preview.emergentagent.com/api
    → Guardar
    ```
 

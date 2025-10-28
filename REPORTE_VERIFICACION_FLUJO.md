@@ -9,7 +9,7 @@
 
 ### 1. BACKEND (CEREBRO AI)
 **URL Local:** http://localhost:8001
-**URL Pública:** https://backend-connect-21.preview.emergentagent.com
+**URL Pública:** https://wpmoneyhub.preview.emergentagent.com
 
 **Estado:** ✅ FUNCIONANDO
 ```json
@@ -74,9 +74,9 @@
 - ✅ 📤 Send Result
 
 **URLs configuradas:**
-- ✅ https://backend-connect-21.preview.emergentagent.com/api/agent/status
-- ✅ https://backend-connect-21.preview.emergentagent.com/api/agent/memory/{user_id}
-- ✅ https://backend-connect-21.preview.emergentagent.com/api/agent/execute
+- ✅ https://wpmoneyhub.preview.emergentagent.com/api/agent/status
+- ✅ https://wpmoneyhub.preview.emergentagent.com/api/agent/memory/{user_id}
+- ✅ https://wpmoneyhub.preview.emergentagent.com/api/agent/execute
 
 ---
 

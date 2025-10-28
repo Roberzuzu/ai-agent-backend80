@@ -33,7 +33,7 @@
     },
     {
       "parameters": {
-        "url": "https://backend-connect-21.preview.emergentagent.com/api/ai/product/complete",
+        "url": "https://wpmoneyhub.preview.emergentagent.com/api/ai/product/complete",
         "method": "POST",
         "sendBody": true,
         "bodyParameters": {

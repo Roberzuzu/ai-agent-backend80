@@ -7,7 +7,7 @@ import requests
 import json
 from datetime import datetime, timedelta
 
-BASE_URL = "https://backend-connect-21.preview.emergentagent.com/api"
+BASE_URL = "https://wpmoneyhub.preview.emergentagent.com/api"
 
 def create_test_products():
     """Create test products for checkout testing"""

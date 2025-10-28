@@ -388,7 +388,7 @@ from stripe_client import StripeCheckout  # Standalone usando SDK de Stripe
 
 **Antes:**
 ```python
-BACKEND_URL = "https://backend-connect-21.preview.emergentagent.com/api"  # Hardcoded
+BACKEND_URL = "https://wpmoneyhub.preview.emergentagent.com/api"  # Hardcoded
 ```
 
 **Ahora:**

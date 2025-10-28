@@ -22,7 +22,7 @@
 - Chat ID: `7202793910`
 
 **Backend:**
-- URL: `https://backend-connect-21.preview.emergentagent.com`
+- URL: `https://wpmoneyhub.preview.emergentagent.com`
 - Status: ✅ FUNCIONANDO (22 herramientas activas)
 
 ---
@@ -159,7 +159,7 @@ Vuelve a tu workflow importado. Necesitas asignar la credencial a **7 nodos**:
 1. **Click en el nodo "📊 Get Agent Status"**
 2. **Verifica la URL:**
    ```
-   URL: https://backend-connect-21.preview.emergentagent.com/api/agent/status
+   URL: https://wpmoneyhub.preview.emergentagent.com/api/agent/status
    Method: GET
    ```
 3. **Si la URL es diferente, cámbiala**
@@ -169,7 +169,7 @@ Vuelve a tu workflow importado. Necesitas asignar la credencial a **7 nodos**:
 1. **Click en el nodo "🧠 Get Memory"**
 2. **Verifica la URL:**
    ```
-   URL: https://backend-connect-21.preview.emergentagent.com/api/agent/memory/{{ $json.user_id }}?limit=5
+   URL: https://wpmoneyhub.preview.emergentagent.com/api/agent/memory/{{ $json.user_id }}?limit=5
    Method: GET
    ```
 
@@ -178,7 +178,7 @@ Vuelve a tu workflow importado. Necesitas asignar la credencial a **7 nodos**:
 1. **Click en el nodo "🤖 Execute Cerebro AI"**
 2. **Verifica:**
    ```
-   URL: https://backend-connect-21.preview.emergentagent.com/api/agent/execute
+   URL: https://wpmoneyhub.preview.emergentagent.com/api/agent/execute
    Method: POST
    Timeout: 180000 (3 minutos)
    ```
@@ -343,7 +343,7 @@ Vuelve a tu workflow importado. Necesitas asignar la credencial a **7 nodos**:
 
 **Verificar el backend:**
 ```bash
-curl https://backend-connect-21.preview.emergentagent.com/api/agent/status
+curl https://wpmoneyhub.preview.emergentagent.com/api/agent/status
 ```
 
 **Debe retornar:**
