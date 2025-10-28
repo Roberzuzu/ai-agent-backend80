@@ -247,6 +247,13 @@ class Cerebro_AI_WooCommerce {
     public function render_admin_page() {
         include CEREBRO_AI_PLUGIN_DIR . 'templates/admin-page.php';
     }
+    
+    /**
+     * Página de prompts
+     */
+    public function render_prompts_page() {
+        include CEREBRO_AI_PLUGIN_DIR . 'templates/prompts-page.php';
+    }
 }
 
 // Inicializar el plugin
