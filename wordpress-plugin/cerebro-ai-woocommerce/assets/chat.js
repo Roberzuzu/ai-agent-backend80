@@ -60,8 +60,45 @@
         handleFileSelect(e) {
             const file = e.target.files[0];
             if (file) {
+                // Validar tamaño (max 10MB)
+                const maxSize = 10 * 1024 * 1024; // 10MB
+                if (file.size > maxSize) {
+                    alert('El archivo es muy grande. Máximo 10MB.');
+                    return;
+                }
+                
+                // Tipos permitidos
+                const allowedTypes = [
+                    'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+                    'video/mp4', 'video/mpeg', 'video/quicktime',
+                    'application/pdf',
+                    'application/msword',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'application/vnd.ms-excel',
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'text/plain', 'text/csv'
+                ];
+                
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Tipo de archivo no permitido. Formatos: Imágenes, Videos, PDF, Word, Excel, CSV');
+                    return;
+                }
+                
                 this.currentFile = file;
-                this.$fileName.text(file.name);
+                
+                // Mostrar preview según tipo
+                let preview = '';
+                if (file.type.startsWith('image/')) {
+                    preview = '🖼️ ';
+                } else if (file.type.startsWith('video/')) {
+                    preview = '🎥 ';
+                } else if (file.type === 'application/pdf') {
+                    preview = '📄 ';
+                } else {
+                    preview = '📎 ';
+                }
+                
+                this.$fileName.text(preview + file.name);
                 this.$filePreview.show();
             }
         },
