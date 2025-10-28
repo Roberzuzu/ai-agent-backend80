@@ -7003,8 +7003,8 @@ async def ai_health_check():
 # =====================================================
 # AI AGENT - CEREBRO CENTRAL DEL SISTEMA
 # =====================================================
-
-from ai_agent import agent
+# TODO: Fix ai_agent.py to export 'agent' object before uncommenting
+# from ai_agent import agent
 
 class AgentExecuteRequest(BaseModel):
     """Request para ejecutar comando del agente"""
