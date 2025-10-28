@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Conexión - Cerebro AI Backend</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: #f9f9f9;
+        }
+        
+        .test-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .status.loading {
+            background: #ffa500;
+            color: white;
+        }
+        
+        .status.success {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .status.error {
+            background: #f44336;
+            color: white;
+        }
+        
+        .result {
+            margin-top: 10px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            font-family: monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .endpoint-url {
+            color: #667eea;
+            font-weight: bold;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 Test de Conexión - Cerebro AI Backend</h1>
+        
+        <div class="info">
+            <strong>Backend URL:</strong> <span class="endpoint-url" id="backend-url"></span>
+        </div>
+        
+        <button onclick="testAll()">🚀 Probar Todas las Conexiones</button>
+        
+        <!-- Test 1: Health Check -->
+        <div class="test-section">
+            <h2>1. Health Check</h2>
+            <span class="status loading" id="status-health">Esperando...</span>
+            <div class="result" id="result-health" style="display:none;"></div>
+        </div>
+        
+        <!-- Test 2: MongoDB Status -->
+        <div class="test-section">
+            <h2>2. MongoDB Status</h2>
+            <span class="status loading" id="status-mongo">Esperando...</span>
+            <div class="result" id="result-mongo" style="display:none;"></div>
+        </div>
+        
+        <!-- Test 3: Agent Status -->
+        <div class="test-section">
+            <h2>3. Agent Status</h2>
+            <span class="status loading" id="status-agent">Esperando...</span>
+            <div class="result" id="result-agent" style="display:none;"></div>
+        </div>
+        
+        <!-- Test 4: Productos -->
+        <div class="test-section">
+            <h2>4. Productos (GET)</h2>
+            <span class="status loading" id="status-products">Esperando...</span>
+            <div class="result" id="result-products" style="display:none;"></div>
+        </div>
+        
+        <!-- Test 5: Crear Producto -->
+        <div class="test-section">
+            <h2>5. Crear Producto (POST)</h2>
+            <span class="status loading" id="status-create">Esperando...</span>
+            <div class="result" id="result-create" style="display:none;"></div>
+        </div>
+    </div>
+    
+    <script>
+        const BACKEND_URL = 'https://ai-agent-backend80.onrender.com';
+        document.getElementById('backend-url').textContent = BACKEND_URL;
+        
+        async function testEndpoint(name, url, options = {}) {
+            const statusEl = document.getElementById(`status-${name}`);
+            const resultEl = document.getElementById(`result-${name}`);
+            
+            statusEl.textContent = 'Probando...';
+            statusEl.className = 'status loading';
+            resultEl.style.display = 'none';
+            
+            try {
+                const response = await fetch(url, options);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    statusEl.textContent = '✅ Éxito';
+                    statusEl.className = 'status success';
+                    resultEl.innerHTML = `<strong>Status:</strong> ${response.status}<br><br><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    statusEl.textContent = '⚠️ Error';
+                    statusEl.className = 'status error';
+                    resultEl.innerHTML = `<strong>Status:</strong> ${response.status}<br><br><pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+                
+                resultEl.style.display = 'block';
+                return { success: response.ok, data };
+            } catch (error) {
+                statusEl.textContent = '❌ Fallo';
+                statusEl.className = 'status error';
+                resultEl.innerHTML = `<strong>Error:</strong> ${error.message}<br><br>Verifica que el backend esté activo y accesible.`;
+                resultEl.style.display = 'block';
+                return { success: false, error: error.message };
+            }
+        }
+        
+        async function testAll() {
+            // Test 1: Health Check
+            await testEndpoint('health', `${BACKEND_URL}/api/health`);
+            
+            await new Promise(r => setTimeout(r, 500));
+            
+            // Test 2: MongoDB Status
+            await testEndpoint('mongo', `${BACKEND_URL}/api/status/detailed`);
+            
+            await new Promise(r => setTimeout(r, 500));
+            
+            // Test 3: Agent Status
+            await testEndpoint('agent', `${BACKEND_URL}/api/agent/status`);
+            
+            await new Promise(r => setTimeout(r, 500));
+            
+            // Test 4: Productos
+            await testEndpoint('products', `${BACKEND_URL}/api/products`);
+            
+            await new Promise(r => setTimeout(r, 500));
+            
+            // Test 5: Crear Producto
+            await testEndpoint('create', `${BACKEND_URL}/api/products`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: 'Producto Test Web',
+                    description: 'Creado desde la página de prueba',
+                    price: 199.99,
+                    category: 'test',
+                    stock: 100
+                })
+            });
+        }
+        
+        // Auto-test al cargar la página
+        window.onload = () => {
+            setTimeout(testAll, 1000);
+        };
+    </script>
+</body>
+</html>
