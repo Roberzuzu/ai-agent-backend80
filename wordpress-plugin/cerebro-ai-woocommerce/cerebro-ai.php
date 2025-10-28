@@ -210,6 +210,11 @@ class Cerebro_AI_WooCommerce {
         $settings = get_option('cerebro_ai_settings');
         $api_url = $settings['api_url'] ?? '';
         
+        if (empty($api_url)) {
+            wp_send_json_error(array('message' => 'API URL no configurada'));
+            return;
+        }
+        
         $endpoint = sanitize_text_field($_POST['endpoint'] ?? '');
         $method = sanitize_text_field($_POST['method'] ?? 'POST');
         $data = $_POST['data'] ?? array();
@@ -228,17 +233,50 @@ class Cerebro_AI_WooCommerce {
             $args['body'] = json_encode($data);
         }
         
+        // Log para debug (solo en development)
+        error_log('Cerebro AI - Llamando a: ' . $url);
+        error_log('Cerebro AI - Datos: ' . json_encode($data));
+        
         $response = wp_remote_request($url, $args);
         
         if (is_wp_error($response)) {
+            error_log('Cerebro AI - Error WP: ' . $response->get_error_message());
             wp_send_json_error(array('message' => $response->get_error_message()));
             return;
         }
         
+        $http_code = wp_remote_retrieve_response_code($response);
         $body = wp_remote_retrieve_body($response);
-        $data = json_decode($body, true);
         
-        wp_send_json_success($data);
+        error_log('Cerebro AI - HTTP Code: ' . $http_code);
+        error_log('Cerebro AI - Respuesta: ' . $body);
+        
+        if ($http_code !== 200) {
+            wp_send_json_error(array(
+                'message' => 'Error del servidor: HTTP ' . $http_code,
+                'http_code' => $http_code,
+                'body' => $body
+            ));
+            return;
+        }
+        
+        $decoded = json_decode($body, true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            error_log('Cerebro AI - Error JSON: ' . json_last_error_msg());
+            wp_send_json_error(array(
+                'message' => 'Error decodificando JSON: ' . json_last_error_msg(),
+                'raw_body' => substr($body, 0, 200)
+            ));
+            return;
+        }
+        
+        if ($decoded === null) {
+            wp_send_json_error(array('message' => 'Respuesta vacía del servidor'));
+            return;
+        }
+        
+        wp_send_json_success($decoded);
     }
     
     /**
