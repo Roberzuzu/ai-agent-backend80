@@ -7035,6 +7035,56 @@ async def ai_health_check():
 #     # Implementation commented out - requires 'agent' object
 #     pass
 
+# =====================================================
+# TEMPORARY AGENT ENDPOINTS - WORDPRESS PLUGIN SUPPORT
+# =====================================================
+
+class AgentExecuteRequest(BaseModel):
+    """Request para ejecutar comando del agente"""
+    command: str
+    user_id: str = "default"
+
+@api_router.post("/agent/execute")
+async def agent_execute_command_temp(request: AgentExecuteRequest):
+    """
+    Endpoint temporal para WordPress plugin
+    Responde con un mensaje mientras se implementa el agente completo
+    """
+    try:
+        # Guardar el comando en la colección de conversaciones
+        conversation = {
+            "user_id": request.user_id,
+            "command": request.command,
+            "timestamp": datetime.now(timezone.utc),
+            "status": "pending_agent_implementation"
+        }
+        
+        await db["conversations"].insert_one(conversation)
+        
+        # Respuesta temporal
+        return {
+            "success": True,
+            "mensaje": f"✅ Comando recibido: '{request.command}'\n\n⚠️ El agente AI está en configuración. Por ahora, puedo:\n\n1. ✅ Guardar tus comandos\n2. ✅ Gestionar productos (usa la API REST)\n3. ✅ Ver analíticas\n\nPronto tendré capacidades AI completas! 🚀",
+            "plan": {
+                "respuesta_usuario": "Comando guardado correctamente. Funcionalidad AI en desarrollo.",
+                "acciones": []
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error en agent/execute temporal: {str(e)}")
+        return {
+            "success": False,
+            "message": f"Error al procesar comando: {str(e)}"
+        }
+
+@api_router.post("/agent/chat")
+async def agent_chat_temp(request: AgentExecuteRequest):
+    """
+    Chat temporal para WordPress plugin
+    """
+    return await agent_execute_command_temp(request)
+
 @api_router.get("/agent/status")
 async def agent_status():
     """Estado del agente y conversaciones activas - Con manejo robusto de errores"""
