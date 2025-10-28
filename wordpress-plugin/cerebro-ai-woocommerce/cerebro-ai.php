@@ -3,7 +3,7 @@
  * Plugin Name: Cerebro AI - Asistente Experto WooCommerce
  * Plugin URI: https://cerebroai.com
  * Description: Asistente de IA avanzado para gestión de WooCommerce. Sube fotos de productos, optimiza catálogos, crea ofertas y mucho más.
- * Version: 1.1.0
+ * Version: 1.1.1
  * Author: Cerebro AI Team
  * Author URI: https://cerebroai.com
  * License: GPL v2 or later
