@@ -111,52 +111,26 @@
         
         async sendMessage() {
             const message = this.$input.val().trim();
+            if (!message) return;
             
-            if (!message && !this.currentFile) return;
-            
-            // Mostrar mensaje del usuario
-            this.addMessage('user', message || `📎 ${this.currentFile.name}`);
-            
+            this.addMessage('user', message);
             this.$input.val('');
             this.$typing.show();
             
             try {
-                let response;
+                const data = await this.sendCommand(message);
                 
-                if (this.currentFile) {
-                    response = await this.sendWithFile(message);
-                } else {
-                    response = await this.sendCommand(message);
-                }
+                console.log('Backend dice:', data);
                 
-                console.log('📡 Respuesta del backend:', response);
+                const msg = data.mensaje || data.message || JSON.stringify(data);
+                this.addMessage('bot', msg);
                 
-                // Respuesta DIRECTA del backend (sin WordPress wrapper)
-                if (response && response.success) {
-                    let botMessage = response.mensaje || response.message || 'Comando ejecutado';
-                    
-                    // Si hay análisis de archivo
-                    if (response.file_info && response.file_info.analysis) {
-                        botMessage += '\n\n📄 Análisis:\n' + response.file_info.analysis;
-                    }
-                    
-                    // Si hay resultados
-                    if (response.resultados && response.resultados.length > 0) {
-                        botMessage += '\n\n🛠️ Herramientas ejecutadas: ' + response.resultados.length;
-                    }
-                    
-                    this.addMessage('bot', botMessage);
-                } else {
-                    const errorMsg = response?.error || response?.message || 'Error desconocido';
-                    this.addMessage('bot', '❌ Error: ' + errorMsg, true);
-                }
             } catch (error) {
-                console.error('❌ Error:', error);
-                this.addMessage('bot', '❌ Error de conexión: ' + error.message, true);
-            } finally {
-                this.$typing.hide();
-                this.removeFile();
+                console.error('Error:', error);
+                this.addMessage('bot', 'Error: ' + error.message, true);
             }
+            
+            this.$typing.hide();
         },
         
         async sendCommand(command) {
