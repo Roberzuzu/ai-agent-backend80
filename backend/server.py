@@ -7393,6 +7393,32 @@ logger = logging.getLogger(__name__)
 @app.on_event("startup")
 async def startup_db():
     """Initialize database with migrations on startup"""
+    logger.info("="*60)
+    logger.info("🚀 SUPER CEREBRO AI - STARTING UP")
+    logger.info("="*60)
+    
+    # Log environment configuration
+    logger.info("📋 ENVIRONMENT CONFIGURATION:")
+    logger.info(f"   - MongoDB: {'✅ Configured' if os.environ.get('MONGO_URL') else '❌ Not configured'}")
+    logger.info(f"   - Database Name: {os.environ.get('DB_NAME', 'Not set')}")
+    logger.info(f"   - OpenRouter API: {'✅ Configured' if os.environ.get('OPENROUTER_API_KEY') else '❌ Not configured'}")
+    logger.info(f"   - OpenAI API: {'✅ Configured' if os.environ.get('OPENAI_API_KEY') else '❌ Not configured'}")
+    logger.info(f"   - Perplexity API: {'✅ Configured' if os.environ.get('PERPLEXITY_API_KEY') else '❌ Not configured'}")
+    logger.info(f"   - Stripe API: {'✅ Configured' if os.environ.get('STRIPE_API_KEY') else '❌ Not configured'}")
+    logger.info(f"   - WooCommerce: {'✅ Configured' if os.environ.get('WC_URL') else '❌ Not configured'}")
+    logger.info(f"   - WordPress: {'✅ Configured' if os.environ.get('WP_URL') else '❌ Not configured'}")
+    logger.info(f"   - Telegram Bot: {'✅ Configured' if os.environ.get('TELEGRAM_BOT_TOKEN') else '❌ Not configured'}")
+    logger.info(f"   - Environment: {os.environ.get('ENVIRONMENT', 'development')}")
+    
+    # Test MongoDB connection
+    try:
+        logger.info("🔍 Testing MongoDB connection...")
+        await db.command('ping')
+        logger.info("✅ MongoDB connection successful!")
+    except Exception as e:
+        logger.error(f"❌ MongoDB connection failed: {str(e)}")
+    
+    # Run migrations
     try:
         from database.migrations import run_all_migrations
         logger.info("🚀 Running database migrations...")
@@ -7401,6 +7427,19 @@ async def startup_db():
     except Exception as e:
         logger.error(f"❌ Database migration error: {e}")
         # Don't fail startup, just log the error
+    
+    # Log available routes
+    logger.info("🛣️  AVAILABLE API ROUTES:")
+    routes = []
+    for route in app.routes:
+        if hasattr(route, 'path') and hasattr(route, 'methods'):
+            routes.append(f"   {list(route.methods)[0] if route.methods else 'GET'} {route.path}")
+    for route in sorted(routes)[:20]:  # Show first 20 routes
+        logger.info(route)
+    
+    logger.info("="*60)
+    logger.info("✅ SUPER CEREBRO AI - READY TO SERVE")
+    logger.info("="*60)
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
