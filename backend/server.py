@@ -7141,24 +7141,36 @@ async def agent_chat(request: AgentExecuteRequest):
 
 @api_router.get("/agent/status")
 async def agent_status():
-    """Estado del agente y conversaciones activas"""
+    """Estado del agente y conversaciones activas - Con manejo robusto de errores"""
     try:
-        # Contar conversaciones en MongoDB
-        total_conversations = await db["conversations"].count_documents({})
-        total_memories = await db["agent_memory"].count_documents({})
+        # Intentar contar conversaciones en MongoDB
+        total_conversations = 0
+        total_memories = 0
+        db_connected = False
+        
+        try:
+            total_conversations = await db["conversations"].count_documents({})
+            total_memories = await db["agent_memory"].count_documents({})
+            db_connected = True
+            logger.info(f"MongoDB connected: conversations={total_conversations}, memories={total_memories}")
+        except Exception as db_error:
+            logger.warning(f"MongoDB connection issue in /agent/status: {str(db_error)}")
+            db_connected = False
         
         # Verificar si OpenAI key está disponible
         openai_key_available = bool(os.environ.get('OPENAI_API_KEY'))
         
-        return {
+        response = {
             "success": True,
             "agente_activo": True,
+            "database_connected": db_connected,
             "conversaciones_totales": total_conversations,
             "memorias_guardadas": total_memories,
             "herramientas_disponibles": 22,
             "modelo": "Perplexity Pro (sonar-pro)",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "caracteristicas": {
-                "memoria_persistente": True,
+                "memoria_persistente": db_connected,
                 "busqueda_semantica": openai_key_available,
                 "rag_enabled": openai_key_available,
                 "embeddings": openai_key_available,
@@ -7168,10 +7180,16 @@ async def agent_status():
                 "perplexity_pro": bool(os.environ.get('PERPLEXITY_API_KEY'))
             }
         }
+        
+        logger.info(f"Agent status check completed successfully")
+        return response
+        
     except Exception as e:
+        logger.error(f"Error in /agent/status endpoint: {str(e)}", exc_info=True)
         return {
             "success": False,
-            "error": str(e)
+            "error": str(e),
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
 
 @api_router.get("/agent/memory/{user_id}")
