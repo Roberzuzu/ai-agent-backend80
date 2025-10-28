@@ -172,20 +172,28 @@
         },
         
         async sendCommand(command) {
-            return await $.ajax({
-                url: cerebroAI.ajaxUrl,
-                method: 'POST',
-                data: {
-                    action: 'cerebro_ai_proxy',
-                    nonce: cerebroAI.nonce,
-                    endpoint: 'agent/execute',
+            // Llamada DIRECTA al backend - sin WordPress proxy
+            const apiUrl = cerebroAI.apiUrl;
+            
+            try {
+                const response = await fetch(apiUrl + '/agent/execute', {
                     method: 'POST',
-                    data: {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
                         command: command,
                         user_id: cerebroAI.userId
-                    }
-                }
-            });
+                    })
+                });
+                
+                const data = await response.json();
+                return data; // Retorna directamente la respuesta del backend
+                
+            } catch (error) {
+                console.error('Error directo al backend:', error);
+                throw error;
+            }
         },
         
         async sendWithFile(command) {
