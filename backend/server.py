@@ -6715,6 +6715,32 @@ async def root():
 
 
 # =====================================================
+# SIMPLE STATUS ENDPOINT - DIAGNOSTICO
+# =====================================================
+
+@api_router.get("/status/simple")
+async def simple_status():
+    """
+    Endpoint simple de status sin dependencias de DB
+    Para verificar que el servidor está funcionando
+    """
+    return {
+        "status": "live",
+        "message": "Backend funcionando correctamente",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "service": "Super Cerebro AI Backend",
+        "version": "1.0.0",
+        "endpoints_available": True,
+        "environment": {
+            "mongo_configured": bool(os.environ.get('MONGO_URL')),
+            "openrouter_configured": bool(os.environ.get('OPENROUTER_API_KEY')),
+            "openai_configured": bool(os.environ.get('OPENAI_API_KEY')),
+            "stripe_configured": bool(os.environ.get('STRIPE_API_KEY')),
+            "wc_configured": bool(os.environ.get('WC_URL'))
+        }
+    }
+
+# =====================================================
 # AI SUPER POWERS - ENDPOINTS FOR WORDPRESS PLUGIN
 # =====================================================
 
