@@ -6929,7 +6929,7 @@ class AIEmailRequest(BaseModel):
 #     except Exception as e:
 #         logger.error(f"Error analyzing market: {str(e)}")
 #         raise HTTPException(status_code=500, detail=str(e))
-# 
+# # from ai_agent import agent
 # @api_router.post("/ai/product/optimal-pricing")
 # async def ai_optimal_pricing(request: AIPricingRequest):
 #     """
