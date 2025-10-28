@@ -9,8 +9,8 @@
 ### ✅ Paso 1: Instalar Plugin AI Dropshipping (3 min)
 
 1. **Descargar plugin:**
-   - URL: https://railway-port-config.preview.emergentagent.com/api/wordpress/plugin/download
-   - O desde terminal: `curl -o plugin.zip https://railway-port-config.preview.emergentagent.com/api/wordpress/plugin/download`
+   - URL: https://backend-connect-21.preview.emergentagent.com/api/wordpress/plugin/download
+   - O desde terminal: `curl -o plugin.zip https://backend-connect-21.preview.emergentagent.com/api/wordpress/plugin/download`
 
 2. **Instalar en WordPress:**
    ```

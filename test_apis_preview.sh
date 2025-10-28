@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BASE_URL="https://railway-port-config.preview.emergentagent.com"
+BASE_URL="https://backend-connect-21.preview.emergentagent.com"
 
 echo "================================================================"
 echo "🧪 PRUEBA DE APIS - CEREBRO AI"

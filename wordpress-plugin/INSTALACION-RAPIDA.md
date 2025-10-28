@@ -25,7 +25,7 @@
 1. Ve a: `WordPress Admin → Cerebro AI`
 2. Configura:
    ```
-   URL de la API: https://railway-port-config.preview.emergentagent.com/api
+   URL de la API: https://backend-connect-21.preview.emergentagent.com/api
    ✅ Chat flotante: Activado
    ✅ Solo administradores: Activado
    Posición: Abajo a la derecha
@@ -125,7 +125,7 @@ Por defecto, solo administradores pueden usar el chat. Para cambiar:
 1. Crea un nodo HTTP Request en n8n
 2. Configura:
    ```
-   URL: https://railway-port-config.preview.emergentagent.com/api/agent/execute
+   URL: https://backend-connect-21.preview.emergentagent.com/api/agent/execute
    Method: POST
    Body:
    {

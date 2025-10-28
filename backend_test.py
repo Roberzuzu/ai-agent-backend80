@@ -12,9 +12,9 @@ from datetime import datetime
 from typing import Dict, Any, List
 
 # Configuration
-BASE_URL = "https://railway-port-config.preview.emergentagent.com/api"
+BASE_URL = "https://backend-connect-21.preview.emergentagent.com/api"
 TEST_USER_ID = "test_user_backend"
-ORIGIN_URL = "https://railway-port-config.preview.emergentagent.com"
+ORIGIN_URL = "https://backend-connect-21.preview.emergentagent.com"
 
 class AIAgentTester:
     def __init__(self):

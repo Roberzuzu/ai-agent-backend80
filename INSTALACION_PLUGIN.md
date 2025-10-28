@@ -91,7 +91,7 @@ chown -R www-data:www-data ai-dropshipping-manager
 
 2. **URL de API:**
    ```
-   https://railway-port-config.preview.emergentagent.com/api
+   https://backend-connect-21.preview.emergentagent.com/api
    ```
    
 3. **Opciones:**
@@ -116,7 +116,7 @@ chown -R www-data:www-data ai-dropshipping-manager
    - **Tema:** `product.created`
    - **URL de entrega:**
      ```
-     https://railway-port-config.preview.emergentagent.com/api/webhooks/woocommerce/product-created
+     https://backend-connect-21.preview.emergentagent.com/api/webhooks/woocommerce/product-created
      ```
    - **Secreto:**
      ```
@@ -138,7 +138,7 @@ chown -R www-data:www-data ai-dropshipping-manager
    - **Tema:** `product.updated`
    - **URL de entrega:**
      ```
-     https://railway-port-config.preview.emergentagent.com/api/webhooks/woocommerce/product-updated
+     https://backend-connect-21.preview.emergentagent.com/api/webhooks/woocommerce/product-updated
      ```
    - **Secreto:**
      ```
@@ -268,7 +268,7 @@ El plugin puede generar:
 
 3. **Probar webhook manualmente:**
    ```bash
-   curl https://railway-port-config.preview.emergentagent.com/api/webhooks/test
+   curl https://backend-connect-21.preview.emergentagent.com/api/webhooks/test
    ```
    Debería retornar: `{"status": "ok"}`
 
@@ -279,7 +279,7 @@ El plugin puede generar:
 1. **Verificar conexión a API:**
    - Desde tu servidor WordPress:
    ```bash
-   curl https://railway-port-config.preview.emergentagent.com/api/woocommerce/products
+   curl https://backend-connect-21.preview.emergentagent.com/api/woocommerce/products
    ```
 
 2. **Verificar credenciales WooCommerce:**

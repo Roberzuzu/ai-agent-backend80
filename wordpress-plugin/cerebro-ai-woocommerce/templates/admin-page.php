@@ -68,7 +68,7 @@ if (isset($_POST['cerebro_ai_save'])) {
                                     required
                                 />
                                 <p class="description">
-                                    URL base de tu API de Cerebro AI (ejemplo: https://railway-port-config.preview.emergentagent.com/api)
+                                    URL base de tu API de Cerebro AI (ejemplo: https://backend-connect-21.preview.emergentagent.com/api)
                                 </p>
                             </td>
                         </tr>
