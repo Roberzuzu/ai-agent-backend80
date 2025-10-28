@@ -6740,6 +6740,53 @@ async def simple_status():
         }
     }
 
+@api_router.get("/status/detailed")
+async def detailed_status():
+    """
+    Status detallado con información de todos los servicios
+    """
+    status = {
+        "service": "Super Cerebro AI Backend",
+        "version": "1.0.0",
+        "status": "operational",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "environment": os.environ.get('ENVIRONMENT', 'development'),
+        "services": {}
+    }
+    
+    # Test MongoDB
+    try:
+        await db.command('ping')
+        collections_count = len(await db.list_collection_names())
+        status["services"]["mongodb"] = {
+            "status": "connected",
+            "database": os.environ.get('DB_NAME'),
+            "collections": collections_count
+        }
+    except Exception as e:
+        status["services"]["mongodb"] = {
+            "status": "error",
+            "error": str(e)
+        }
+    
+    # Check AI APIs
+    status["services"]["ai_apis"] = {
+        "openrouter": "configured" if os.environ.get('OPENROUTER_API_KEY') else "not_configured",
+        "openai": "configured" if os.environ.get('OPENAI_API_KEY') else "not_configured",
+        "perplexity": "configured" if os.environ.get('PERPLEXITY_API_KEY') else "not_configured",
+        "fal_ai": "configured" if os.environ.get('FAL_API_KEY') else "not_configured"
+    }
+    
+    # Check WooCommerce/WordPress
+    status["services"]["integrations"] = {
+        "woocommerce": "configured" if os.environ.get('WC_URL') else "not_configured",
+        "wordpress": "configured" if os.environ.get('WP_URL') else "not_configured",
+        "stripe": "configured" if os.environ.get('STRIPE_API_KEY') else "not_configured",
+        "telegram": "configured" if os.environ.get('TELEGRAM_BOT_TOKEN') else "not_configured"
+    }
+    
+    return status
+
 # =====================================================
 # AI SUPER POWERS - ENDPOINTS FOR WORDPRESS PLUGIN
 # =====================================================
