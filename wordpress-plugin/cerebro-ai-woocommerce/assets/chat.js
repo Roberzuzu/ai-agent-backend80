@@ -7,6 +7,16 @@
     
     const CerebroAI = {
         init() {
+            console.log('🧠 Cerebro AI Iniciando...');
+            console.log('API URL configurada:', cerebroAI.apiUrl);
+            console.log('User ID:', cerebroAI.userId);
+            
+            if (!cerebroAI.apiUrl) {
+                console.error('❌ ERROR: API URL no configurada en WordPress!');
+                console.log('Ve a: WordPress Admin > Cerebro AI > Configuración');
+                return;
+            }
+            
             this.chatOpen = false;
             this.currentFile = null;
             this.messages = [];
