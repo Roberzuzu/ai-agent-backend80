@@ -101,6 +101,24 @@ class Cerebro_AI_WooCommerce {
             'dashicons-brain',
             56
         );
+        
+        add_submenu_page(
+            'cerebro-ai',
+            'Configuración',
+            'Configuración',
+            'manage_woocommerce',
+            'cerebro-ai',
+            array($this, 'render_admin_page')
+        );
+        
+        add_submenu_page(
+            'cerebro-ai',
+            'Prompts Personalizados',
+            'Prompts',
+            'manage_woocommerce',
+            'cerebro-ai-prompts',
+            array($this, 'render_prompts_page')
+        );
     }
     
     /**
