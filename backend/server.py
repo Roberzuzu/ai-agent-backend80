@@ -7133,23 +7133,29 @@ async def get_agent_conversations(user_id: str, limit: int = 50):
         raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.post("/agent/search-memory")
-async def search_agent_memory(request: AgentExecuteRequest):
+async def search_agent_memory(request: dict):
     """Busca en la memoria del agente usando similaridad semántica"""
-    try:
-        memories = await agent.search_relevant_memories(
-            request.user_id,
-            request.command,
-            limit=10
-        )
-        
-        return {
-            "success": True,
-            "query": request.command,
-            "resultados": len(memories),
-            "memories": memories
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    # TODO: Re-enable when agent is properly exported from ai_agent.py
+    return {
+        "success": False,
+        "error": "Agent search functionality temporarily disabled",
+        "message": "This endpoint requires the agent object which is currently unavailable"
+    }
+    # try:
+    #     memories = await agent.search_relevant_memories(
+    #         request.get("user_id"),
+    #         request.get("command"),
+    #         limit=10
+    #     )
+    #     
+    #     return {
+    #         "success": True,
+    #         "query": request.get("command"),
+    #         "resultados": len(memories),
+    #         "memories": memories
+    #     }
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.delete("/agent/memory/{user_id}")
 async def delete_agent_memory(user_id: str):
