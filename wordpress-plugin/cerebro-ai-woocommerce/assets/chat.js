@@ -92,28 +92,34 @@
                     response = await this.sendCommand(message);
                 }
                 
-                if (response.success) {
-                    // WordPress AJAX devuelve response.data que ya contiene los datos del backend
-                    const data = response.data || response;
-                    let botMessage = data.mensaje || data.message || 'Comando ejecutado';
+                console.log('Response completa:', response);
+                
+                // WordPress wp_send_json_success devuelve {success: true, data: {...}}
+                if (response.success && response.data) {
+                    // Los datos del backend están en response.data
+                    const backendData = response.data;
+                    let botMessage = backendData.mensaje || backendData.message || 'Comando ejecutado';
                     
                     // Si hay análisis de archivo
-                    if (data.file_info && data.file_info.analysis) {
-                        botMessage += '\n\n📄 Análisis:\n' + data.file_info.analysis;
+                    if (backendData.file_info && backendData.file_info.analysis) {
+                        botMessage += '\n\n📄 Análisis:\n' + backendData.file_info.analysis;
                     }
                     
                     // Si hay resultados
-                    if (data.resultados && data.resultados.length > 0) {
-                        botMessage += '\n\n🛠️ Herramientas ejecutadas: ' + data.resultados.length;
+                    if (backendData.resultados && backendData.resultados.length > 0) {
+                        botMessage += '\n\n🛠️ Herramientas ejecutadas: ' + backendData.resultados.length;
                     }
                     
                     this.addMessage('bot', botMessage);
+                } else if (response.mensaje || response.message) {
+                    // Respuesta directa del backend (sin WordPress wrapper)
+                    this.addMessage('bot', response.mensaje || response.message);
                 } else {
                     const errorMsg = response.data?.error || response.error || response.message || 'Error desconocido';
                     this.addMessage('bot', '❌ Error: ' + errorMsg, true);
                 }
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error completo:', error);
                 this.addMessage('bot', '❌ Error de conexión: ' + error.message, true);
             } finally {
                 this.$typing.hide();
