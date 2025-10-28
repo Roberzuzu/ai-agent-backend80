@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Plugin WordPress</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>🧪 Test de Conexión del Plugin</h1>
+    <button onclick="testWordPressAJAX()">Test WordPress AJAX Simulation</button>
+    <button onclick="testDirectBackend()">Test Backend Directo</button>
+    <pre id="result"></pre>
+    
+    <script>
+        const BACKEND_URL = 'https://ai-agent-backend80.onrender.com/api';
+        
+        // Simula exactamente lo que hace el plugin
+        async function testWordPressAJAX() {
+            const result = document.getElementById('result');
+            result.textContent = '⏳ Probando WordPress AJAX simulation...';
+            
+            try {
+                // Esto simula wp_remote_request + wp_send_json_success
+                const backendResponse = await fetch(BACKEND_URL + '/agent/execute', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        command: 'Hola desde test',
+                        user_id: 'test_user'
+                    })
+                });
+                
+                const backendData = await backendResponse.json();
+                
+                // WordPress wrappea con wp_send_json_success
+                const wordpressResponse = {
+                    success: true,
+                    data: backendData
+                };
+                
+                console.log('📡 Respuesta WordPress AJAX:', wordpressResponse);
+                
+                // Ahora procesa como lo haría el plugin
+                if (wordpressResponse.success && wordpressResponse.data) {
+                    const data = wordpressResponse.data;
+                    const mensaje = data.mensaje || data.message || 'Sin mensaje';
+                    
+                    result.textContent = '✅ ÉXITO\n\n' + 
+                        'Estructura WordPress:\n' + JSON.stringify(wordpressResponse, null, 2) + '\n\n' +
+                        'Mensaje extraído: ' + mensaje;
+                } else {
+                    result.textContent = '❌ ERROR\n\n' + JSON.stringify(wordpressResponse, null, 2);
+                }
+                
+            } catch (error) {
+                result.textContent = '❌ ERROR CAPTURADO\n\n' + error.message;
+                console.error(error);
+            }
+        }
+        
+        // Test directo al backend
+        async function testDirectBackend() {
+            const result = document.getElementById('result');
+            result.textContent = '⏳ Probando backend directo...';
+            
+            try {
+                const response = await fetch(BACKEND_URL + '/agent/execute', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        command: 'Hola',
+                        user_id: 'test_user'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                console.log('📡 Respuesta Backend Directo:', data);
+                
+                result.textContent = '✅ Backend responde:\n\n' + JSON.stringify(data, null, 2);
+                
+            } catch (error) {
+                result.textContent = '❌ ERROR\n\n' + error.message;
+                console.error(error);
+            }
+        }
+        
+        // Auto-test al cargar
+        window.onload = () => {
+            testWordPressAJAX();
+        };
+    </script>
+</body>
+</html>
