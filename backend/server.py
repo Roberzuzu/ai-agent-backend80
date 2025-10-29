@@ -4,7 +4,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
-from agent_core import CerebroAgent
+from agent_core import CerebroUncensored
 import os
 import logging
 from pathlib import Path
@@ -46,7 +46,7 @@ db = client[os.environ['DB_NAME']]
 
 # Inicializar Cerebro AI Agent
 ADMIN_TELEGRAM_ID = os.environ.get('ADMIN_TELEGRAM_ID', '7202793910')
-agente = CerebroAgent(db, ADMIN_TELEGRAM_ID)
+agente = CerebroUncensored(db, ADMIN_TELEGRAM_ID)
 
 # =========================
 # SECURITY SYSTEMS
