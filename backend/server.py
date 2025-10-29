@@ -47,7 +47,7 @@ db = client[os.environ['DB_NAME']]
 # Inicializar Cerebro AI Agent
 ADMIN_TELEGRAM_ID = os.environ.get('ADMIN_TELEGRAM_ID', '7202793910')
 agente = CerebroAgent(db, ADMIN_TELEGRAM_ID)
-logger.info("✅ Cerebro AI Agent inicializado")
+
 # =========================
 # SECURITY SYSTEMS
 # =========================
