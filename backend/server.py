@@ -1,10 +1,10 @@
 from fastapi import FastAPI, APIRouter, HTTPException, BackgroundTasks, Request, Depends, status, UploadFile, File, Form
-from agent_core import CerebroAgent
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
-from motor.motor_asyncio import AsyncIOMotorClient from agent_core import CerebroAgent
+from motor.motor_asyncio import AsyncIOMotorClient
+from agent_core import CerebroAgent
 import os
 import logging
 from pathlib import Path
@@ -43,6 +43,7 @@ load_dotenv(ROOT_DIR / '.env')
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
+
 # Inicializar Cerebro AI Agent
 ADMIN_TELEGRAM_ID = os.environ.get('ADMIN_TELEGRAM_ID', '7202793910')
 agente = CerebroAgent(db, ADMIN_TELEGRAM_ID)
