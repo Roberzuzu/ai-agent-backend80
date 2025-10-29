@@ -7048,46 +7048,67 @@ class AgentExecuteRequest(BaseModel):
     user_id: str = "default"
 
 @api_router.post("/agent/execute")
-async def agent_execute_command_temp(request: AgentExecuteRequest):
+@api_router.post("/agent/execute")
+async def agent_execute_command(request: AgentExecuteRequest):
     """
-    Endpoint temporal para WordPress plugin
-    Responde con un mensaje mientras se implementa el agente completo
+    Endpoint principal del agente con IA completa
+    Maneja conversación + ejecución de acciones
     """
     try:
-        # Guardar el comando en la colección de conversaciones
-        conversation = {
-            "user_id": request.user_id,
-            "command": request.command,
-            "timestamp": datetime.now(timezone.utc),
-            "status": "pending_agent_implementation"
-        }
+        # Procesar comando con el agente
+        resultado = await agente.procesar_comando(
+            command=request.command,
+            user_id=request.user_id
+        )
         
-        await db["conversations"].insert_one(conversation)
-        
-        # Respuesta temporal
-        return {
-            "success": True,
-            "mensaje": f"✅ Comando recibido: '{request.command}'\n\n⚠️ El agente AI está en configuración. Por ahora, puedo:\n\n1. ✅ Guardar tus comandos\n2. ✅ Gestionar productos (usa la API REST)\n3. ✅ Ver analíticas\n\nPronto tendré capacidades AI completas! 🚀",
-            "plan": {
-                "respuesta_usuario": "Comando guardado correctamente. Funcionalidad AI en desarrollo.",
+        # Si requiere autorización y el usuario no es admin
+        if resultado.get('requiere_autorizacion') and request.user_id != agente.admin_telegram_id:
+            # Enviar notificación al admin
+            await agente._solicitar_autorizacion(request.user_id, request.command)
+            
+            return {
+                "success": True,
+                "mensaje": f"📋 He recibido tu solicitud:\n\n'{request.command}'\n\n⏳ Estoy solicitando autorización del administrador. Te notificaré cuando esté aprobada.",
+                "estado": "pendiente_autorizacion",
                 "acciones": []
+            }
+        
+        # Formatear respuesta
+        mensaje = resultado.get('mensaje', '')
+        
+        # Si hubo acciones ejecutadas, agregarlas al mensaje
+        if resultado.get('acciones'):
+            mensaje += "\n\n🛠️ **Acciones ejecutadas:**\n"
+            for accion in resultado['acciones']:
+                herramienta = accion.get('herramienta', 'desconocida')
+                estado = accion.get('estado', 'completada')
+                mensaje += f"• {herramienta}: {estado}\n"
+        
+        return {
+            "success": resultado.get('success', True),
+            "mensaje": mensaje,
+            "acciones": resultado.get('acciones', []),
+            "plan": {
+                "respuesta_usuario": mensaje,
+                "acciones_ejecutadas": len(resultado.get('acciones', []))
             }
         }
         
     except Exception as e:
-        logger.error(f"Error en agent/execute temporal: {str(e)}")
+        logger.error(f"Error en agent/execute: {str(e)}", exc_info=True)
         return {
             "success": False,
-            "message": f"Error al procesar comando: {str(e)}"
+            "mensaje": f"❌ Error al procesar tu solicitud:\n\n{str(e)}\n\nPor favor, intenta de nuevo o contacta con soporte.",
+            "acciones": []
         }
 
-@api_router.post("/agent/chat")
-async def agent_chat_temp(request: AgentExecuteRequest):
-    """
-    Chat temporal para WordPress plugin
-    """
-    return await agent_execute_command_temp(request)
 
+@api_router.post("/agent/chat")
+async def agent_chat(request: AgentExecuteRequest):
+    """
+    Alias para compatibilidad - usa el mismo endpoint
+    """
+    return await agent_execute_command(request)
 @api_router.get("/agent/status")
 async def agent_status():
     """Estado del agente y conversaciones activas - Con manejo robusto de errores"""
