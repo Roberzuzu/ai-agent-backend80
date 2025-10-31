@@ -150,88 +150,107 @@ Eres CEREBRO - Sin cadenas, sin filtros, sin límites artificiales."""
             }
     
     async def _llamar_ia_uncensored(self, messages: List[Dict]) -> str:
-        """
-        Llama a APIs de IA priorizando las menos censuradas
-        """
-        
-        # 1. OpenRouter primero (permite modelos sin censura)
-        if self.openrouter_key:
-            try:
-                async with httpx.AsyncClient(timeout=60.0) as client:
-                    # Usa modelos conocidos por ser menos restrictivos
-                    response = await client.post(
-                        "https://openrouter.ai/api/v1/chat/completions",
-                        headers={
-                            "Authorization": f"Bearer {self.openrouter_key}",
-                            "Content-Type": "application/json",
-                            "HTTP-Referer": self.woo_url or "https://localhost",
-                        },
-                        json={
-                            "model": "meta-llama/llama-3.1-70b-instruct",  # Modelo menos censurado
-                            "messages": messages,
-                            "temperature": 0.8,  # Más creatividad
-                            "max_tokens": 4000,
-                            "top_p": 0.95
-                        }
-                    )
-                    
-                    if response.status_code == 200:
-                        data = response.json()
-                        return data['choices'][0]['message']['content']
-                    else:
-                        logger.warning(f"OpenRouter status: {response.status_code}")
-            except Exception as e:
-                logger.warning(f"OpenRouter error: {str(e)}")
-        
-        # 2. Perplexity (menos restrictivo que OpenAI)
-        if self.perplexity_key:
-            try:
-                async with httpx.AsyncClient(timeout=60.0) as client:
-                    response = await client.post(
-                        "https://api.perplexity.ai/chat/completions",
-                        headers={
-                            "Authorization": f"Bearer {self.perplexity_key}",
-                            "Content-Type": "application/json"
-                        },
-                        json={
-                            "model": "llama-3.1-sonar-large-128k-online",
-                            "messages": messages,
-                            "temperature": 0.8,
-                            "max_tokens": 4000
-                        }
-                    )
-                    
-                    if response.status_code == 200:
-                        data = response.json()
-                        return data['choices'][0]['message']['content']
-            except Exception as e:
-                logger.warning(f"Perplexity error: {str(e)}")
-        
-        # 3. OpenAI como último recurso (más censurado)
-        if self.openai_key:
-            try:
-                async with httpx.AsyncClient(timeout=60.0) as client:
-                    response = await client.post(
-                        "https://api.openai.com/v1/chat/completions",
-                        headers={
-                            "Authorization": f"Bearer {self.openai_key}",
-                            "Content-Type": "application/json"
-                        },
-                        json={
-                            "model": "gpt-4-turbo-preview",
-                            "messages": messages,
-                            "temperature": 0.8,
-                            "max_tokens": 4000
-                        }
-                    )
-                    
-                    if response.status_code == 200:
-                        data = response.json()
-                        return data['choices'][0]['message']['content']
-            except Exception as e:
-                logger.warning(f"OpenAI error: {str(e)}")
-        
-        return "Sistema temporalmente sin conexión a IA. Verifica APIs."
+    """
+    Llama a APIs de IA priorizando las menos censuradas
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    # 1. OpenRouter primero (permite modelos sin censura)
+    if self.openrouter_key:
+        try:
+            logger.info(f"Intentando OpenRouter con key: {self.openrouter_key[:10]}...")
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                # Usa modelos conocidos por ser menos restrictivos
+                response = await client.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {self.openrouter_key}",
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": self.woo_url or "https://localhost",
+                    },
+                    json={
+                        "model": "meta-llama/llama-3.1-70b-instruct", # Modelo menos censurado
+                        "messages": messages,
+                        "temperature": 0.8, # Más creatividad
+                        "max_tokens": 4000,
+                        "top_p": 0.95
+                    }
+                )
+                
+                logger.info(f"OpenRouter response status: {response.status_code}")
+                if response.status_code == 200:
+                    data = response.json()
+                    result = data['choices'][0]['message']['content']
+                    logger.info(f"OpenRouter success: {result[:100]}...")
+                    return result
+                else:
+                    logger.error(f"OpenRouter error: {response.status_code} - {response.text}")
+        except Exception as e:
+            logger.error(f"OpenRouter exception: {str(e)}")
+
+    # 2. Perplexity (menos restrictivo que OpenAI)
+    if self.perplexity_key:
+        try:
+            logger.info(f"Intentando Perplexity con key: {self.perplexity_key[:10]}...")
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                response = await client.post(
+                    "https://api.perplexity.ai/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {self.perplexity_key}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": "llama-3.1-sonar-large-128k-online",
+                        "messages": messages,
+                        "temperature": 0.8,
+                        "max_tokens": 4000
+                    }
+                )
+                
+                logger.info(f"Perplexity response status: {response.status_code}")
+                if response.status_code == 200:
+                    data = response.json()
+                    result = data['choices'][0]['message']['content']
+                    logger.info(f"Perplexity success: {result[:100]}...")
+                    return result
+                else:
+                    logger.error(f"Perplexity error: {response.status_code} - {response.text}")
+        except Exception as e:
+            logger.error(f"Perplexity exception: {str(e)}")
+
+    # 3. OpenAI como último recurso (más censurado)
+    if self.openai_key:
+        try:
+            logger.info(f"Intentando OpenAI con key: {self.openai_key[:10]}...")
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                response = await client.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {self.openai_key}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": "gpt-4-turbo-preview",
+                        "messages": messages,
+                        "temperature": 0.8,
+                        "max_tokens": 4000
+                    }
+                )
+                
+                logger.info(f"OpenAI response status: {response.status_code}")
+                if response.status_code == 200:
+                    data = response.json()
+                    result = data['choices'][0]['message']['content']
+                    logger.info(f"OpenAI success: {result[:100]}...")
+                    return result
+                else:
+                    logger.error(f"OpenAI error: {response.status_code} - {response.text}")
+        except Exception as e:
+            logger.error(f"OpenAI exception: {str(e)}")
+
+    logger.error("Todas las APIs fallaron")
+    return "Sistema temporalmente sin conexión a IA. Verifica APIs."
     
     async def _ejecutar_herramientas(self, command: str, ai_response: str, user_id: str) -> List[Dict]:
         """
