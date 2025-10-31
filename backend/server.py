@@ -7314,12 +7314,12 @@ async def test_ai_direct():
             "error": str(e),
             "agente_available": False
         }
-🚀 Después de agregar estos endpoints:
+ Después de agregar estos endpoints:
 Haz commit y redeploy
 Prueba estos URLs:
 https://ai-agent-backend80.onrender.com/api/debug/env
 https://ai-agent-backend80.onrender.com/api/debug/test-ai (POST)
-💡 También verifica en Render:
+ También verifica en Render:
 Ve a tu dashboard de Render y por favor comparte:
 
 Captura de pantalla de las Environment Variables
@@ -7359,7 +7359,7 @@ if admin_whitelist:
             "/api/api-keys"
         ]
     )
-    logger.info(f"🔒 Admin IP whitelist enabled with {len(admin_whitelist)} IPs")
+    logger.info(f" Admin IP whitelist enabled with {len(admin_whitelist)} IPs")
 
 # 3. CSRF Protection
 app.add_middleware(
@@ -7374,7 +7374,7 @@ app.add_middleware(
 # 4. CORS Middleware (more restrictive in production)
 allowed_origins = os.environ.get('CORS_ORIGINS', '*').split(',')
 if '*' in allowed_origins and os.environ.get('ENVIRONMENT') == 'production':
-    logger.warning("⚠️  CORS set to allow all origins in production - consider restricting")
+    logger.warning("  CORS set to allow all origins in production - consider restricting")
 
 app.add_middleware(
     CORSMiddleware,
