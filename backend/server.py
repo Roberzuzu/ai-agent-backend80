@@ -7328,27 +7328,7 @@ async def test_ai_direct():
             "error": str(e),
             "agente_available": False
         }
- Ubicación exacta recomendada:
- Después de agregar estos endpoints:
-Haz commit y redeploy
-Prueba estos URLs:
-https://ai-agent-backend80.onrender.com/api/debug/env
-https://ai-agent-backend80.onrender.com/api/debug/test-ai (POST)
- También verifica en Render:
-Ve a tu dashboard de Render y por favor comparte:
 
-Captura de pantalla de las Environment Variables
-Últimos logs del deploy
-Logs en tiempo real cuando hagas la prueba
-Con esta información podremos identificar mejor dónde está el problema y ayudarte a resolverlo.
-
-Si necesitas continuar con esta solución, también puedes considerar revertir a un checkpoint anterior y probar paso a paso para asegurar estabilidad.
-
-Gracias por tu colaboración.
-
-Oct 31, 08:03 PM
-
-Copy
 
 # =========================
 # SECURITY MIDDLEWARES
