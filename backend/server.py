@@ -7295,12 +7295,26 @@ app.include_router(api_router)
 # Include webhook router
 from webhooks import webhook_router
 app.include_router(webhook_router)
+@api_router.get("/debug/env")
+async def debug_env():
+    """Endpoint temporal para diagnóstico"""
+    return {
+        "perplexity_key_exists": bool(os.environ.get('PERPLEXITY_API_KEY')),
+        "perplexity_key_length": len(os.environ.get('PERPLEXITY_API_KEY', '')) if os.environ.get('PERPLEXITY_API_KEY') else 0,
+        "openai_key_exists": bool(os.environ.get('OPENAI_API_KEY')),
+        "openrouter_key_exists": bool(os.environ.get('OPENROUTER_API_KEY')),
+        "backend_url": os.environ.get('BACKEND_URL', 'Not set'),
+        "environment": os.environ.get('ENVIRONMENT', 'Not set'),
+        "agente_configured": bool(agente),
+        "perplexity_test": "Checking..." if os.environ.get('PERPLEXITY_API_KEY') else "No API key"
+    }
+
 @api_router.post("/debug/test-ai")
 async def test_ai_direct():
     """Test directo del agente AI"""
     try:
         result = await agente.procesar_comando(
-            command="Hola, ¿estás funcionando?",
+            command="Hola, estas funcionando?",
             user_id="debug_test"
         )
         return {
@@ -7314,6 +7328,7 @@ async def test_ai_direct():
             "error": str(e),
             "agente_available": False
         }
+🎯 Ubicación exacta recomendada:
  Después de agregar estos endpoints:
 Haz commit y redeploy
 Prueba estos URLs:
