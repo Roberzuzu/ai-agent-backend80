@@ -7452,7 +7452,56 @@ async def startup_db():
     logger.info("="*60)
     logger.info(" SUPER CEREBRO AI - READY TO SERVE")
     logger.info("="*60)
+# ENDPOINTS DE DIAGNOSTICO - TEMPORAL
+@api_router.get("/debug/env")
+async def debug_env():
+    """Endpoint temporal para diagnóstico de variables de entorno"""
+    return {
+        "perplexity_key_exists": bool(os.environ.get('PERPLEXITY_API_KEY')),
+        "perplexity_key_length": len(os.environ.get('PERPLEXITY_API_KEY', '')),
+        "perplexity_key_start": os.environ.get('PERPLEXITY_API_KEY', '')[:10] if os.environ.get('PERPLEXITY_API_KEY') else "None",
+        "openai_key_exists": bool(os.environ.get('OPENAI_API_KEY')),
+        "openrouter_key_exists": bool(os.environ.get('OPENROUTER_API_KEY')),
+        "all_env_vars_with_api": [k for k in os.environ.keys() if 'API' in k.upper()]
+    }
 
+@api_router.post("/debug/test-perplexity")
+async def test_perplexity_direct():
+    """Test directo de Perplexity API"""
+    import httpx
+    
+    perplexity_key = os.environ.get('PERPLEXITY_API_KEY')
+    
+    if not perplexity_key:
+        return {"error": "No PERPLEXITY_API_KEY found", "key_exists": False}
+    
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                "https://api.perplexity.ai/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {perplexity_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": "llama-3.1-sonar-large-128k-online",
+                    "messages": [{"role": "user", "content": "Hola, responde con 'SI FUNCIONO'"}],
+                    "max_tokens": 50
+                }
+            )
+            
+            return {
+                "status_code": response.status_code,
+                "response_text": response.text[:500],  # Solo primeros 500 caracteres
+                "success": response.status_code == 200,
+                "key_length": len(perplexity_key)
+            }
+    except Exception as e:
+        return {
+            "error": str(e),
+            "success": False,
+            "key_length": len(perplexity_key)
+        }
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
