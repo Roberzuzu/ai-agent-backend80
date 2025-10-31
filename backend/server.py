@@ -7505,3 +7505,98 @@ async def test_perplexity_direct():
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+@api_router.post("/debug/test-ai-detailed")
+async def test_ai_detailed():
+    """Test detallado de todas las APIs de IA"""
+    results = {}
+    
+    # Test OpenRouter
+    openrouter_key = os.environ.get('OPENROUTER_API_KEY')
+    if openrouter_key:
+        try:
+            import httpx
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {openrouter_key}",
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": "https://localhost",
+                    },
+                    json={
+                        "model": "meta-llama/llama-3.1-70b-instruct",
+                        "messages": [{"role": "user", "content": "Test"}],
+                        "temperature": 0.8,
+                        "max_tokens": 50,
+                        "top_p": 0.95
+                    }
+                )
+                results['openrouter'] = {
+                    "status_code": response.status_code,
+                    "success": response.status_code == 200,
+                    "error": response.text[:200] if response.status_code != 200 else None
+                }
+        except Exception as e:
+            results['openrouter'] = {"success": False, "error": str(e)}
+    else:
+        results['openrouter'] = {"success": False, "error": "No API key"}
+
+    # Test Perplexity
+    perplexity_key = os.environ.get('PERPLEXITY_API_KEY')
+    if perplexity_key:
+        try:
+            import httpx
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    "https://api.perplexity.ai/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {perplexity_key}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": "llama-3.1-sonar-large-128k-online",
+                        "messages": [{"role": "user", "content": "Test"}],
+                        "temperature": 0.8,
+                        "max_tokens": 50
+                    }
+                )
+                results['perplexity'] = {
+                    "status_code": response.status_code,
+                    "success": response.status_code == 200,
+                    "error": response.text[:200] if response.status_code != 200 else None
+                }
+        except Exception as e:
+            results['perplexity'] = {"success": False, "error": str(e)}
+    else:
+        results['perplexity'] = {"success": False, "error": "No API key"}
+
+    # Test OpenAI
+    openai_key = os.environ.get('OPENAI_API_KEY')
+    if openai_key:
+        try:
+            import httpx
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {openai_key}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": "gpt-4-turbo-preview",
+                        "messages": [{"role": "user", "content": "Test"}],
+                        "temperature": 0.8,
+                        "max_tokens": 50
+                    }
+                )
+                results['openai'] = {
+                    "status_code": response.status_code,
+                    "success": response.status_code == 200,
+                    "error": response.text[:200] if response.status_code != 200 else None
+                }
+        except Exception as e:
+            results['openai'] = {"success": False, "error": str(e)}
+    else:
+        results['openai'] = {"success": False, "error": "No API key"}
+
+    return results
