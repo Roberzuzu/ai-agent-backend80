@@ -2712,7 +2712,7 @@ async def get_checkout_status(session_id: str):
                             await create_notification_internal(
                                 user_email=affiliate['email'],
                                 notification_type="affiliate",
-                                title="🤝 ¡Nueva Comisión Ganada!",
+                                title=" ¡Nueva Comisión Ganada!",
                                 message=f"Has ganado ${commission_amount:.2f} en comisiones por una nueva venta.",
                                 link="/affiliate-dashboard",
                                 icon="affiliate"
@@ -2789,11 +2789,11 @@ async def stripe_webhook(request: Request):
                 )
                 logger.info(f"✓ Webhook signature verified for event: {event['id']}")
             except stripe.error.SignatureVerificationError as e:
-                logger.error(f"⚠️ Webhook signature verification failed: {str(e)}")
+                logger.error(f" Webhook signature verification failed: {str(e)}")
                 raise HTTPException(status_code=400, detail="Invalid signature")
         else:
             # Parse event without verification (development only)
-            logger.warning("⚠️ Webhook secret not configured - skipping signature verification")
+            logger.warning(" Webhook secret not configured - skipping signature verification")
             import json
             event = json.loads(body)
         
@@ -2802,7 +2802,7 @@ async def stripe_webhook(request: Request):
         event_type = event['type']
         event_data = event['data']['object']
         
-        logger.info(f"📨 Processing webhook: {event_type} (ID: {event_id})")
+        logger.info(f" Processing webhook: {event_type} (ID: {event_id})")
         
         # Log webhook to database
         webhook_log = WebhookLog(
@@ -2819,7 +2819,7 @@ async def stripe_webhook(request: Request):
         # Check for duplicate events
         existing_log = await db.webhook_logs.find_one({"event_id": event_id}, {"_id": 0})
         if existing_log:
-            logger.info(f"⏭️  Duplicate event {event_id} - already processed")
+            logger.info(f"  Duplicate event {event_id} - already processed")
             return {"status": "success", "message": "Duplicate event ignored"}
         
         await db.webhook_logs.insert_one(log_doc)
@@ -2851,7 +2851,7 @@ async def stripe_webhook(request: Request):
                 await handle_invoice_failed(event_data, event_id)
             
             else:
-                logger.info(f"ℹ️  Unhandled event type: {event_type}")
+                logger.info(f"  Unhandled event type: {event_type}")
             
             # Mark webhook as processed
             await db.webhook_logs.update_one(
@@ -2863,13 +2863,13 @@ async def stripe_webhook(request: Request):
                 }}
             )
             
-            logger.info(f"✅ Successfully processed webhook: {event_type}")
+            logger.info(f" Successfully processed webhook: {event_type}")
             return {"status": "success", "event_type": event_type, "event_id": event_id}
             
         except Exception as processing_error:
             # Mark webhook as failed
             error_msg = str(processing_error)
-            logger.error(f"❌ Error processing webhook {event_id}: {error_msg}")
+            logger.error(f" Error processing webhook {event_id}: {error_msg}")
             
             await db.webhook_logs.update_one(
                 {"event_id": event_id},
@@ -2886,7 +2886,7 @@ async def stripe_webhook(request: Request):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Webhook endpoint error: {str(e)}")
+        logger.error(f" Webhook endpoint error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # Webhook event handlers
@@ -2895,7 +2895,7 @@ async def handle_checkout_completed(session_data: dict, event_id: str):
     session_id = session_data.get('id')
     payment_status = session_data.get('payment_status')
     
-    logger.info(f"💳 Checkout completed: {session_id} - Status: {payment_status}")
+    logger.info(f" Checkout completed: {session_id} - Status: {payment_status}")
     
     # Update transaction
     result = await db.payment_transactions.update_one(
@@ -2911,14 +2911,14 @@ async def handle_checkout_completed(session_data: dict, event_id: str):
     if result.modified_count > 0:
         logger.info(f"✓ Transaction updated for session {session_id}")
     else:
-        logger.warning(f"⚠️ No transaction found for session {session_id}")
+        logger.warning(f" No transaction found for session {session_id}")
 
 async def handle_payment_succeeded(payment_intent: dict, event_id: str):
     """Handle payment_intent.succeeded event"""
     payment_id = payment_intent.get('id')
     amount = payment_intent.get('amount', 0) / 100  # Convert from cents
     
-    logger.info(f"💰 Payment succeeded: {payment_id} - Amount: ${amount}")
+    logger.info(f" Payment succeeded: {payment_id} - Amount: ${amount}")
     
     # Additional processing if needed
     # This is more for direct PaymentIntents not through Checkout
@@ -2928,14 +2928,14 @@ async def handle_payment_failed(payment_intent: dict, event_id: str):
     payment_id = payment_intent.get('id')
     error = payment_intent.get('last_payment_error', {})
     
-    logger.warning(f"⚠️ Payment failed: {payment_id} - Error: {error.get('message', 'Unknown')}")
+    logger.warning(f" Payment failed: {payment_id} - Error: {error.get('message', 'Unknown')}")
 
 async def handle_subscription_created(subscription: dict, event_id: str):
     """Handle customer.subscription.created event"""
     subscription_id = subscription.get('id')
     customer_email = subscription.get('customer_email')
     
-    logger.info(f"🔔 Subscription created: {subscription_id} for {customer_email}")
+    logger.info(f" Subscription created: {subscription_id} for {customer_email}")
     
     # Create or update subscription record
     # This is backup in case checkout didn't create it
@@ -2945,7 +2945,7 @@ async def handle_subscription_updated(subscription: dict, event_id: str):
     subscription_id = subscription.get('id')
     status = subscription.get('status')
     
-    logger.info(f"🔄 Subscription updated: {subscription_id} - Status: {status}")
+    logger.info(f" Subscription updated: {subscription_id} - Status: {status}")
     
     # Update subscription status in our database
     await db.subscriptions.update_one(
@@ -2960,7 +2960,7 @@ async def handle_subscription_deleted(subscription: dict, event_id: str):
     """Handle customer.subscription.deleted event"""
     subscription_id = subscription.get('id')
     
-    logger.info(f"🗑️ Subscription deleted: {subscription_id}")
+    logger.info(f" Subscription deleted: {subscription_id}")
     
     # Mark subscription as cancelled
     await db.subscriptions.update_one(
@@ -2982,7 +2982,7 @@ async def handle_invoice_failed(invoice: dict, event_id: str):
     """Handle invoice.payment_failed event"""
     invoice_id = invoice.get('id')
     
-    logger.warning(f"⚠️ Invoice payment failed: {invoice_id}")
+    logger.warning(f" Invoice payment failed: {invoice_id}")
 
 @api_router.get("/webhooks/logs")
 async def get_webhook_logs(status: Optional[str] = None, limit: int = 50):
@@ -4997,7 +4997,7 @@ async def get_premium_content_detail(content_id: str, user_email: Optional[str] 
     has_access = user_level_index >= content_level_index
     
     if not has_access:
-        content['content'] = "🔒 Contenido Premium - Actualiza tu membresía para acceder"
+        content['content'] = " Contenido Premium - Actualiza tu membresía para acceder"
     
     # Increment views
     await db.premium_content.update_one(
@@ -6702,19 +6702,19 @@ async def root():
             "Social Manager",
             "Ad Manager",
             "WordPress Integration",
-            "💳 Payments & Checkout (Stripe)",
-            "📊 Revenue Analytics",
-            "💰 Subscription Management",
-            "📈 Campaign ROI Tracking",
-            "🤝 Affiliate Program",
-            "🛒 Amazon Associates Integration",
-            "📦 Dropshipping Automation",
-            "👑 Memberships & Premium Content",
-            "💝 Donations & Tips",
-            "🧪 A/B Testing",
-            "🤖 AI Product Recommendations",
-            "📧 Email Marketing Automation",
-            "🛒 Cart Abandonment Recovery"
+            " Payments & Checkout (Stripe)",
+            " Revenue Analytics",
+            " Subscription Management",
+            " Campaign ROI Tracking",
+            " Affiliate Program",
+            " Amazon Associates Integration",
+            " Dropshipping Automation",
+            " Memberships & Premium Content",
+            " Donations & Tips",
+            " A/B Testing",
+            " AI Product Recommendations",
+            " Email Marketing Automation",
+            " Cart Abandonment Recovery"
         ]
     }
 
@@ -7070,7 +7070,7 @@ async def agent_execute_command(request: AgentExecuteRequest):
             
             return {
                 "success": True,
-                "mensaje": f"📋 He recibido tu solicitud:\n\n'{request.command}'\n\n⏳ Estoy solicitando autorización del administrador. Te notificaré cuando esté aprobada.",
+                "mensaje": f" He recibido tu solicitud:\n\n'{request.command}'\n\n⏳ Estoy solicitando autorización del administrador. Te notificaré cuando esté aprobada.",
                 "estado": "pendiente_autorizacion",
                 "acciones": []
             }
@@ -7100,7 +7100,7 @@ async def agent_execute_command(request: AgentExecuteRequest):
         logger.error(f"Error en agent/execute: {str(e)}", exc_info=True)
         return {
             "success": False,
-            "mensaje": f"❌ Error al procesar tu solicitud:\n\n{str(e)}\n\nPor favor, intenta de nuevo o contacta con soporte.",
+            "mensaje": f" Error al procesar tu solicitud:\n\n{str(e)}\n\nPor favor, intenta de nuevo o contacta con soporte.",
             "acciones": []
         }
 
@@ -7328,7 +7328,7 @@ async def test_ai_direct():
             "error": str(e),
             "agente_available": False
         }
-🎯 Ubicación exacta recomendada:
+ Ubicación exacta recomendada:
  Después de agregar estos endpoints:
 Haz commit y redeploy
 Prueba estos URLs:
@@ -7426,42 +7426,42 @@ logger = logging.getLogger(__name__)
 async def startup_db():
     """Initialize database with migrations on startup"""
     logger.info("="*60)
-    logger.info("🚀 SUPER CEREBRO AI - STARTING UP")
+    logger.info(" SUPER CEREBRO AI - STARTING UP")
     logger.info("="*60)
     
     # Log environment configuration
     logger.info("📋 ENVIRONMENT CONFIGURATION:")
-    logger.info(f"   - MongoDB: {'✅ Configured' if os.environ.get('MONGO_URL') else '❌ Not configured'}")
+    logger.info(f"   - MongoDB: {' Configured' if os.environ.get('MONGO_URL') else ' Not configured'}")
     logger.info(f"   - Database Name: {os.environ.get('DB_NAME', 'Not set')}")
-    logger.info(f"   - OpenRouter API: {'✅ Configured' if os.environ.get('OPENROUTER_API_KEY') else '❌ Not configured'}")
-    logger.info(f"   - OpenAI API: {'✅ Configured' if os.environ.get('OPENAI_API_KEY') else '❌ Not configured'}")
-    logger.info(f"   - Perplexity API: {'✅ Configured' if os.environ.get('PERPLEXITY_API_KEY') else '❌ Not configured'}")
-    logger.info(f"   - Stripe API: {'✅ Configured' if os.environ.get('STRIPE_API_KEY') else '❌ Not configured'}")
-    logger.info(f"   - WooCommerce: {'✅ Configured' if os.environ.get('WC_URL') else '❌ Not configured'}")
-    logger.info(f"   - WordPress: {'✅ Configured' if os.environ.get('WP_URL') else '❌ Not configured'}")
-    logger.info(f"   - Telegram Bot: {'✅ Configured' if os.environ.get('TELEGRAM_BOT_TOKEN') else '❌ Not configured'}")
+    logger.info(f"   - OpenRouter API: {' Configured' if os.environ.get('OPENROUTER_API_KEY') else ' Not configured'}")
+    logger.info(f"   - OpenAI API: {' Configured' if os.environ.get('OPENAI_API_KEY') else ' Not configured'}")
+    logger.info(f"   - Perplexity API: {' Configured' if os.environ.get('PERPLEXITY_API_KEY') else ' Not configured'}")
+    logger.info(f"   - Stripe API: {' Configured' if os.environ.get('STRIPE_API_KEY') else ' Not configured'}")
+    logger.info(f"   - WooCommerce: {' Configured' if os.environ.get('WC_URL') else ' Not configured'}")
+    logger.info(f"   - WordPress: {' Configured' if os.environ.get('WP_URL') else ' Not configured'}")
+    logger.info(f"   - Telegram Bot: {' Configured' if os.environ.get('TELEGRAM_BOT_TOKEN') else ' Not configured'}")
     logger.info(f"   - Environment: {os.environ.get('ENVIRONMENT', 'development')}")
     
     # Test MongoDB connection
     try:
-        logger.info("🔍 Testing MongoDB connection...")
+        logger.info(" Testing MongoDB connection...")
         await db.command('ping')
-        logger.info("✅ MongoDB connection successful!")
+        logger.info(" MongoDB connection successful!")
     except Exception as e:
-        logger.error(f"❌ MongoDB connection failed: {str(e)}")
+        logger.error(f" MongoDB connection failed: {str(e)}")
     
     # Run migrations
     try:
         from database.migrations import run_all_migrations
-        logger.info("🚀 Running database migrations...")
+        logger.info(" Running database migrations...")
         await run_all_migrations(mongo_url, os.environ['DB_NAME'])
-        logger.info("✅ Database migrations complete")
+        logger.info(" Database migrations complete")
     except Exception as e:
-        logger.error(f"❌ Database migration error: {e}")
+        logger.error(f" Database migration error: {e}")
         # Don't fail startup, just log the error
     
     # Log available routes
-    logger.info("🛣️  AVAILABLE API ROUTES:")
+    logger.info("  AVAILABLE API ROUTES:")
     routes = []
     for route in app.routes:
         if hasattr(route, 'path') and hasattr(route, 'methods'):
@@ -7470,7 +7470,7 @@ async def startup_db():
         logger.info(route)
     
     logger.info("="*60)
-    logger.info("✅ SUPER CEREBRO AI - READY TO SERVE")
+    logger.info(" SUPER CEREBRO AI - READY TO SERVE")
     logger.info("="*60)
 
 @app.on_event("shutdown")
