@@ -37,34 +37,7 @@ app = FastAPI()
 class IAQuery(BaseModel):
     user_id: str
     message: str
-@app.post("/api/agent/execute")
-async def execute_command(cmd: BotCommand):
-    """
-    Orquestador: gestiona cualquier consulta/acción (negocios, cursos, WooCommerce, WordPress, ventas, SaaS, IA).
-    """
-    try:
-        texto = cmd.command.lower()
-        # Módulos conectados:
-        if "venta" in texto:
-            ventas = await get_external_saas("https://miventasapi.com/api/stats")
-            return {"mensaje": f"Tus ventas hoy: {ventas.get('total', 'Sin datos')}€"}
-        elif "woocommerce" in texto:
-            wc = await get_external_saas("https://miwoocomerce.com/api/products")
-            lista = [p["name"] for p in wc.get("products",[])]
-            return {"mensaje": "Productos WooCommerce:\n" + "\n".join(lista)}
-        elif "curso" in texto or "formación" in texto:
-            cursos = await get_external_saas("https://miscursos.com/api/list")
-            return {"mensaje": f"Cursos disponibles:\n" + "\n".join(cursos.get("titles",[]))}
-        elif "wordpress" in texto or "wp" in texto:
-            result = await get_external_saas("https://miwp.com/wp-json/wp/v2/posts")
-            posts = [str(post['title']) for post in result]
-            return {"mensaje": "Últimos posts WordPress:\n" + "\n".join(posts)}
-        # ... Añade más if/elif para módulos/API externas
-        # Fallback IA si no hay coincidencia directa
-        ia_response = await get_perplexity_response(cmd.command)
-        return {"mensaje": ia_response}
-    except Exception as e:
-        return {"error": str(e)}
+
 @app.post("/api/ai/ask")
 async def ask_ai(query: IAQuery):
     # (Aquí irá la lógica de IA real)
