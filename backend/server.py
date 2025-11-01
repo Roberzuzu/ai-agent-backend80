@@ -65,24 +65,6 @@ async def execute_command(cmd: BotCommand):
         return {"mensaje": ia_response}
     except Exception as e:
         return {"error": str(e)}
-async def get_perplexity_response(prompt: str) -> str:
-    url = "https://api.perplexity.ai/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {os.environ.get('PERPLEXITY_API_KEY')}",
-        "Content-Type": "application/json"
-    }
-    body = {
-        "model": "pplx-70b-chat",
-        "messages": [{"role": "user", "content": prompt}]
-    }
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, headers=headers, json=body, timeout=40) as resp:
-            if resp.status == 200:
-                result = await resp.json()
-                return result['choices'][0]['message']['content']
-            err = await resp.text()
-            raise HTTPException(status_code=500, detail=f"IA Error: {err}")
-
 @app.post("/api/ai/ask")
 async def ask_ai(query: IAQuery):
     # (Aquí irá la lógica de IA real)
