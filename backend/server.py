@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from agent_core import CerebroUncensored
+import aiohttp
+from fastapi import HTTPException
 import os
 import logging
 from pathlib import Path
@@ -35,6 +37,51 @@ app = FastAPI()
 class IAQuery(BaseModel):
     user_id: str
     message: str
+@app.post("/api/agent/execute")
+async def execute_command(cmd: BotCommand):
+    """
+    Orquestador: gestiona cualquier consulta/acción (negocios, cursos, WooCommerce, WordPress, ventas, SaaS, IA).
+    """
+    try:
+        texto = cmd.command.lower()
+        # Módulos conectados:
+        if "venta" in texto:
+            ventas = await get_external_saas("https://miventasapi.com/api/stats")
+            return {"mensaje": f"Tus ventas hoy: {ventas.get('total', 'Sin datos')}€"}
+        elif "woocommerce" in texto:
+            wc = await get_external_saas("https://miwoocomerce.com/api/products")
+            lista = [p["name"] for p in wc.get("products",[])]
+            return {"mensaje": "Productos WooCommerce:\n" + "\n".join(lista)}
+        elif "curso" in texto or "formación" in texto:
+            cursos = await get_external_saas("https://miscursos.com/api/list")
+            return {"mensaje": f"Cursos disponibles:\n" + "\n".join(cursos.get("titles",[]))}
+        elif "wordpress" in texto or "wp" in texto:
+            result = await get_external_saas("https://miwp.com/wp-json/wp/v2/posts")
+            posts = [str(post['title']) for post in result]
+            return {"mensaje": "Últimos posts WordPress:\n" + "\n".join(posts)}
+        # ... Añade más if/elif para módulos/API externas
+        # Fallback IA si no hay coincidencia directa
+        ia_response = await get_perplexity_response(cmd.command)
+        return {"mensaje": ia_response}
+    except Exception as e:
+        return {"error": str(e)}
+async def get_perplexity_response(prompt: str) -> str:
+    url = "https://api.perplexity.ai/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {os.environ.get('PERPLEXITY_API_KEY')}",
+        "Content-Type": "application/json"
+    }
+    body = {
+        "model": "pplx-70b-chat",
+        "messages": [{"role": "user", "content": prompt}]
+    }
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, headers=headers, json=body, timeout=40) as resp:
+            if resp.status == 200:
+                result = await resp.json()
+                return result['choices'][0]['message']['content']
+            err = await resp.text()
+            raise HTTPException(status_code=500, detail=f"IA Error: {err}")
 
 @app.post("/api/ai/ask")
 async def ask_ai(query: IAQuery):
@@ -5674,6 +5721,16 @@ async def get_database_info():
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database info error: {str(e)}")
+        
+async def get_external_saas(url, params=None):
+    """Conexión ultra-flexible a cualquier API externa/interna/SaaS (GET)"""
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, params=params or {}, timeout=20) as resp:
+            if resp.status == 200:
+                return await resp.json()
+            else:
+                error = await resp.text()
+                return {"error": error}
 
 
 @api_router.post("/database/backup")
