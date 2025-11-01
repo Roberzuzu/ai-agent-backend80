@@ -1,4 +1,19 @@
 from fastapi import FastAPI, APIRouter, HTTPException, BackgroundTasks, Request, Depends, status, UploadFile, File, Form
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class IAQuery(BaseModel):
+    user_id: str
+    message: str
+
+@app.post("/api/ai/ask")
+async def ask_ai(query: IAQuery):
+    # (Aquí irá la lógica de IA real)
+    respuesta_ia = f"Respuesta IA simulada a: {query.message}"
+    return {"reply": respuesta_ia}
+
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from dotenv import load_dotenv
