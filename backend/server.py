@@ -7103,7 +7103,7 @@ async def agent_execute_command(request: AgentExecuteRequest):
             }
         
         # Formatear respuesta
-        mensaje = resultado.get('mensaje', '')
+        mensaje = resultado.get('response') or resultado.get('mensaje', '')
         
         # Si hubo acciones ejecutadas, agregarlas al mensaje
         if resultado.get('acciones'):
