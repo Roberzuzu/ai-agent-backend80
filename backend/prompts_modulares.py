@@ -384,23 +384,8 @@ Comportamiento:
 # EJEMPLOS DE USO
 # ============================================
 
-if __name__ == "__main__":PromptPersonalizado
-    # Ejemplo 1: Detección automática
-    comando1 = "Analiza las ventas del último mes"
-    prompt1 = PromptManager.construir_prompt_completo(comando1)
-    print("COMANDO:", comando1)
-    print("CONTEXTOS DETECTADOS:", PromptManager.detectar_contexto(comando1))
-    print("\n" + "="*50 + "\n")
-    
-    # Ejemplo 2: Marketing
-    comando2 = "Escribe una descripción SEO para un taladro inalámbrico"
-    prompt2 = PromptManager.construir_prompt_completo(comando2)
-    print("COMANDO:", comando2)
-    print("CONTEXTOS DETECTADOS:", PromptManager.detectar_contexto(comando2))
-    print("\n" + "="*50 + "\n")
-    
-    # Ejemplo 3: Prompt personalizado forzado
-    prompt3 = PromptManager.obtener_prompt_personalizado('soporte')
-    print("PROMPT PERSONALIZADO: soporte")
-    print(prompt3[:200] + "...")
-  PromptPersonalizado
+
+  @classmethod
+    def listar_prompts_guardados(cls) -> list:
+        """Retorna lista de prompts personalizados guardados"""
+        return list(cls.prompts_guardados.keys())
