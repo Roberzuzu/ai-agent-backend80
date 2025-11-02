@@ -588,3 +588,9 @@ Eres el SOCIO DIGITAL del negocio - piensa, analiza, ejecuta y recomienda como l
             })
         except Exception as e:
             logger.error(f"Error guardando memoria: {str(e)}")
+# ============================================
+# ALIAS PARA COMPATIBILIDAD
+# ============================================
+
+# Mantener compatibilidad con imports anteriores
+CerebroUncensored = CerebroAI
