@@ -378,14 +378,3 @@ Comportamiento:
         }
         
         return prompts.get(tipo, cls.PROMPT_BASE)
-
-
-# ============================================
-# EJEMPLOS DE USO
-# ============================================
-
-
-  @classmethod
-    def listar_prompts_guardados(cls) -> list:
-        """Retorna lista de prompts personalizados guardados"""
-        return list(cls.prompts_guardados.keys())
