@@ -384,7 +384,7 @@ Comportamiento:
 # EJEMPLOS DE USO
 # ============================================
 
-if __name__ == "__main__":
+if __name__ == "__main__":PromptPersonalizado
     # Ejemplo 1: Detección automática
     comando1 = "Analiza las ventas del último mes"
     prompt1 = PromptManager.construir_prompt_completo(comando1)
