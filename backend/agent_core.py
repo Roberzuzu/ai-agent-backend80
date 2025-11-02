@@ -17,12 +17,12 @@ import json
 from datetime import datetime, timezone
 from typing import Dict, List, Any, Optional
 import logging
-import logging
+
 
 # Importar sistema de prompts modulares
 from prompts_modulares import PromptManager
 
-logger = logging.getLogger(__name__)
+
 logger = logging.getLogger(__name__)
 
 
