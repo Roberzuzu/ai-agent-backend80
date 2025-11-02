@@ -9,43 +9,7 @@ import aiohttp
 from fastapi import HTTPException
 from fastapi import HTTPException, Request
 from pydantic import BaseModel
-import aiohttp
 import os
-
-class AskRequest(BaseModel):
-    user_id: str
-    question: str
-
-class AskResponse(BaseModel):
-    answer: str
-
-PERPLEXITY_API_URL = os.environ.get("PERPLEXITY_API_URL", "").rstrip("/")
-PERPLEXITY_API_KEY = os.environ.get("PERPLEXITY_API_KEY")  # Optional
-
-@apirouter.post("/ask", response_model=AskResponse)
-async def ask_endpoint(input: AskRequest, request: Request):
-    url = f"{PERPLEXITY_API_URL}/api/answer"  # Ajusta si tu endpoint es diferente
-    payload = {
-        "user_id": input.user_id,
-        "question": input.question
-    }
-    headers = {"Accept": "application/json"}
-    if PERPLEXITY_API_KEY:
-        headers["Authorization"] = f"Bearer {PERPLEXITY_API_KEY}"
-
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(url, json=payload, headers=headers, timeout=30) as resp:
-                if resp.status != 200:
-                    error_msg = await resp.text()
-                    raise HTTPException(status_code=502, detail=f"AI service error: {error_msg}")
-                response_data = await resp.json()
-    except Exception as e:
-        raise HTTPException(status_code=503, detail="Could not reach the AI backend service.")
-
-    answer = str(response_data.get("answer") or response_data)
-    return AskResponse(answer=answer)
-
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
