@@ -26,7 +26,7 @@ from prompts_modulares import PromptManager
 logger = logging.getLogger(__name__)
 
 
-    class CerebroAI:
+class CerebroAI:
     """
     Agente IA ejecutivo para gestión de e-commerce
     Conectado a herramientasyaccesorios.store
