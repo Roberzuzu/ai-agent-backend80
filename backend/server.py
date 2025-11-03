@@ -7073,11 +7073,7 @@ async def agent_execute_command(request: AgentExecuteRequest):
         if not ai_response:
             ai_response = "Error: respuesta vacía"
         
-        # CRÍTICO: Extraer el campo correcto
-        ai_response = (
-            resultado.get('response') or 
-            resultado.get('mensaje') or 
-            str(resultado)
+        acciones = resultado.get('acciones', [])
         )
         
         # Si requiere autorización
