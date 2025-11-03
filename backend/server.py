@@ -7057,9 +7057,25 @@ async def ai_health_check():
 # 
 #@api_router.post("/agent/execute")
 @api_router.post("/agent/chat")
+# ============================================
+# FUNCIÓN COMPLETA PARA server.py
+# ============================================
+# Copia esta función completa y reemplaza la que tienes en server.py
+
+from pydantic import BaseModel
+
+class AgentExecuteRequest(BaseModel):
+    """Request para ejecutar comando del agente"""
+    command: str
+    user_id: str = "default"
+
+
+@api_router.post("/agent/execute")
+@api_router.post("/agent/chat")
 async def agent_execute_command(request: AgentExecuteRequest):
     """
     Endpoint principal del agente con IA completa
+    Maneja conversación + ejecución de acciones
     """
     try:
         # Procesar comando con el agente
@@ -7067,34 +7083,49 @@ async def agent_execute_command(request: AgentExecuteRequest):
             command=request.command,
             user_id=request.user_id
         )
+        
+        # Extraer respuesta (con fallbacks)
         ai_response = resultado.get('response', '')
         if not ai_response:
             ai_response = resultado.get('mensaje', '')
         if not ai_response:
-            ai_response = "Error: respuesta vacía"
+            ai_response = "He procesado tu solicitud pero no generé una respuesta. Intenta reformular tu pregunta."
         
+        # Extraer acciones
         acciones = resultado.get('acciones', [])
-        )
         
-        # Si requiere autorización
+        # Si requiere autorización y el usuario no es admin
         if resultado.get('requiere_autorizacion') and request.user_id != agente.admin_telegram_id:
+            # Enviar notificación al admin (si está configurado)
+            try:
+                await agente._solicitar_autorizacion(request.user_id, request.command)
+            except:
+                pass  # Si falla, continuar sin notificación
+            
             return {
                 "success": True,
-                "response": f"⏳ He recibido tu solicitud. Solicitando autorización del administrador.",
-                "mensaje": f"⏳ He recibido tu solicitud. Solicitando autorización del administrador.",
+                "response": f"⏳ He recibido tu solicitud:\n\n'{request.command}'\n\nEstoy solicitando autorización del administrador. Te notificaré cuando esté aprobada.",
+                "mensaje": f"⏳ Solicitud pendiente de autorización.",
                 "estado": "pendiente_autorizacion",
-                "acciones": []
+                "acciones": [],
+                "plan": {
+                    "respuesta_usuario": "Solicitud pendiente de autorización",
+                    "acciones_ejecutadas": 0
+                }
             }
         
-        # Si hubo acciones, agregarlas
-        acciones = resultado.get('acciones', [])
+        # Si hubo acciones ejecutadas, agregarlas al mensaje
         if acciones:
-            ai_response += "\n\n🛠️ Acciones ejecutadas:\n"
+            resumen_acciones = "\n\n🛠️ **Acciones ejecutadas:**\n"
             for accion in acciones:
                 herramienta = accion.get('herramienta', 'desconocida')
-                ai_response += f"• {herramienta}\n"
+                estado = "✅" if accion.get('resultado', {}).get('success', False) else "❌"
+                resumen_acciones += f"{estado} {herramienta}\n"
+            
+            ai_response += resumen_acciones
         
-        # RETORNAR EN TODOS LOS FORMATOS POSIBLES
+        # Retornar respuesta en todos los formatos posibles
+        # (para compatibilidad con diferentes versiones del bot)
         return {
             "success": resultado.get('success', True),
             "response": ai_response,
@@ -7103,19 +7134,125 @@ async def agent_execute_command(request: AgentExecuteRequest):
             "plan": {
                 "respuesta_usuario": ai_response,
                 "acciones_ejecutadas": len(acciones)
-            }
+            },
+            "timestamp": resultado.get('timestamp')
         }
         
-    except Exception as e:
-        logger.error(f"Error en agent_execute_command: {str(e)}", exc_info=True)
-        error_msg = f"Error procesando comando: {str(e)}"
+    except AttributeError as e:
+        logger.error(f"Error en agente: {str(e)}", exc_info=True)
+        error_msg = f"Error interno del agente: {str(e)}. Por favor, contacta con soporte."
         return {
             "success": False,
             "response": error_msg,
             "mensaje": error_msg,
-            "acciones": []
+            "acciones": [],
+            "plan": {
+                "respuesta_usuario": error_msg,
+                "acciones_ejecutadas": 0
+            }
+        }
+    
+    except Exception as e:
+        logger.error(f"Error en agent_execute_command: {str(e)}", exc_info=True)
+        error_msg = f"Error al procesar tu solicitud: {str(e)}\nPor favor, intenta de nuevo o contacta con soporte."
+        return {
+            "success": False,
+            "response": error_msg,
+            "mensaje": error_msg,
+            "acciones": [],
+            "plan": {
+                "respuesta_usuario": error_msg,
+                "acciones_ejecutadas": 0
+            }
         }
 
+
+# ============================================
+# ENDPOINTS ADICIONALES ÚTILES
+# ============================================
+
+@api_router.get("/agent/status")
+async def agent_status():
+    """Estado del agente y sistemas conectados"""
+    try:
+        # Verificar conexiones
+        woo_conectado = all([
+            agente.woo_url,
+            agente.woo_key,
+            agente.woo_secret
+        ])
+        
+        openai_conectado = bool(agente.openai_key)
+        perplexity_conectado = bool(agente.perplexity_key)
+        
+        # Contar conversaciones en memoria
+        try:
+            total_conversations = await db["conversations"].count_documents({})
+            total_memories = await db["agent_memory"].count_documents({})
+        except:
+            total_conversations = 0
+            total_memories = 0
+        
+        return {
+            "success": True,
+            "estado": "operativo",
+            "sistemas": {
+                "woocommerce": "conectado" if woo_conectado else "no configurado",
+                "openai": "conectado" if openai_conectado else "no configurado",
+                "perplexity": "conectado" if perplexity_conectado else "no configurado",
+                "mongodb": "conectado"
+            },
+            "estadisticas": {
+                "conversaciones_totales": total_conversations,
+                "memorias_almacenadas": total_memories
+            },
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error en agent_status: {str(e)}")
+        return {
+            "success": False,
+            "estado": "error",
+            "error": str(e)
+        }
+
+
+@api_router.get("/agent/memory/{user_id}")
+async def get_agent_memory(user_id: str, limit: int = 20):
+    """Obtiene la memoria de conversaciones de un usuario"""
+    try:
+        conversaciones = await agente._cargar_memoria(user_id, limit=limit)
+        
+        return {
+            "success": True,
+            "user_id": user_id,
+            "conversaciones": conversaciones,
+            "total": len(conversaciones)
+        }
+    except Exception as e:
+        logger.error(f"Error obteniendo memoria: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.delete("/agent/memory/{user_id}")
+async def delete_agent_memory(user_id: str):
+    """Elimina toda la memoria de un usuario"""
+    try:
+        # Eliminar conversaciones
+        result_conv = await db["conversations"].delete_many({"user_id": user_id})
+        
+        # Eliminar memorias adicionales
+        result_mem = await db["agent_memory"].delete_many({"user_id": user_id})
+        
+        return {
+            "success": True,
+            "conversaciones_eliminadas": result_conv.deleted_count,
+            "memorias_eliminadas": result_mem.deleted_count,
+            "mensaje": f"Memoria de usuario {user_id} eliminada completamente"
+        }
+    except Exception as e:
+        logger.error(f"Error eliminando memoria: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 # =====================================================
 # TEMPORARY AGENT ENDPOINTS - WORDPRESS PLUGIN SUPPORT
 # =====================================================
