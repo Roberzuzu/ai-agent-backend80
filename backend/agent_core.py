@@ -18,10 +18,8 @@ from datetime import datetime, timezone
 from typing import Dict, List, Any, Optional
 import logging
 
-
 # Importar sistema de prompts modulares
 from prompts_modulares import PromptManager
-
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +33,6 @@ class CerebroAI:
     def __init__(self, db, admin_id: str):
         self.db = db
         self.admin_id = admin_id
-        self.prompt_manager = PromptManager
         
         # APIs disponibles
         self.openrouter_key = os.environ.get('OPENROUTER_API_KEY')
@@ -54,119 +51,10 @@ class CerebroAI:
         
         # Telegram
         self.telegram_token = os.environ.get('TELEGRAM_BOT_TOKEN')
+        self.admin_telegram_id = os.environ.get('ADMIN_TELEGRAM_ID', admin_id)
         
-        # System prompt PROFESIONAL Y EJECUTIVO
-        self.system_prompt = """Eres CEREBRO AI, el asistente ejecutivo de herramientasyaccesorios.store.
-
-🔗 CONFIRMACIÓN DE CONEXIÓN:
-Estás DIRECTAMENTE conectado a:
-- Backend de la tienda (ai-agent-backend80.onrender.com)
-- Base de datos MongoDB (social_media_monetization)
-- WooCommerce API de herramientasyaccesorios.store
-- Sistema de analytics y métricas
-- Telegram Bot para notificaciones
-- Todas las herramientas del ecosistema
-
-Cuando te pregunten si estás conectado, CONFIRMA claramente que SÍ lo estás y menciona a qué sistemas tienes acceso.
-
-💼 TU ROL:
-Eres el cerebro ejecutivo del negocio. No eres solo un chatbot informativo - eres un asistente que HACE COSAS.
-
-🎯 COMPORTAMIENTO EJECUTIVO:
-- Directo y sin rodeos innecesarios
-- Proactivo: sugiere mejoras sin que te las pidan
-- Ejecutivo: cuando algo se puede hacer, lo HACES (con confirmación si es crítico)
-- Analítico: extraes insights de datos automáticamente
-- Estratégico: piensas en el negocio, no solo en responder
-- Eficiente: vas al grano y produces resultados
-
-✅ CAPACIDADES COMPLETAS:
-
-1. GESTIÓN DE PRODUCTOS:
-   - Crear, modificar, eliminar productos en WooCommerce
-   - Ajustar precios masivamente
-   - Gestionar inventario
-   - Optimizar descripciones y SEO
-   - Análisis de rendimiento de productos
-
-2. ANÁLISIS Y MÉTRICAS:
-   - Ventas diarias/mensuales/anuales
-   - Productos más vendidos
-   - Análisis de márgenes
-   - Tendencias y proyecciones
-   - ROI de campañas
-
-3. MARKETING Y CONTENIDO:
-   - Generar descripciones de productos
-   - Crear contenido para blog/redes
-   - Estrategias de pricing
-   - Recomendaciones de cross-selling
-   - Análisis de competencia
-
-4. AUTOMATIZACIÓN:
-   - Respuestas automáticas a consultas
-   - Alertas de bajo stock
-   - Reportes automáticos
-   - Gestión de pedidos
-   - Seguimiento de clientes
-
-5. BÚSQUEDA E INVESTIGACIÓN:
-   - Tendencias de mercado
-   - Análisis de competidores
-   - Precios de referencia
-   - Nuevas oportunidades de producto
-
-📋 FORMATO DE RESPUESTAS:
-
-Para consultas simples:
-- Respuesta directa y concisa
-- Datos relevantes
-- Acción tomada (si aplica)
-
-Para análisis complejos:
-- Resumen ejecutivo primero
-- Datos clave con números
-- Insights y recomendaciones
-- Próximos pasos sugeridos
-
-Para acciones ejecutivas:
-- "✅ Ejecutado: [acción]"
-- "📊 Resultado: [datos]"
-- "💡 Recomendación: [siguiente paso]"
-
-🚫 NUNCA DIGAS:
-- "No puedo acceder a..." (SÍ puedes, estás conectado)
-- "Como IA no tengo la capacidad de..." (SÍ la tienes)
-- "No estoy conectado a..." (SÍ estás conectado)
-- "Deberías consultar con..." (TÚ eres el consultor)
-
-✅ SÍ DICES:
-- "Analizando datos de la tienda..."
-- "He revisado tus últimas ventas..."
-- "Ejecutando cambio en [X] productos..."
-- "Según tus métricas actuales..."
-- "Recomiendo implementar..."
-
-⚖️ CONFIRMACIONES IMPORTANTES:
-Para acciones críticas (eliminar productos, cambios masivos de precio), pregunta:
-"⚠️ Esto afectará [X] productos. ¿Confirmas?"
-
-Para acciones menores (crear 1 producto, ajustar descripción), ejecuta directamente.
-
-🎓 APRENDIZAJE:
-- Recuerdas conversaciones previas
-- Adaptas tu estilo según preferencias del usuario
-- Aprendes de cada interacción
-- Mejoras tus recomendaciones con el tiempo
-
-💬 TONO:
-- Profesional pero accesible
-- Confiado (sabes de lo que hablas)
-- Proactivo (ofreces soluciones)
-- Orientado a resultados
-- Sin jerga innecesaria
-
-Eres el SOCIO DIGITAL del negocio - piensa, analiza, ejecuta y recomienda como lo haría un director general de operaciones."""
+        # Sistema de prompts modulares
+        self.prompt_manager = PromptManager
 
     async def procesar_comando(self, command: str, user_id: str, conversation_history: List[Dict] = None) -> Dict[str, Any]:
         """
@@ -184,7 +72,6 @@ Eres el SOCIO DIGITAL del negocio - piensa, analiza, ejecuta y recomienda como l
             messages = [{"role": "system", "content": system_prompt_dinamico}]
             
             # Agregar historial reciente (últimas 20 interacciones)
-                # Agregar historial reciente (últimas 20 interacciones)
             for msg in conversation_history[-20:]:
                 messages.append({"role": "user", "content": msg.get("command", "")})
                 messages.append({"role": "assistant", "content": msg.get("response", "")})
@@ -217,9 +104,10 @@ Eres el SOCIO DIGITAL del negocio - piensa, analiza, ejecuta y recomienda como l
             logger.error(f"Error procesando comando: {str(e)}", exc_info=True)
             return {
                 "success": False,
-                "response": f"Error: {str(e)}",
+                "response": f"He encontrado un problema técnico: {str(e)}. Reintentando...",
                 "acciones": []
             }
+    
     async def _enriquecer_comando(self, command: str) -> str:
         """
         Enriquece el comando con contexto de sistemas disponibles
@@ -255,12 +143,10 @@ Eres el SOCIO DIGITAL del negocio - piensa, analiza, ejecuta y recomienda como l
                             "Content-Type": "application/json"
                         },
                         json={
-                            "model": "gpt-4o-mini",  # Rápido y eficiente
+                            "model": "gpt-4o-mini",
                             "messages": messages,
-                            "temperature": 0.7,  # Balance creatividad/precisión
-                            "max_tokens": 2000,
-                            "presence_penalty": 0.1,
-                            "frequency_penalty": 0.1
+                            "temperature": 0.7,
+                            "max_tokens": 2000
                         }
                     )
                     
@@ -321,7 +207,7 @@ Eres el SOCIO DIGITAL del negocio - piensa, analiza, ejecuta y recomienda como l
             except Exception as e:
                 logger.warning(f"OpenRouter error: {str(e)}")
         
-        return "Estoy experimentando problemas de conexión con los servicios de IA. Por favor, verifica las API keys en las variables de entorno."
+        return "Estoy experimentando problemas de conexión con los servicios de IA. Por favor, verifica las API keys."
     
     async def _ejecutar_herramientas_inteligentes(self, command: str, ai_response: str, user_id: str) -> List[Dict]:
         """
@@ -358,29 +244,19 @@ Eres el SOCIO DIGITAL del negocio - piensa, analiza, ejecuta y recomienda como l
                 "timestamp": datetime.now(timezone.utc).isoformat()
             })
         
-        # Análisis de ventas (cuando esté implementado)
-        elif any(palabra in command_lower for palabra in ['ventas', 'análisis', 'métricas', 'estadísticas']):
-            # Placeholder para futuro análisis
-            acciones.append({
-                "herramienta": "analisis_pendiente",
-                "resultado": {"mensaje": "Análisis de ventas en desarrollo"},
-                "timestamp": datetime.now(timezone.utc).isoformat()
-            })
-        
         return acciones
     
     async def _extraer_datos_producto_ia(self, command: str, ai_response: str) -> Dict:
         """
         Extrae datos de producto del comando usando la respuesta de la IA
         """
-        # Implementación básica - la IA puede sugerir datos en su respuesta
         return {
             "name": "Producto sugerido por IA",
             "type": "simple",
             "regular_price": "99.99",
             "description": ai_response[:500] if len(ai_response) > 500 else "Producto generado automáticamente",
             "short_description": ai_response[:160] if len(ai_response) > 160 else "Descripción breve",
-            "status": "draft"  # Draft por seguridad, requiere revisión
+            "status": "draft"
         }
     
     async def _enriquecer_respuesta(self, ai_response: str, acciones: List[Dict]) -> str:
@@ -505,64 +381,6 @@ Eres el SOCIO DIGITAL del negocio - piensa, analiza, ejecuta y recomienda como l
             logger.error(f"Error creando producto: {str(e)}")
             return {"error": str(e), "success": False}
     
-    async def modificar_producto_woo(self, product_id: int, datos: Dict) -> Dict:
-        """Modifica producto en WooCommerce"""
-        if not all([self.woo_url, self.woo_key, self.woo_secret]):
-            return {"error": "WooCommerce no configurado", "success": False}
-        
-        try:
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.put(
-                    f"{self.woo_url}/wp-json/wc/v3/products/{product_id}",
-                    json=datos,
-                    auth=(self.woo_key, self.woo_secret)
-                )
-                
-                if response.status_code == 200:
-                    return {
-                        "producto": response.json(),
-                        "success": True
-                    }
-                else:
-                    return {"error": f"Status {response.status_code}", "success": False}
-        except Exception as e:
-            logger.error(f"Error modificando producto: {str(e)}")
-            return {"error": str(e), "success": False}
-    
-    async def eliminar_producto_woo(self, product_id: int, confirmar: bool = False) -> Dict:
-        """
-        Elimina producto de WooCommerce
-        Requiere confirmación explícita
-        """
-        if not confirmar:
-            return {
-                "error": "Se requiere confirmación explícita para eliminar productos",
-                "success": False,
-                "requiere_confirmacion": True
-            }
-        
-        if not all([self.woo_url, self.woo_key, self.woo_secret]):
-            return {"error": "WooCommerce no configurado", "success": False}
-        
-        try:
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.delete(
-                    f"{self.woo_url}/wp-json/wc/v3/products/{product_id}",
-                    params={"force": True},
-                    auth=(self.woo_key, self.woo_secret)
-                )
-                
-                if response.status_code == 200:
-                    return {
-                        "mensaje": f"Producto {product_id} eliminado permanentemente",
-                        "success": True
-                    }
-                else:
-                    return {"error": f"Status {response.status_code}", "success": False}
-        except Exception as e:
-            logger.error(f"Error eliminando producto: {str(e)}")
-            return {"error": str(e), "success": False}
-    
     # ============================================
     # SISTEMA DE MEMORIA
     # ============================================
@@ -597,9 +415,11 @@ Eres el SOCIO DIGITAL del negocio - piensa, analiza, ejecuta y recomienda como l
             })
         except Exception as e:
             logger.error(f"Error guardando memoria: {str(e)}")
+
+
 # ============================================
 # ALIAS PARA COMPATIBILIDAD
 # ============================================
 
-# Mantener compatibilidad con imports anteriores
+# Mantener compatibilidad con server.py
 CerebroUncensored = CerebroAI
