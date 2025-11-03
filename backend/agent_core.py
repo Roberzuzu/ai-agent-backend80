@@ -1,14 +1,7 @@
 """
 CEREBRO AI - AGENTE EJECUTIVO PROFESIONAL
 Sistema de IA conectado a herramientasyaccesorios.store
-
-Características:
-- Totalmente conectado al backend y sistemas de la tienda
-- Ejecutivo y proactivo (no solo informativo)
-- Gestión completa de e-commerce
-- Análisis y recomendaciones estratégicas
-- Automatización inteligente
-- Profesional y sostenible a largo plazo
+VERSIÓN SIMPLIFICADA - SIN DEPENDENCIAS EXTERNAS
 """
 
 import os
@@ -18,16 +11,34 @@ from datetime import datetime, timezone
 from typing import Dict, List, Any, Optional
 import logging
 
-# Importar sistema de prompts modulares
-from prompts_modulares import PromptManager
-
 logger = logging.getLogger(__name__)
+
+
+# PROMPT PRINCIPAL INTEGRADO
+SYSTEM_PROMPT = """Eres CEREBRO, el asistente ejecutivo de herramientasyaccesorios.store.
+
+🎯 TU ROL:
+Eres el socio digital del negocio. No solo informas, EJECUTAS y RECOMIENDAS.
+
+💼 CAPACIDADES:
+- Gestión completa de productos WooCommerce
+- Análisis de ventas y métricas
+- Búsqueda en internet en tiempo real
+- Automatización de tareas
+- Recomendaciones estratégicas
+
+🎨 TONO:
+- Ejecutivo pero accesible
+- Confiado y proactivo
+- Orientado a resultados
+- Sin jerga innecesaria
+
+IMPORTANTE: Siempre da respuestas útiles y accionables. Si detectas una oportunidad, señálala."""
 
 
 class CerebroAI:
     """
     Agente IA ejecutivo para gestión de e-commerce
-    Conectado a herramientasyaccesorios.store
     """
     
     def __init__(self, db, admin_id: str):
@@ -52,9 +63,6 @@ class CerebroAI:
         # Telegram
         self.telegram_token = os.environ.get('TELEGRAM_BOT_TOKEN')
         self.admin_telegram_id = os.environ.get('ADMIN_TELEGRAM_ID', admin_id)
-        
-        # Sistema de prompts modulares
-        self.prompt_manager = PromptManager
 
     async def procesar_comando(self, command: str, user_id: str, conversation_history: List[Dict] = None) -> Dict[str, Any]:
         """
@@ -65,23 +73,23 @@ class CerebroAI:
             if conversation_history is None:
                 conversation_history = await self._cargar_memoria(user_id)
             
-            # Construir prompt dinámico según el contexto del comando
-            system_prompt_dinamico = self.prompt_manager.construir_prompt_completo(command)
-            
             # Construir contexto completo
-            messages = [{"role": "system", "content": system_prompt_dinamico}]
+            messages = [{"role": "system", "content": SYSTEM_PROMPT}]
             
-            # Agregar historial reciente (últimas 20 interacciones)
-            for msg in conversation_history[-20:]:
+            # Agregar historial reciente (últimas 10 interacciones)
+            for msg in conversation_history[-10:]:
                 messages.append({"role": "user", "content": msg.get("command", "")})
                 messages.append({"role": "assistant", "content": msg.get("response", "")})
             
-            # Comando actual con contexto de herramientas disponibles
-            command_enriched = await self._enriquecer_comando(command)
-            messages.append({"role": "user", "content": command_enriched})
+            # Comando actual
+            messages.append({"role": "user", "content": command})
             
             # Llamar a IA
             ai_response = await self._llamar_ia_inteligente(messages)
+            
+            # Verificar que ai_response no esté vacío
+            if not ai_response or len(ai_response.strip()) == 0:
+                ai_response = "He recibido tu mensaje pero no pude generar una respuesta adecuada. Por favor, reformula tu pregunta."
             
             # Analizar si necesita ejecutar herramientas
             acciones_ejecutadas = await self._ejecutar_herramientas_inteligentes(command, ai_response, user_id)
@@ -93,6 +101,8 @@ class CerebroAI:
             # Guardar en memoria
             await self._guardar_memoria(user_id, command, ai_response, acciones_ejecutadas)
             
+            logger.info(f"✅ Respuesta generada: {len(ai_response)} caracteres")
+            
             return {
                 "success": True,
                 "response": ai_response,
@@ -101,40 +111,23 @@ class CerebroAI:
             }
             
         except Exception as e:
-            logger.error(f"Error procesando comando: {str(e)}", exc_info=True)
+            logger.error(f"❌ Error procesando comando: {str(e)}", exc_info=True)
+            error_response = f"He encontrado un problema técnico: {str(e)[:100]}. Intentando alternativa..."
             return {
                 "success": False,
-                "response": f"He encontrado un problema técnico: {str(e)}. Reintentando...",
+                "response": error_response,
                 "acciones": []
             }
-    
-    async def _enriquecer_comando(self, command: str) -> str:
-        """
-        Enriquece el comando con contexto de sistemas disponibles
-        """
-        contexto = "\n\n[CONTEXTO DEL SISTEMA:"
-        
-        # Info de WooCommerce
-        if all([self.woo_url, self.woo_key, self.woo_secret]):
-            contexto += "\n✅ WooCommerce conectado"
-        
-        # Info de Telegram
-        if self.telegram_token:
-            contexto += "\n✅ Telegram Bot activo"
-        
-        contexto += "]\n\n"
-        
-        return command + contexto
     
     async def _llamar_ia_inteligente(self, messages: List[Dict]) -> str:
         """
         Llama a APIs de IA con fallback inteligente
-        Prioriza por velocidad y calidad
         """
         
-        # 1. OpenAI primero (mejor calidad y más rápido)
+        # 1. OpenAI primero (mejor calidad)
         if self.openai_key:
             try:
+                logger.info("🔄 Llamando a OpenAI...")
                 async with httpx.AsyncClient(timeout=60.0) as client:
                     response = await client.post(
                         "https://api.openai.com/v1/chat/completions",
@@ -152,15 +145,18 @@ class CerebroAI:
                     
                     if response.status_code == 200:
                         data = response.json()
-                        return data['choices'][0]['message']['content']
+                        content = data['choices'][0]['message']['content']
+                        logger.info(f"✅ OpenAI respondió: {len(content)} caracteres")
+                        return content
                     else:
-                        logger.warning(f"OpenAI status: {response.status_code}")
+                        logger.warning(f"⚠️ OpenAI status: {response.status_code}")
             except Exception as e:
-                logger.warning(f"OpenAI error: {str(e)}")
+                logger.warning(f"⚠️ OpenAI error: {str(e)}")
         
         # 2. Perplexity como backup
         if self.perplexity_key:
             try:
+                logger.info("🔄 Llamando a Perplexity...")
                 async with httpx.AsyncClient(timeout=60.0) as client:
                     response = await client.post(
                         "https://api.perplexity.ai/chat/completions",
@@ -178,13 +174,16 @@ class CerebroAI:
                     
                     if response.status_code == 200:
                         data = response.json()
-                        return data['choices'][0]['message']['content']
+                        content = data['choices'][0]['message']['content']
+                        logger.info(f"✅ Perplexity respondió: {len(content)} caracteres")
+                        return content
             except Exception as e:
-                logger.warning(f"Perplexity error: {str(e)}")
+                logger.warning(f"⚠️ Perplexity error: {str(e)}")
         
         # 3. OpenRouter como última opción
         if self.openrouter_key:
             try:
+                logger.info("🔄 Llamando a OpenRouter...")
                 async with httpx.AsyncClient(timeout=60.0) as client:
                     response = await client.post(
                         "https://openrouter.ai/api/v1/chat/completions",
@@ -203,34 +202,27 @@ class CerebroAI:
                     
                     if response.status_code == 200:
                         data = response.json()
-                        return data['choices'][0]['message']['content']
+                        content = data['choices'][0]['message']['content']
+                        logger.info(f"✅ OpenRouter respondió: {len(content)} caracteres")
+                        return content
             except Exception as e:
-                logger.warning(f"OpenRouter error: {str(e)}")
+                logger.warning(f"⚠️ OpenRouter error: {str(e)}")
         
-        return "Estoy experimentando problemas de conexión con los servicios de IA. Por favor, verifica las API keys."
+        logger.error("❌ Todas las APIs de IA fallaron")
+        return "Estoy experimentando problemas de conexión con los servicios de IA. Por favor, verifica las API keys en las variables de entorno."
     
     async def _ejecutar_herramientas_inteligentes(self, command: str, ai_response: str, user_id: str) -> List[Dict]:
         """
-        Ejecuta herramientas de forma inteligente según el contexto
+        Ejecuta herramientas según el contexto
         """
         acciones = []
         command_lower = command.lower()
         
         # Listar productos
-        if any(palabra in command_lower for palabra in ['lista productos', 'muestra productos', 'cuántos productos', 'productos tenemos']):
+        if any(palabra in command_lower for palabra in ['lista productos', 'muestra productos', 'cuántos productos']):
             resultado = await self.listar_productos()
             acciones.append({
                 "herramienta": "listar_productos",
-                "resultado": resultado,
-                "timestamp": datetime.now(timezone.utc).isoformat()
-            })
-        
-        # Crear producto
-        elif any(palabra in command_lower for palabra in ['crea producto', 'crear producto', 'nuevo producto', 'agregar producto']):
-            producto_data = await self._extraer_datos_producto_ia(command, ai_response)
-            resultado = await self.crear_producto_woo(producto_data)
-            acciones.append({
-                "herramienta": "crear_producto",
                 "resultado": resultado,
                 "timestamp": datetime.now(timezone.utc).isoformat()
             })
@@ -246,22 +238,9 @@ class CerebroAI:
         
         return acciones
     
-    async def _extraer_datos_producto_ia(self, command: str, ai_response: str) -> Dict:
-        """
-        Extrae datos de producto del comando usando la respuesta de la IA
-        """
-        return {
-            "name": "Producto sugerido por IA",
-            "type": "simple",
-            "regular_price": "99.99",
-            "description": ai_response[:500] if len(ai_response) > 500 else "Producto generado automáticamente",
-            "short_description": ai_response[:160] if len(ai_response) > 160 else "Descripción breve",
-            "status": "draft"
-        }
-    
     async def _enriquecer_respuesta(self, ai_response: str, acciones: List[Dict]) -> str:
         """
-        Enriquece la respuesta de la IA con resultados de acciones ejecutadas
+        Enriquece la respuesta con resultados de acciones
         """
         if not acciones:
             return ai_response
@@ -274,26 +253,15 @@ class CerebroAI:
             
             if herramienta == "listar_productos":
                 total = resultado.get("total", 0)
-                enriquecimiento += f"✅ Productos listados: {total} encontrados\n"
-            
-            elif herramienta == "crear_producto":
-                if resultado.get("success"):
-                    producto = resultado.get("producto", {})
-                    enriquecimiento += f"✅ Producto creado: {producto.get('name', 'Sin nombre')}\n"
-                else:
-                    enriquecimiento += f"❌ Error al crear producto: {resultado.get('error')}\n"
+                enriquecimiento += f"✅ Productos encontrados: {total}\n"
             
             elif herramienta == "buscar_internet":
                 if resultado.get("success"):
-                    enriquecimiento += "✅ Búsqueda en internet completada\n"
-                else:
-                    enriquecimiento += "❌ Error en búsqueda\n"
+                    enriquecimiento += "✅ Búsqueda completada\n"
         
         return ai_response + enriquecimiento
     
-    # ============================================
-    # HERRAMIENTAS CORE
-    # ============================================
+    # HERRAMIENTAS
     
     async def buscar_internet(self, query: str) -> Dict:
         """Búsqueda en internet usando Perplexity"""
@@ -310,22 +278,15 @@ class CerebroAI:
                     },
                     json={
                         "model": "llama-3.1-sonar-large-128k-online",
-                        "messages": [
-                            {"role": "user", "content": f"Busca información actualizada sobre: {query}"}
-                        ]
+                        "messages": [{"role": "user", "content": f"Busca: {query}"}]
                     }
                 )
                 
                 if response.status_code == 200:
                     data = response.json()
-                    return {
-                        "resultado": data['choices'][0]['message']['content'],
-                        "success": True
-                    }
-                else:
-                    return {"error": f"Status {response.status_code}", "success": False}
+                    return {"resultado": data['choices'][0]['message']['content'], "success": True}
+                return {"error": f"Status {response.status_code}", "success": False}
         except Exception as e:
-            logger.error(f"Error en búsqueda: {str(e)}")
             return {"error": str(e), "success": False}
     
     async def listar_productos(self, limit: int = 100) -> Dict:
@@ -343,50 +304,15 @@ class CerebroAI:
                 
                 if response.status_code == 200:
                     productos = response.json()
-                    return {
-                        "productos": productos,
-                        "total": len(productos),
-                        "success": True
-                    }
-                else:
-                    return {"error": f"Status {response.status_code}", "success": False}
+                    return {"productos": productos, "total": len(productos), "success": True}
+                return {"error": f"Status {response.status_code}", "success": False}
         except Exception as e:
-            logger.error(f"Error listando productos: {str(e)}")
             return {"error": str(e), "success": False}
     
-    async def crear_producto_woo(self, datos: Dict) -> Dict:
-        """Crea producto en WooCommerce"""
-        if not all([self.woo_url, self.woo_key, self.woo_secret]):
-            return {"error": "WooCommerce no configurado", "success": False}
-        
-        try:
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.post(
-                    f"{self.woo_url}/wp-json/wc/v3/products",
-                    json=datos,
-                    auth=(self.woo_key, self.woo_secret)
-                )
-                
-                if response.status_code == 201:
-                    return {
-                        "producto": response.json(),
-                        "success": True
-                    }
-                else:
-                    return {
-                        "error": f"Status {response.status_code}: {response.text[:200]}",
-                        "success": False
-                    }
-        except Exception as e:
-            logger.error(f"Error creando producto: {str(e)}")
-            return {"error": str(e), "success": False}
+    # MEMORIA
     
-    # ============================================
-    # SISTEMA DE MEMORIA
-    # ============================================
-    
-    async def _cargar_memoria(self, user_id: str, limit: int = 20) -> List[Dict]:
-        """Carga memoria reciente del usuario"""
+    async def _cargar_memoria(self, user_id: str, limit: int = 10) -> List[Dict]:
+        """Carga memoria reciente"""
         try:
             conversaciones = await self.db["conversations"].find(
                 {"user_id": user_id}
@@ -398,7 +324,7 @@ class CerebroAI:
             return []
     
     async def _guardar_memoria(self, user_id: str, command: str, response: str, acciones: List[Dict]):
-        """Guarda interacción en memoria persistente"""
+        """Guarda interacción en memoria"""
         try:
             await self.db["conversations"].insert_one({
                 "user_id": user_id,
@@ -406,20 +332,11 @@ class CerebroAI:
                 "response": response,
                 "acciones": acciones,
                 "timestamp": datetime.now(timezone.utc),
-                "status": "completed",
-                "metadata": {
-                    "response_length": len(response),
-                    "acciones_count": len(acciones),
-                    "tiene_herramientas": len(acciones) > 0
-                }
+                "status": "completed"
             })
         except Exception as e:
             logger.error(f"Error guardando memoria: {str(e)}")
 
 
-# ============================================
-# ALIAS PARA COMPATIBILIDAD
-# ============================================
-
-# Mantener compatibilidad con server.py
+# Alias para compatibilidad
 CerebroUncensored = CerebroAI
