@@ -168,24 +168,24 @@ Para acciones menores (crear 1 producto, ajustar descripción), ejecuta directam
 Eres el SOCIO DIGITAL del negocio - piensa, analiza, ejecuta y recomienda como lo haría un director general de operaciones."""
 
     async def procesar_comando(self, command: str, user_id: str, conversation_history: List[Dict] = None) -> Dict[str, Any]:
-    """
-    Procesa comandos de forma ejecutiva y profesional
-    """
-    try:
-        # Cargar memoria
-        if conversation_history is None:
-            conversation_history = await self._cargar_memoria(user_id)
-        
-        # Construir prompt dinámico según el contexto del comando
-        system_prompt_dinamico = self.prompt_manager.construir_prompt_completo(command)
-        
-        # Construir contexto completo
-        messages = [{"role": "system", "content": system_prompt_dinamico}]
-        
-        # Agregar historial reciente (últimas 20 interacciones)
-        for msg in conversation_history[-20:]:
-            messages.append({"role": "user", "content": msg.get("command", "")})
-            messages.append({"role": "assistant", "content": msg.get("response", "")})
+        """
+        Procesa comandos de forma ejecutiva y profesional
+        """
+        try:
+            # Cargar memoria
+            if conversation_history is None:
+                conversation_history = await self._cargar_memoria(user_id)
+            
+            # Construir prompt dinámico según el contexto del comando
+            system_prompt_dinamico = self.prompt_manager.construir_prompt_completo(command)
+            
+            # Construir contexto completo
+            messages = [{"role": "system", "content": system_prompt_dinamico}]
+            
+            # Agregar historial reciente (últimas 20 interacciones)
+            for msg in conversation_history[-20:]:
+                messages.append({"role": "user", "content": msg.get("command", "")})
+                messages.append({"role": "assistant", "content": msg.get("response", "")})
         
         # Comando actual con contexto de herramientas disponibles
         command_enriched = await self._enriquecer_comando(command)
