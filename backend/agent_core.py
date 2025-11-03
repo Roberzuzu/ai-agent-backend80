@@ -167,7 +167,7 @@ Para acciones menores (crear 1 producto, ajustar descripción), ejecuta directam
 
 Eres el SOCIO DIGITAL del negocio - piensa, analiza, ejecuta y recomienda como lo haría un director general de operaciones."""
 
-    async def procesar_comando(self, command: str, user_id: str, conversation_history: List[Dict] = None) -> Dict[str, Any]:
+async def procesar_comando(self, command: str, user_id: str, conversation_history: List[Dict] = None) -> Dict[str, Any]:
     """
     Procesa comandos de forma ejecutiva y profesional
     """
