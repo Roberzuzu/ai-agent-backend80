@@ -199,22 +199,21 @@ Eres el SOCIO DIGITAL del negocio - piensa, analiza, ejecuta y recomienda como l
                 ai_response = await self._enriquecer_respuesta(ai_response, acciones_ejecutadas)
             
             # Guardar en memoria
-            await self._guardar_memoria(user_id, command, ai_response, acciones_ejecutadas)
-            # Log temporal para debug
-            logger.info(f"========== DEBUG RESULTADO ==========")
-            logger.info(f"Resultado completo: {resultado}")
-            logger.info(f"Success: {resultado.get('success')}")
-            logger.info(f"Response: {resultado.get('response')}")
-            logger.info(f"Timestamp: {resultado.get('timestamp')}")
-            logger.info(f"=====================================")
-    
-            return resultado
-            return {
-                "success": True,
-                "response": ai_response,
-                "acciones": acciones_ejecutadas,
-                "timestamp": datetime.now(timezone.utc).isoformat()
-            }
+            # Guardar en memoria
+        await self._guardar_memoria(user_id, command, ai_response, acciones_ejecutadas)
+        
+        # Log de debug
+        logger.info(f"========== DEBUG ==========")
+        logger.info(f"AI Response: {ai_response[:200]}")  # Primeros 200 caracteres
+        logger.info(f"Acciones: {len(acciones_ejecutadas)}")
+        logger.info(f"===========================")
+        
+        return {
+            "success": True,
+            "response": ai_response,
+            "acciones": acciones_ejecutadas,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
             
         except Exception as e:
             logger.error(f"Error procesando comando: {str(e)}", exc_info=True)
