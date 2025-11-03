@@ -168,43 +168,45 @@ Para acciones menores (crear 1 producto, ajustar descripción), ejecuta directam
 Eres el SOCIO DIGITAL del negocio - piensa, analiza, ejecuta y recomienda como lo haría un director general de operaciones."""
 
     async def procesar_comando(self, command: str, user_id: str, conversation_history: List[Dict] = None) -> Dict[str, Any]:
-        """
-        Procesa comandos de forma ejecutiva y profesional
-        """
-        try:
-            # Cargar memoria
-            if conversation_history is None:
-                conversation_history = await self._cargar_memoria(user_id)
-            
-            # Construir contexto completo
-            messages = [{"role": "system", "content": self.system_prompt}]
-            
-            # Agregar historial reciente (últimas 20 interacciones)
-            for msg in conversation_history[-20:]:
-                messages.append({"role": "user", "content": msg.get("command", "")})
-                messages.append({"role": "assistant", "content": msg.get("response", "")})
-            
-            # Comando actual con contexto de herramientas disponibles
-            command_enriched = await self._enriquecer_comando(command)
-            messages.append({"role": "user", "content": command_enriched})
-            
-            # Llamar a IA
-            ai_response = await self._llamar_ia_inteligente(messages)
-            
-            # Analizar si necesita ejecutar herramientas
-            acciones_ejecutadas = await self._ejecutar_herramientas_inteligentes(command, ai_response, user_id)
-            
-            # Enriquecer respuesta con resultados de acciones
-            if acciones_ejecutadas:
-                ai_response = await self._enriquecer_respuesta(ai_response, acciones_ejecutadas)
-            
-            # Guardar en memoria
-            # Guardar en memoria
+    """
+    Procesa comandos de forma ejecutiva y profesional
+    """
+    try:
+        # Cargar memoria
+        if conversation_history is None:
+            conversation_history = await self._cargar_memoria(user_id)
+        
+        # Construir prompt dinámico según el contexto del comando
+        system_prompt_dinamico = self.prompt_manager.construir_prompt_completo(command)
+        
+        # Construir contexto completo
+        messages = [{"role": "system", "content": system_prompt_dinamico}]
+        
+        # Agregar historial reciente (últimas 20 interacciones)
+        for msg in conversation_history[-20:]:
+            messages.append({"role": "user", "content": msg.get("command", "")})
+            messages.append({"role": "assistant", "content": msg.get("response", "")})
+        
+        # Comando actual con contexto de herramientas disponibles
+        command_enriched = await self._enriquecer_comando(command)
+        messages.append({"role": "user", "content": command_enriched})
+        
+        # Llamar a IA
+        ai_response = await self._llamar_ia_inteligente(messages)
+        
+        # Analizar si necesita ejecutar herramientas
+        acciones_ejecutadas = await self._ejecutar_herramientas_inteligentes(command, ai_response, user_id)
+        
+        # Enriquecer respuesta con resultados de acciones
+        if acciones_ejecutadas:
+            ai_response = await self._enriquecer_respuesta(ai_response, acciones_ejecutadas)
+        
+        # Guardar en memoria
         await self._guardar_memoria(user_id, command, ai_response, acciones_ejecutadas)
         
         # Log de debug
         logger.info(f"========== DEBUG ==========")
-        logger.info(f"AI Response: {ai_response[:200]}")  # Primeros 200 caracteres
+        logger.info(f"AI Response length: {len(ai_response)}")
         logger.info(f"Acciones: {len(acciones_ejecutadas)}")
         logger.info(f"===========================")
         
@@ -214,14 +216,14 @@ Eres el SOCIO DIGITAL del negocio - piensa, analiza, ejecuta y recomienda como l
             "acciones": acciones_ejecutadas,
             "timestamp": datetime.now(timezone.utc).isoformat()
         }
-            
-        except Exception as e:
-            logger.error(f"Error procesando comando: {str(e)}", exc_info=True)
-            return {
-                "success": False,
-                "response": f"He encontrado un problema técnico: {str(e)}. Estoy reintentando con un método alternativo...",
-                "acciones": []
-            }
+        
+    except Exception as e:
+        logger.error(f"Error procesando comando: {str(e)}", exc_info=True)
+        return {
+            "success": False,
+            "response": f"He encontrado un problema técnico: {str(e)}. Estoy reintentando con un método alternativo...",
+            "acciones": []
+        }
     
     async def _enriquecer_comando(self, command: str) -> str:
         """
