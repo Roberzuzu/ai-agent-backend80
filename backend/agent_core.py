@@ -35,6 +35,7 @@ class CerebroAI:
     def __init__(self, db, admin_id: str):
         self.db = db
         self.admin_id = admin_id
+        self.prompt_manager = PromptManager
         
         # APIs disponibles
         self.openrouter_key = os.environ.get('OPENROUTER_API_KEY')
