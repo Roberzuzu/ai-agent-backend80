@@ -7055,17 +7055,65 @@ async def ai_health_check():
 #     # Implementation commented out - requires 'agent' object
 #     pass
 # 
-# @api_router.post("/agent/execute")
-# async def agent_execute_command(request: AgentExecuteRequest):
-#     """Endpoint principal del agente inteligente"""
-#     # Implementation commented out - requires 'agent' object
-#     pass
-# 
-# @api_router.post("/agent/chat")
-# async def agent_chat(request: AgentExecuteRequest):
-#     """Chat conversacional con el agente"""
-#     # Implementation commented out - requires 'agent' object
-#     pass
+#@api_router.post("/agent/execute")
+@api_router.post("/agent/chat")
+async def agent_execute_command(request: AgentExecuteRequest):
+    """
+    Endpoint principal del agente con IA completa
+    """
+    try:
+        # Procesar comando con el agente
+        resultado = await agente.procesar_comando(
+            command=request.command,
+            user_id=request.user_id
+        )
+        
+        # CRÍTICO: Extraer el campo correcto
+        ai_response = (
+            resultado.get('response') or 
+            resultado.get('mensaje') or 
+            str(resultado)
+        )
+        
+        # Si requiere autorización
+        if resultado.get('requiere_autorizacion') and request.user_id != agente.admin_telegram_id:
+            return {
+                "success": True,
+                "response": f"⏳ He recibido tu solicitud. Solicitando autorización del administrador.",
+                "mensaje": f"⏳ He recibido tu solicitud. Solicitando autorización del administrador.",
+                "estado": "pendiente_autorizacion",
+                "acciones": []
+            }
+        
+        # Si hubo acciones, agregarlas
+        acciones = resultado.get('acciones', [])
+        if acciones:
+            ai_response += "\n\n🛠️ Acciones ejecutadas:\n"
+            for accion in acciones:
+                herramienta = accion.get('herramienta', 'desconocida')
+                ai_response += f"• {herramienta}\n"
+        
+        # RETORNAR EN TODOS LOS FORMATOS POSIBLES
+        return {
+            "success": resultado.get('success', True),
+            "response": ai_response,
+            "mensaje": ai_response,
+            "acciones": acciones,
+            "plan": {
+                "respuesta_usuario": ai_response,
+                "acciones_ejecutadas": len(acciones)
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error en agent_execute_command: {str(e)}", exc_info=True)
+        error_msg = f"Error procesando comando: {str(e)}"
+        return {
+            "success": False,
+            "response": error_msg,
+            "mensaje": error_msg,
+            "acciones": []
+        }
 
 # =====================================================
 # TEMPORARY AGENT ENDPOINTS - WORDPRESS PLUGIN SUPPORT
