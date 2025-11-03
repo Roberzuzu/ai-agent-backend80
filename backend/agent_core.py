@@ -45,10 +45,11 @@ class CerebroAI:
         self.db = db
         self.admin_id = admin_id
         
-        # APIs disponibles
-        self.openrouter_key = os.environ.get('OPENROUTER_API_KEY')
-        self.perplexity_key = os.environ.get('PERPLEXITY_API_KEY')
+        # APIs disponibles (PRIORIDAD: Anthropic > OpenAI > Perplexity)
+        self.anthropic_key = os.environ.get('ANTHROPIC_API_KEY')
         self.openai_key = os.environ.get('OPENAI_API_KEY')
+        self.perplexity_key = os.environ.get('PERPLEXITY_API_KEY')
+        self.openrouter_key = os.environ.get('OPENROUTER_API_KEY')
         
         # WooCommerce
         self.woo_url = os.environ.get('WOOCOMMERCE_URL')
@@ -122,9 +123,39 @@ class CerebroAI:
     async def _llamar_ia_inteligente(self, messages: List[Dict]) -> str:
         """
         Llama a APIs de IA con fallback inteligente
+        PRIORIDAD: Anthropic Claude > OpenAI > Perplexity
         """
         
-        # 1. OpenAI primero (mejor calidad)
+        # 1. ANTHROPIC CLAUDE PRIMERO (mejor para agentes autónomos)
+        if self.anthropic_key:
+            try:
+                logger.info("🔄 Llamando a Anthropic Claude...")
+                async with httpx.AsyncClient(timeout=60.0) as client:
+                    response = await client.post(
+                        "https://api.anthropic.com/v1/messages",
+                        headers={
+                            "x-api-key": self.anthropic_key,
+                            "anthropic-version": "2023-06-01",
+                            "Content-Type": "application/json"
+                        },
+                        json={
+                            "model": "claude-sonnet-4-20250514",
+                            "max_tokens": 4096,
+                            "messages": messages
+                        }
+                    )
+                    
+                    if response.status_code == 200:
+                        data = response.json()
+                        content = data['content'][0]['text']
+                        logger.info(f"✅ Claude respondió: {len(content)} caracteres")
+                        return content
+                    else:
+                        logger.warning(f"⚠️ Anthropic status: {response.status_code}")
+            except Exception as e:
+                logger.warning(f"⚠️ Anthropic error: {str(e)}")
+        
+        # 2. OpenAI como backup
         if self.openai_key:
             try:
                 logger.info("🔄 Llamando a OpenAI...")
@@ -153,7 +184,7 @@ class CerebroAI:
             except Exception as e:
                 logger.warning(f"⚠️ OpenAI error: {str(e)}")
         
-        # 2. Perplexity como backup
+        # 3. Perplexity como última opción
         if self.perplexity_key:
             try:
                 logger.info("🔄 Llamando a Perplexity...")
@@ -179,34 +210,6 @@ class CerebroAI:
                         return content
             except Exception as e:
                 logger.warning(f"⚠️ Perplexity error: {str(e)}")
-        
-        # 3. OpenRouter como última opción
-        if self.openrouter_key:
-            try:
-                logger.info("🔄 Llamando a OpenRouter...")
-                async with httpx.AsyncClient(timeout=60.0) as client:
-                    response = await client.post(
-                        "https://openrouter.ai/api/v1/chat/completions",
-                        headers={
-                            "Authorization": f"Bearer {self.openrouter_key}",
-                            "Content-Type": "application/json",
-                            "HTTP-Referer": self.woo_url or "https://localhost",
-                        },
-                        json={
-                            "model": "meta-llama/llama-3.1-70b-instruct",
-                            "messages": messages,
-                            "temperature": 0.7,
-                            "max_tokens": 2000
-                        }
-                    )
-                    
-                    if response.status_code == 200:
-                        data = response.json()
-                        content = data['choices'][0]['message']['content']
-                        logger.info(f"✅ OpenRouter respondió: {len(content)} caracteres")
-                        return content
-            except Exception as e:
-                logger.warning(f"⚠️ OpenRouter error: {str(e)}")
         
         logger.error("❌ Todas las APIs de IA fallaron")
         return "Estoy experimentando problemas de conexión con los servicios de IA. Por favor, verifica las API keys en las variables de entorno."
