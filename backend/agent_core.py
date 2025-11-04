@@ -124,7 +124,7 @@ class ToolRegistry:
 
         logger.info(f"🔧 Capacidades detectadas: {len(self.capabilities)}")
         for cap in self.capabilities:
-            logger.info(f"  ✅ {cap['name']}: {cap['description']}")
+        logger.info(f"  ✅ {cap['name']}: {cap['description']}")
         logger.info(f"WordPress URL: {self.wp_url}")
         logger.info(f"WooCommerce URL: {self.woo_url}")
 
