@@ -5222,7 +5222,7 @@ async def create_ab_test(test: ABTestCreate):
 
 # Más endpoints...
 
-app.include_router(apirouter)
+app.include_router(api-router)
 
 @api_router.get("/ab-tests")
 async def get_ab_tests(status: Optional[str] = None):
