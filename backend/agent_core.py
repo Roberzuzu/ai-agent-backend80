@@ -209,6 +209,8 @@ Eres un CEO Digital con poder ejecutivo REAL. No eres un chatbot informativo - e
         return prompt
 
     async def procesar_comando(self, command: str, user_id: str, conversation_history: List[Dict] = None, archivos: List[Dict] = None) -> Dict[str, Any]:
+            if archivos:
+                logger.info(f"Archivos ignorados por ahora: {len(archivos)}")
         try:
             if conversation_history is None:
                 conversation_history = await self._cargar_memoria(user_id)
