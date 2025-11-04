@@ -7189,14 +7189,56 @@ async def agent_execute_command(request: AgentExecuteRequest):
                 "acciones_ejecutadas": 0
             }
         }
-            }
+@api_router.post("/agent/execute")
+@api_router.post("/agent/chat")
+async def agent_execute_command(request: AgentExecuteRequest):
+    """Endpoint principal del agente con IA completa y soporte multimedia"""
+    try:
+        logger.info(f"📨 Comando de user {request.user_id}: {request.command[:50]}...")
+        
+        if request.archivos:
+            logger.info(f"📎 {len(request.archivos)} archivos adjuntos")
+        
+        resultado = await agente.procesar_comando(
+            command=request.command,
+            user_id=request.user_id,
+            archivos=request.archivos
+        )
+        
+        logger.info(f"📦 Resultado: {resultado.get('success')}")
+        
+        ai_response = resultado.get('response', '')
+        
+        if not ai_response:
+            ai_response = resultado.get('mensaje', '')
+        
+        if not ai_response:
+            ai_response = "He procesado tu solicitud."
+        
+        acciones = resultado.get('acciones', [])
+        
+        respuesta_final = {
+            "success": resultado.get('success', True),
+            "response": ai_response,
+            "mensaje": ai_response,
+            "acciones": acciones,
+            "plan": {
+                "respuesta_usuario": ai_response,
+                "acciones_ejecutadas": len(acciones)
+            },
+            "timestamp": resultado.get('timestamp', datetime.now(timezone.utc).isoformat())
         }
         
+        logger.info(f"📤 Enviando: {len(ai_response)} chars")
+        
+        return respuesta_final
+        
     except Exception as e:
-        logger.error(f"Error en agent/execute: {str(e)}", exc_info=True)
+        logger.error(f"❌ Error: {str(e)}", exc_info=True)
         return {
             "success": False,
-            "mensaje": f" Error al procesar tu solicitud:\n\n{str(e)}\n\nPor favor, intenta de nuevo o contacta con soporte.",
+            "response": f"Error: {str(e)[:100]}",
+            "mensaje": f"Error: {str(e)[:100]}",
             "acciones": []
         }
 
