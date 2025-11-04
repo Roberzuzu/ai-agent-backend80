@@ -7072,28 +7072,62 @@ async def ai_health_check():
 # =====================================================
 
 class AgentExecuteRequest(BaseModel):
-    """Request para ejecutar comando del agente"""
+    """Request para ejecutar comando del agente con soporte multimedia"""
     command: str
     user_id: str = "default"
+    archivos: Optional[List[Dict[str, Any]]] = None
 
 @api_router.post("/agent/execute")
 @api_router.post("/agent/execute")
 @api_router.post("/agent/execute")
+# ==========================================
+# FIX PARA server.py - SOPORTE MULTIMEDIA
+# ==========================================
+
+# PASO 1: Actualizar el modelo AgentExecuteRequest (línea 7074)
+# REEMPLAZA:
+
+class AgentExecuteRequest(BaseModel):
+    """Request para ejecutar comando del agente"""
+    command: str
+    user_id: str = "default"
+
+# POR:
+
+class AgentExecuteRequest(BaseModel):
+    """Request para ejecutar comando del agente con soporte multimedia"""
+    command: str
+    user_id: str = "default"
+    archivos: Optional[List[Dict[str, Any]]] = None
+
+
+# ==========================================
+# PASO 2: Actualizar función agent_execute_command (línea 7083)
+# REEMPLAZA TODO desde línea 7083 hasta 7151 POR:
+
+@api_router.post("/agent/execute")
 @api_router.post("/agent/chat")
 async def agent_execute_command(request: AgentExecuteRequest):
     """
-    Endpoint principal del agente con IA completa
+    Endpoint principal del agente con IA completa y soporte multimedia
     """
     try:
-        logger.info(f"📨 Comando recibido de user {request.user_id}: {request.command[:50]}...")
+        logger.info(f"📨 Comando de user {request.user_id}: {request.command[:50]}...")
         
-        # Procesar comando con el agente
+        # Log de archivos si existen
+        if request.archivos:
+            logger.info(f"📎 {len(request.archivos)} archivos adjuntos")
+            for archivo in request.archivos:
+                logger.info(f"  - {archivo.get('tipo')}: {archivo.get('nombre', archivo.get('file_id'))}")
+        
+        # Procesar comando con el agente (incluye archivos)
         resultado = await agente.procesar_comando(
             command=request.command,
-            user_id=request.user_id
+            user_id=request.user_id,
+            archivos=request.archivos
         )
         
-        logger.info(f"📦 Resultado del agente: {resultado}")
+        logger.info(f"📦 Resultado: success={resultado.get('success')}")
         
         # Extraer respuesta con múltiples fallbacks
         ai_response = resultado.get('response', '')
@@ -7102,9 +7136,13 @@ async def agent_execute_command(request: AgentExecuteRequest):
             ai_response = resultado.get('mensaje', '')
         
         if not ai_response or len(ai_response.strip()) == 0:
-            ai_response = "He procesado tu solicitud pero no generé una respuesta. Por favor, reformula tu pregunta."
+            # Si hay archivos pero no respuesta, dar feedback
+            if request.archivos:
+                ai_response = "He recibido tus archivos y los estoy procesando. Dame un momento..."
+            else:
+                ai_response = "He procesado tu solicitud pero no generé una respuesta. Reformula tu pregunta."
         
-        logger.info(f"✅ Respuesta extraída: {len(ai_response)} caracteres")
+        logger.info(f"✅ Respuesta: {len(ai_response)} caracteres")
         
         # Extraer acciones
         acciones = resultado.get('acciones', [])
@@ -7126,6 +7164,7 @@ async def agent_execute_command(request: AgentExecuteRequest):
             "response": ai_response,
             "mensaje": ai_response,
             "acciones": acciones,
+            "archivos_procesados": len(request.archivos) if request.archivos else 0,
             "plan": {
                 "respuesta_usuario": ai_response,
                 "acciones_ejecutadas": len(acciones)
@@ -7133,13 +7172,13 @@ async def agent_execute_command(request: AgentExecuteRequest):
             "timestamp": resultado.get('timestamp', datetime.now(timezone.utc).isoformat())
         }
         
-        logger.info(f"📤 Enviando respuesta: success={respuesta_final['success']}, len={len(ai_response)}")
+        logger.info(f"📤 Enviando: {len(ai_response)} chars, {len(acciones)} acciones")
         
         return respuesta_final
         
     except Exception as e:
-        logger.error(f"❌ Error en agent_execute_command: {str(e)}", exc_info=True)
-        error_msg = f"Error inesperado: {str(e)}"
+        logger.error(f"❌ Error: {str(e)}", exc_info=True)
+        error_msg = f"Error procesando solicitud: {str(e)[:200]}"
         return {
             "success": False,
             "response": error_msg,
@@ -7148,6 +7187,8 @@ async def agent_execute_command(request: AgentExecuteRequest):
             "plan": {
                 "respuesta_usuario": error_msg,
                 "acciones_ejecutadas": 0
+            }
+        }
             }
         }
         
