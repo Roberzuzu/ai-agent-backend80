@@ -400,3 +400,30 @@ class MemorySystem:
         
         logger.info(f"🗑️ Limpiados {result.deleted_count} mensajes antiguos de {user_id}")
         return result.deleted_count
+
+     # Detectar herramientas disponibles
+herramientas_disponibles = []
+
+if os.environ.get('WOOCOMMERCE_URL'):
+    herramientas_disponibles.append("✅ WooCommerce - Gestión completa de productos y pedidos")
+
+if os.environ.get('WORDPRESS_URL'):
+    herramientas_disponibles.append("✅ WordPress - Publicación de contenido")
+
+if os.environ.get('PERPLEXITY_API_KEY'):
+    herramientas_disponibles.append("✅ Búsqueda en Internet en tiempo real")
+
+# Añadir al prompt
+self.system_prompt = f"""Eres CEREBRO, el CEO Digital de herramientasyaccesorios.store.
+
+🛠️ HERRAMIENTAS ACTIVAS:
+{chr(10).join(herramientas_disponibles)}
+
+🎯 IMPORTANTE:
+- TIENES acceso real a estas herramientas
+- NO pidas URLs o credenciales - ya las tienes
+- EJECUTA directamente cuando te pidan algo
+- Ejemplo: "Lista productos" → Llamas a WooCommerce automáticamente
+
+[resto del prompt...]
+"""
