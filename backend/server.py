@@ -4614,7 +4614,7 @@ async def generate_all_embeddings():
 # =========================
 # ROUTES - Amazon Associates Integration
 # =========================
-@apirouter.post("/agent/chat")
+@api-router.post("/agent/chat")
 async def agentexecutecommand(request: AgentExecuteRequest):
     resultado = await agente.procesarcomando(command=request.command, userid=request.userid)
     acciones = resultado.get("acciones", [])
