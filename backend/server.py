@@ -73,7 +73,7 @@ class CerebroUncensored:
         ...
     async def crear_producto_inteligente(self, command: str) -> dict:
         ...
-
+    
 # =========================
 # SECURITY SYSTEMS
 # =========================
@@ -3026,7 +3026,33 @@ async def get_webhook_logs(status: Optional[str] = None, limit: int = 50):
             log['processed_at'] = datetime.fromisoformat(log['processed_at'])
         if isinstance(log.get('updated_at'), str):
             log['updated_at'] = datetime.fromisoformat(log['updated_at'])
-    
+ @apirouter.post("/agent/chat")
+async def agentexecutecommand(request: AgentExecuteRequest):
+    resultado = await agente.procesarcomando(command=request.command, userid=request.userid)
+    acciones = resultado.get("acciones", [])
+    ai_response = resultado.get("response") or "Sin respuesta generada."
+    if acciones:
+        resumen_acciones = []
+        for accion in acciones:
+            herramienta = accion.get("herramienta", "desconocida")
+            exito = accion.get("success", False)
+            if exito:
+                resumen_acciones.append(
+                    f"✅ {herramienta}: Éxito real. Detalle: {accion.get('detalle', accion)}"
+                )
+            else:
+                resumen_acciones.append(
+                    f"❌ {herramienta}: Fallo. Motivo: {accion.get('error', 'No especificado')}"
+                )
+        ai_response += "\n\n" + "\n".join(resumen_acciones)
+    return {
+        "success": resultado.get("success", True),
+        "response": ai_response,
+        "acciones": acciones,
+        "accionesejecutadas": len(acciones),
+        "timestamp": resultado.get("timestamp", datetime.now(timezone.utc).isoformat())
+    }
+   
     return logs
 
 @api_router.post("/webhooks/{event_id}/retry")
