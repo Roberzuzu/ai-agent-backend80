@@ -121,13 +121,15 @@ class ToolRegistry:
 
         # Generación de documentos
         self.register_capability('document_generation', 'Creación de PDFs, reportes, presentaciones')
-
+        logger.info("🔍 Verificando variables de entorno...")
         logger.info(f"🔧 Capacidades detectadas: {len(self.capabilities)}")
         for cap in self.capabilities:
         logger.info(f"  ✅ {cap['name']}: {cap['description']}")
         logger.info(f"WordPress URL: {self.wp_url}")
         logger.info(f"WooCommerce URL: {self.woo_url}")
-
+        logger.info(f"  - OpenAI: {'✅' if os.environ.get('OPENAI_API_KEY') else '❌'}")
+        logger.info(f"  - Anthropic: {'✅' if os.environ.get('ANTHROPIC_API_KEY') else '❌'}")
+        logger.info(f"  - Perplexity: {'✅' if os.environ.get('PERPLEXITY_API_KEY') else '❌'}")
     def _register_api(self, name, variants, description):
         key = get_env_var(*variants)
         if key:
