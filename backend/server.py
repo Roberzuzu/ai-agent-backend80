@@ -7198,11 +7198,6 @@ async def agent_execute_command(request: AgentExecuteRequest):
         if request.archivos:
             logger.info(f"📎 {len(request.archivos)} archivos adjuntos")
         
-        resultado = await agente.procesar_comando(
-            command=request.command,
-            user_id=request.user_id,
-            archivos=request.archivos
-        )
         
         logger.info(f"📦 Resultado: {resultado.get('success')}")
         
