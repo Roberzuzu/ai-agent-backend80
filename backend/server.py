@@ -33,7 +33,12 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from fastapi import FastAPI
 from pydantic import BaseModel
-
+class CerebroUncensored:
+    def __init__(self, db, admin_id):
+        ...
+    async def procesarcomando(self, command, userid):
+        ...
+    async def crear_producto_inteligente(self, command: str) -> dict:
 app = FastAPI()
 
 class IAQuery(BaseModel):
