@@ -1,47 +1,44 @@
 """
-AI Integrations Module - Super Powered
-Gestiona todas las integraciones con APIs de IA:
-- OpenRouter (LLM routing)
-- Perplexity (Real-time search)
-- OpenAI (GPT + DALL-E)
-- Fal AI (Image/Video generation)
-- Abacus AI (Predictive analytics)
+AI Integrations Module - OMNICANAL SUPER CEREBRO
+Gestiona todas las integraciones con APIs de IA, accesorios, backend y herramientas extendidas.
+Soporta expansión modular por prompt/capacidad, memoria extendida y multi-routing inteligente.
 """
+
 import os
 import asyncio
 import httpx
-import fal_client
-from typing import Dict, List, Optional, Any
-from openai import AsyncOpenAI
 import json
+from typing import Dict, List, Optional, Any
 
-# Configurar API keys
+# Importar clientes base y añadir nuevos según modularidad
+from openai import AsyncOpenAI
+
+# =========================
+# Configuración de claves y endpoints
+# =========================
+
 FAL_KEY = os.getenv("FAL_API_KEY")
 OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY")
 PERPLEXITY_KEY = os.getenv("PERPLEXITY_API_KEY")
 OPENAI_KEY = os.getenv("OPENAI_API_KEY")
 ABACUS_KEY = os.getenv("ABACUS_API_KEY")
 
-# Configurar Fal Client solo si la key existe
-if FAL_KEY:
-    os.environ["FAL_KEY"] = FAL_KEY
+BACKEND_URL = os.getenv("AI_AGENT_BACKEND", "https://ai-agent-backend80.onrender.com")
 
-# Cliente OpenAI - solo si la key existe
-openai_client = None
-if OPENAI_KEY:
-    openai_client = AsyncOpenAI(api_key=OPENAI_KEY)
+# ===============================
+# Cliente OpenRouter - LLM Routing
+# ===============================
 
 class OpenRouterClient:
-    """Cliente para OpenRouter - Enrutamiento de LLMs"""
     def __init__(self):
-        self.api_key = OPENROUTER_KEY
-        self.base_url = "https://openrouter.ai/api/v1/chat/completions"
+        self.apikey = OPENROUTER_KEY
+        self.baseurl = "https://openrouter.ai/api/v1/chat/completions"
 
-    async def generate_text(self, prompt: str, model: str = 'anthropic/claude-3.5-sonnet', max_tokens: int = 2000, temperature: float = 0.7) -> Dict[str, Any]:
-        if not self.api_key:
-            return {'success': False, 'error': 'OPENROUTER_API_KEY not configured'}
+    async def generate_text(self, prompt: str, model: str = "anthropic/claude-3.5-sonnet", max_tokens: int = 2500, temperature: float = 0.7) -> Dict[str, Any]:
+        if not self.apikey:
+            return {"success": False, "error": "OPENROUTER_API_KEY not configured"}
         headers = {
-            "Authorization": f"Bearer {self.api_key}",
+            "Authorization": f"Bearer {self.apikey}",
             "Content-Type": "application/json",
             "HTTP-Referer": "https://herramientasyaccesorios.store",
             "X-Title": "Super Cerebro AI"
@@ -56,26 +53,28 @@ class OpenRouterClient:
         }
         async with httpx.AsyncClient(timeout=60) as client:
             try:
-                res = await client.post(self.base_url, headers=headers, json=payload)
+                res = await client.post(self.baseurl, headers=headers, json=payload)
                 data = res.json()
-                content = data.get('choices', [{}])[0].get('message', {}).get('content')
+                content = data.get("choices", [{}])[0].get("message", {}).get("content")
                 if content:
-                    return {'success': True, 'text': content, 'model': data.get('model'), 'usage': data.get('usage')}
-                return {'success': False, 'error': 'Empty response from OpenRouter'}
+                    return {"success": True, "text": content, "model": data.get("model"), "usage": data.get("usage")}
+                return {"success": False, "error": "Empty response from OpenRouter"}
             except Exception as e:
-                return {'success': False, 'error': str(e)}
+                return {"success": False, "error": str(e)}
 
+# ==============================
+# Cliente Perplexity - Search en tiempo real
+# ==============================
 class PerplexityClient:
-    """Cliente para búsquedas en Perplexity"""
     def __init__(self):
-        self.api_key = PERPLEXITY_KEY
-        self.base_url = "https://api.perplexity.ai/chat/completions"
+        self.apikey = PERPLEXITY_KEY
+        self.baseurl = "https://api.perplexity.ai/chat/completions"
 
-    async def search(self, prompt: str, model: str = 'sonar', max_tokens: int = 1800) -> Dict[str, Any]:
-        if not self.api_key:
-            return {'success': False, 'error': 'PERPLEXITY_API_KEY not configured'}
+    async def search(self, prompt: str, model: str = "sonar", max_tokens: int = 1800) -> Dict[str, Any]:
+        if not self.apikey:
+            return {"success": False, "error": "PERPLEXITY_API_KEY not configured"}
         headers = {
-            "Authorization": f"Bearer {self.api_key}",
+            "Authorization": f"Bearer {self.apikey}",
             "Content-Type": "application/json"
         }
         payload = {
@@ -88,24 +87,26 @@ class PerplexityClient:
         }
         async with httpx.AsyncClient(timeout=60) as client:
             try:
-                res = await client.post(self.base_url, headers=headers, json=payload)
+                res = await client.post(self.baseurl, headers=headers, json=payload)
                 data = res.json()
-                content = data.get('choices', [{}])[0].get('message', {}).get('content')
-                citations = data.get('citations') or []
+                content = data.get("choices", [{}])[0].get("message", {}).get("content")
+                citations = data.get("citations", [])
                 if content:
-                    return {'success': True, 'content': content, 'citations': citations}
-                return {'success': False, 'error': 'Empty response from Perplexity'}
+                    return {"success": True, "content": content, "citations": citations}
+                return {"success": False, "error": "Empty response from Perplexity"}
             except Exception as e:
-                return {'success': False, 'error': str(e)}
+                return {"success": False, "error": str(e)}
 
+# ==============================
+# Cliente OpenAI - para chat avanzado, plugins y memoria extendida
+# ==============================
 class OpenAIClient:
-    """Cliente para OpenAI (chat)"""
     def __init__(self):
-        self.client = openai_client
+        self.client = AsyncOpenAI(api_key=OPENAI_KEY) if OPENAI_KEY else None
 
-    async def chat(self, prompt: str, model: str = 'gpt-4o-mini', max_tokens: int = 2000, temperature: float = 0.7) -> Dict[str, Any]:
+    async def chat(self, prompt: str, model: str = "gpt-4o-mini", max_tokens: int = 2000, temperature: float = 0.7) -> Dict[str, Any]:
         if not self.client:
-            return {'success': False, 'error': 'OPENAI_API_KEY not configured'}
+            return {"success": False, "error": "OPENAI_API_KEY not configured"}
         try:
             resp = await self.client.chat.completions.create(
                 model=model,
@@ -115,85 +116,98 @@ class OpenAIClient:
             )
             content = resp.choices[0].message.content if resp.choices else None
             if content:
-                return {'success': True, 'content': content}
-            return {'success': False, 'error': 'Empty response from OpenAI'}
+                return {"success": True, "content": content}
+            return {"success": False, "error": "Empty response from OpenAI"}
         except Exception as e:
-            return {'success': False, 'error': str(e)}
+            return {"success": False, "error": str(e)}
 
+# ==============================
+# Cliente Fal AI - imágenes/video generación
+# ==============================
 class FalAIClient:
-    """Cliente para Fal AI (imágenes/videos)"""
     def __init__(self):
         self.enabled = bool(FAL_KEY)
+        self.api_key = FAL_KEY
+        # Se puede añadir endpoint y lógica real según plataforma
 
     async def generate_image(self, prompt: str) -> Dict[str, Any]:
         if not self.enabled:
-            return {'success': False, 'error': 'FAL_API_KEY not configured'}
-        # Placeholder: Implementar integración real si es necesario
-        return {'success': True, 'url': 'https://example.com/image.png'}
+            return {"success": False, "error": "FAL_API_KEY not configured"}
+        # Lógica real aquí y conexión backend si aplica
+        return {"success": True, "url": "https://example.com/image.png"}
 
+# ==============================
+# Cliente Abacus AI - analítica predictiva y dashboards avanzados
+# ==============================
 class AbacusAIClient:
-    """Cliente para Abacus AI (analítica predictiva)"""
     def __init__(self):
-        self.api_key = ABACUS_KEY
+        self.apikey = ABACUS_KEY
 
     async def analyze(self, data: Dict[str, Any]) -> Dict[str, Any]:
-        if not self.api_key:
-            return {'success': False, 'error': 'ABACUS_API_KEY not configured'}
-        # Placeholder: Implementar integración real si es necesario
-        return {'success': True, 'insights': {}}
+        if not self.apikey:
+            return {"success": False, "error": "ABACUS_API_KEY not configured"}
+        # Lógica real aquí y conexión backend si aplica
+        return {"success": True, "insights": "Placeholder - implementar analítica avanzada."}
 
-# ====================================
-# AI ROUTER - INTELLIGENT CHAT ROUTING  
-# ====================================
-
-from typing import Dict, Any
-
+# ==============================
+# Enrutador Omnicanal con integración backend, prompts y accesorios
+# ==============================
 class AIRouter:
     def __init__(self):
         self.openrouter = OpenRouterClient()
         self.perplexity = PerplexityClient()
-        self.openai = OpenAIClient() if OPENAI_KEY else None
+        self.openai = OpenAIClient()
         self.abacus = AbacusAIClient()
-    
-    async def generate_text(self, message: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
+        self.fal = FalAIClient()
+        self.backend_url = BACKEND_URL
+
+    async def generate_text(self, message: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         context = context or {}
-        query_type = self._detect_query_type(message)
-        
-        system_context = '''Eres Super Cerebro AI, asistente experto en herramientas y accesorios.
-Tienda: herramientasyaccesorios.store
-Responde de forma profesional, detallada (200+ palabras), con emojis y ejemplos concretos.'''
-        
-        full_prompt = f"{system_context}\n\nUsuario: {message}\n\nAsistente:"
-        
+        querytype = self.detect_query_type(message)
+        system_context = (
+            "Eres Super Cerebro AI, agente omnicanal experto en herramientas, accesorios y monetización. "
+            "Siempre conectado a backend: " + self.backend_url + " ."
+            "Responde en modo profesional, explicando cada paso. Incluye detalles técnicos, emojis y ejemplos."
+        )
+        full_prompt = f"{system_context}\n{message}"
+
         try:
-            # Try Perplexity for search queries
-            if query_type == 'search':
+            # Buscar y generar texto/contexto según la petición
+            if querytype == "search":
                 result = await self.perplexity.search(full_prompt)
-                if result.get('content'):
-                    return {'success': True, 'text': result['content'], 'platform_used': 'perplexity'}
-            
-            # Primary: Claude 3.5 Sonnet via OpenRouter
-            result = await self.openrouter.generate_text(full_prompt, model='anthropic/claude-3.5-sonnet', max_tokens=2500)
-            if result.get('text') or result.get('content'):
-                # normalize
-                content = result.get('text') or result.get('content')
-                return {'success': True, 'text': content, 'platform_used': 'claude'}
-            
-            # Fallback: OpenAI
+                if result.get("content"):
+                    return {"success": True, "text": result["content"], "platform_used": "perplexity"}
+            result = await self.openrouter.generate_text(full_prompt)
+            if result.get("text"):
+                return {"success": True, "text": result["text"], "platform_used": "claude"}
             if self.openai:
-                result = await self.openai.chat(full_prompt, max_tokens=2500)
-                if result.get('content'):
-                    return {'success': True, 'text': result['content'], 'platform_used': 'openai'}
-            
-            return {'success': False, 'text': 'Error: No hay respuesta disponible'}
+                result = await self.openai.chat(full_prompt)
+                if result.get("content"):
+                    return {"success": True, "text": result["content"], "platform_used": "openai"}
+            return {"success": False, "text": "Error: No hay respuesta disponible"}
         except Exception as e:
-            return {'success': False, 'text': f'Error: {str(e)}'}
-    
-    def _detect_query_type(self, message: str) -> str:
+            return {"success": False, "text": f"Error: {str(e)}"}
+
+    def detect_query_type(self, message: str) -> str:
         msg_lower = message.lower()
-        if any(w in msg_lower for w in ['buscar', 'precio', 'mercado', 'comparar']):
-            return 'search'
-        return 'general'
-    
-    async def route(self, prompt: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
+        if any(w in msg_lower for w in ["buscar", "precio", "mercado", "comparar", "oportunidad", "monetizar"]):
+            return "search"
+        return "general"
+
+    async def route(self, prompt: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        # Punto único de enrutamiento multi-plataforma y multi-modular
         return await self.generate_text(prompt, context)
+
+    # Expansión: puede integrarse con backend, prompts dinámicos, gestión de herramientas y accesorios
+    async def execute_backend_command(self, command: str, params: Dict[str, Any] = None):
+        """
+        Permite ejecutar comandos directos sobre el backend conectado (expansión arbitraria).
+        Ejemplo: auto-integraciones de plugins, memoria, accesorios, reportes, etc.
+        """
+        params = params or {}
+        async with httpx.AsyncClient(timeout=60) as client:
+            try:
+                res = await client.post(f"{self.backend_url}/api/autocomandos", json={"comando": command, "params": params})
+                return res.json()
+            except Exception as e:
+                return {"success": False, "error": str(e)}
