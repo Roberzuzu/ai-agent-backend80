@@ -7078,48 +7078,76 @@ class AgentExecuteRequest(BaseModel):
 
 @api_router.post("/agent/execute")
 @api_router.post("/agent/execute")
+@api_router.post("/agent/execute")
+@api_router.post("/agent/chat")
 async def agent_execute_command(request: AgentExecuteRequest):
     """
     Endpoint principal del agente con IA completa
-    Maneja conversación + ejecución de acciones
     """
     try:
+        logger.info(f"📨 Comando recibido de user {request.user_id}: {request.command[:50]}...")
+        
         # Procesar comando con el agente
         resultado = await agente.procesar_comando(
             command=request.command,
             user_id=request.user_id
         )
         
-        # Si requiere autorización y el usuario no es admin
-        if resultado.get('requiere_autorizacion') and request.user_id != agente.admin_telegram_id:
-            # Enviar notificación al admin
-            await agente._solicitar_autorizacion(request.user_id, request.command)
-            
-            return {
-                "success": True,
-                "mensaje": f" He recibido tu solicitud:\n\n'{request.command}'\n\n⏳ Estoy solicitando autorización del administrador. Te notificaré cuando esté aprobada.",
-                "estado": "pendiente_autorizacion",
-                "acciones": []
-            }
+        logger.info(f"📦 Resultado del agente: {resultado}")
         
-        # Formatear respuesta
-        mensaje = resultado.get('mensaje', '')
+        # Extraer respuesta con múltiples fallbacks
+        ai_response = resultado.get('response', '')
+        
+        if not ai_response or len(ai_response.strip()) == 0:
+            ai_response = resultado.get('mensaje', '')
+        
+        if not ai_response or len(ai_response.strip()) == 0:
+            ai_response = "He procesado tu solicitud pero no generé una respuesta. Por favor, reformula tu pregunta."
+        
+        logger.info(f"✅ Respuesta extraída: {len(ai_response)} caracteres")
+        
+        # Extraer acciones
+        acciones = resultado.get('acciones', [])
         
         # Si hubo acciones ejecutadas, agregarlas al mensaje
-        if resultado.get('acciones'):
-            mensaje += "\n\n🛠️ **Acciones ejecutadas:**\n"
-            for accion in resultado['acciones']:
+        if acciones and len(acciones) > 0:
+            resumen_acciones = "\n\n🛠️ **Acciones ejecutadas:**\n"
+            for accion in acciones:
                 herramienta = accion.get('herramienta', 'desconocida')
-                estado = accion.get('estado', 'completada')
-                mensaje += f"• {herramienta}: {estado}\n"
+                exito = accion.get('resultado', {}).get('success', False)
+                estado = "✅" if exito else "❌"
+                resumen_acciones += f"{estado} {herramienta}\n"
+            
+            ai_response += resumen_acciones
         
-        return {
+        # Construir respuesta final
+        respuesta_final = {
             "success": resultado.get('success', True),
-            "mensaje": mensaje,
-            "acciones": resultado.get('acciones', []),
+            "response": ai_response,
+            "mensaje": ai_response,
+            "acciones": acciones,
             "plan": {
-                "respuesta_usuario": mensaje,
-                "acciones_ejecutadas": len(resultado.get('acciones', []))
+                "respuesta_usuario": ai_response,
+                "acciones_ejecutadas": len(acciones)
+            },
+            "timestamp": resultado.get('timestamp', datetime.now(timezone.utc).isoformat())
+        }
+        
+        logger.info(f"📤 Enviando respuesta: success={respuesta_final['success']}, len={len(ai_response)}")
+        
+        return respuesta_final
+        
+    except Exception as e:
+        logger.error(f"❌ Error en agent_execute_command: {str(e)}", exc_info=True)
+        error_msg = f"Error inesperado: {str(e)}"
+        return {
+            "success": False,
+            "response": error_msg,
+            "mensaje": error_msg,
+            "acciones": [],
+            "plan": {
+                "respuesta_usuario": error_msg,
+                "acciones_ejecutadas": 0
             }
         }
         
