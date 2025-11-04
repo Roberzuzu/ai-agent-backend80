@@ -7122,10 +7122,9 @@ async def agent_execute_command(request: AgentExecuteRequest):
         
         # Procesar comando con el agente (incluye archivos)
         resultado = await agente.procesar_comando(
-            command=request.command,
-            user_id=request.user_id,
-            archivos=request.archivos
-        )
+    command=request.command,
+    user_id=request.user_id
+)
         
         logger.info(f"📦 Resultado: success={resultado.get('success')}")
         
