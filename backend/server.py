@@ -64,6 +64,15 @@ db = client[os.environ['DB_NAME']]
 # Inicializar Cerebro AI Agent
 ADMIN_TELEGRAM_ID = os.environ.get('ADMIN_TELEGRAM_ID', '7202793910')
 agente = CerebroUncensored(db, ADMIN_TELEGRAM_ID)
+import httpx
+
+class CerebroUncensored:
+    def __init__(self, db, admin_id):
+        ...
+    async def procesarcomando(self, command, userid):
+        ...
+    async def crear_producto_inteligente(self, command: str) -> dict:
+        ...
 
 # =========================
 # SECURITY SYSTEMS
