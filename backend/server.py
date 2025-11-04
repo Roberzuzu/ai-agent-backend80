@@ -7494,7 +7494,11 @@ async def startup_db():
     logger.info(f"   - WordPress: {' Configured' if os.environ.get('WP_URL') else ' Not configured'}")
     logger.info(f"   - Telegram Bot: {' Configured' if os.environ.get('TELEGRAM_BOT_TOKEN') else ' Not configured'}")
     logger.info(f"   - Environment: {os.environ.get('ENVIRONMENT', 'development')}")
-    
+    logger.info(f"📨 Comando recibido de user {request.user_id}: {request.command[:50]}...")
+    resultado = await agente.procesar_comando(...)
+    logger.info(f"📦 Resultado del agente: {resultado}")
+    logger.info(f"✅ Respuesta extraída: {len(ai_response)} caracteres")
+    logger.info(f"📤 Enviando respuesta: success={respuesta_final['success']}, len={len(ai_response)}")
     # Test MongoDB connection
     try:
         logger.info(" Testing MongoDB connection...")
