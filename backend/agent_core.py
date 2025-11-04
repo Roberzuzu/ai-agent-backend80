@@ -413,6 +413,17 @@ Eres un CEO Digital con poder ejecutivo REAL. No eres un chatbot informativo - e
             elif herramienta == 'buscar_internet':
                 enriquecimiento += "✅ Información actualizada de internet integrada\n"
         return ai_response + enriquecimiento
+     async def ejecutar_backend_comando(self, command: str, user_id: str) -> Dict:
+    try:
+        async with httpx.AsyncClient(timeout=60) as client:
+            res = await client.post(
+                f"{self.backend_url}/api/autocomandos",
+                json={"comando": command, "usuario": user_id}
+            )
+            return res.json()
+    except Exception as e:
+        logger.error(f"Error ejecutando backend: {str(e)}")
+        return {"success": False, "error": str(e)}
 
     # ========================
     # HERRAMIENTAS ESPECÍFICAS
