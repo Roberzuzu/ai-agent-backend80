@@ -4614,6 +4614,32 @@ async def generate_all_embeddings():
 # =========================
 # ROUTES - Amazon Associates Integration
 # =========================
+@apirouter.post("/agent/chat")
+async def agentexecutecommand(request: AgentExecuteRequest):
+    resultado = await agente.procesarcomando(command=request.command, userid=request.userid)
+    acciones = resultado.get("acciones", [])
+    ai_response = resultado.get("response") or "Sin respuesta generada."
+    if acciones:
+        resumen_acciones = []
+        for accion in acciones:
+            herramienta = accion.get("herramienta", "desconocida")
+            exito = accion.get("success", False)
+            if exito:
+                resumen_acciones.append(
+                    f"✅ {herramienta}: Éxito real. Detalle: {accion.get('detalle', accion)}"
+                )
+            else:
+                resumen_acciones.append(
+                    f"❌ {herramienta}: Fallo. Motivo: {accion.get('error', 'No especificado')}"
+                )
+        ai_response += "\n\n" + "\n".join(resumen_acciones)
+    return {
+        "success": resultado.get("success", True),
+        "response": ai_response,
+        "acciones": acciones,
+        "accionesejecutadas": len(acciones),
+        "timestamp": resultado.get("timestamp", datetime.now(timezone.utc).isoformat())
+    }
 
 @api_router.post("/amazon/products")
 async def create_amazon_product(data: AmazonProductCreate):
