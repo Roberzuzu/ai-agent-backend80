@@ -5220,10 +5220,6 @@ async def create_ab_test(test: ABTestCreate):
     return ab_test
 # Otros endpoints y configuraciones...
 
-@apirouter.post("/agent/chat")
-async def agentexecutecommand(request: AgentExecuteRequest):
-    # ...código del bloque proporcionado...
-
 # Más endpoints...
 
 app.include_router(apirouter)
