@@ -61,6 +61,50 @@ class ToolRegistry:
         self._register_api('apify', ['APIFY_TOKEN'], 'Scraping avanzado con Apify')
         self._register_api('fal', ['FAL_KEY'], 'Modelos de imagen y vídeo en Fal.ai')
         self._register_api('serpapi', ['SERPAPI_API_KEY'], 'Resultados de búsqueda estructurados con SerpApi')
+        # Fragmento para registro de capacidades
+  def get_capabilities_summary(self):
+    if not self.capabilities:
+        return "Sistema básico sin herramientas externas configuradas."
+       summary = "HERRAMIENTAS Y CAPACIDADES DISPONIBLES:\n"
+    for cap in self.capabilities:
+        summary += f"- {cap['name'].upper()}: {cap['description']}\n"
+       return summary
+
+  # Plantilla/método robusto para procesamiento de comandos con feedback ampliado
+ async def procesar_comando(self, command: str, userid: str, conversation_history: List[Dict] = None, archivos: List[Dict]=None) -> Dict[str, Any]:
+    try:
+        if conversation_history is None:
+            conversation_history = await self.cargar_memoria(userid)
+        messages = [{"role": "system", "content": self.generatedynamicprompt()}]
+        for msg in conversation_history[-10:]:
+            messages.append({"role": "user", "content": msg.get("command", "")})
+            messages.append({"role": "assistant", "content": msg.get("response", "")})
+        messages.append({"role": "user", "content": command})
+
+        intencion = await self.analizar_intencion(command)
+        airesponse = await self.llamar_ia_inteligente(messages)
+        accionesejecutadas = await self.ejecutar_herramientas_automaticas(command, airesponse, intencion, userid)
+
+        # Plantilla enriquecida para respuesta
+        if accionesejecutadas:
+            airesponse = await self.enriquecer_respuesta(airesponse, accionesejecutadas)
+
+        await self.guardar_memoria(userid, command, airesponse, accionesejecutadas)
+        logger.info(f"Comando procesado: {len(airesponse)} caracteres, {len(accionesejecutadas)} acciones")
+
+        return {
+            "success": True,
+            "response": airesponse,
+            "acciones": accionesejecutadas,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error: {str(e)}", exc_info=True)
+        return {
+            "success": False,
+            "response": f"Error técnico: {str(e)}. Reintentando con método alternativo...",
+            "acciones": []
+        }
 
         # E-commerce (detecta variantes)
         woo_url = get_env_var('WOOCOMMERCE_URL', 'WC_API_URL', 'WORDPRESS_URL')
