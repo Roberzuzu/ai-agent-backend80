@@ -64,16 +64,7 @@ db = client[os.environ['DB_NAME']]
 # Inicializar Cerebro AI Agent
 ADMIN_TELEGRAM_ID = os.environ.get('ADMIN_TELEGRAM_ID', '7202793910')
 agente = CerebroUncensored(db, ADMIN_TELEGRAM_ID)
-import httpx
 
-class CerebroUncensored:
-    def __init__(self, db, admin_id):
-        ...
-    async def procesarcomando(self, command, userid):
-        ...
-    async def crear_producto_inteligente(self, command: str) -> dict:
-        ...
-    
 # =========================
 # SECURITY SYSTEMS
 # =========================
@@ -3026,7 +3017,7 @@ async def get_webhook_logs(status: Optional[str] = None, limit: int = 50):
             log['processed_at'] = datetime.fromisoformat(log['processed_at'])
         if isinstance(log.get('updated_at'), str):
             log['updated_at'] = datetime.fromisoformat(log['updated_at'])
- 
+    
     return logs
 
 @api_router.post("/webhooks/{event_id}/retry")
@@ -5218,11 +5209,6 @@ async def create_ab_test(test: ABTestCreate):
     
     await db.ab_tests.insert_one(doc)
     return ab_test
-# Otros endpoints y configuraciones...
-
-# Más endpoints...
-
-app.include_router(api-router)
 
 @api_router.get("/ab-tests")
 async def get_ab_tests(status: Optional[str] = None):
