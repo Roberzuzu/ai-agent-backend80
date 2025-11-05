@@ -123,34 +123,6 @@ app = FastAPI(title="Social Media Monetization Agent")
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
-from fastapi import APIRouter
-from pydantic import BaseModel
-from typing import Optional, Dict, Any
-
-api_router = APIRouter(prefix="/api")
-
-# Modelo de entrada para el endpoint
-class ChatRequest(BaseModel):
-    message: str
-    session_id: Optional[str] = None
-    mode: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
-
-# Endpoint principal de chat (ajusta la lógica según tus necesidades)
-@api_router.post("/chat")
-async def chat_endpoint(request: ChatRequest):
-    # Lógica de procesamiento (puedes conectarlo a tu core, agentes, etc.)
-    # Ejemplo mínimo funcional:
-    texto = request.message
-    session = request.session_id or "anon"
-    # Aquí puedes poner la llamada a tu agente principal, workflow, etc.
-    # Ejemplo básico de respuesta:
-    resp = f"Hola {session}, has preguntado: {texto}"
-    return {
-        "response": resp,
-        "session_id": session
-    }
-
 
 # Initialize social media publisher
 social_publisher = SocialMediaPublisher()
@@ -7565,6 +7537,21 @@ async def delete_agent_memory(user_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+class ChatRequest(BaseModel):
+    message: str
+    session_id: Optional[str] = None
+    mode: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
+
+@api_router.post("/chat")
+async def chat_endpoint(request: ChatRequest):
+    texto = request.message
+    session = request.session_id or "anon"
+    resp = f"Hola {session}, has preguntado: {texto}"
+    return {
+        "response": resp,
+        "session_id": session
+    }
 
 
 @api_router.get("/download/wordpress-plugin")
