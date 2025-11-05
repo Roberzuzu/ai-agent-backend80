@@ -1123,21 +1123,30 @@ async def chat_endpoint(request: ChatRequest):
                 user_id=session
             )
             return {
-                "response": str(resultado),
-                "session_id": session
-            }
+                    "success": True,
+                    "response": str(resultado),
+                    "acciones": [],
+                    "timestamp": datetime.now().isoformat(),
+                    "session_id": session
+                }
         else:
             # Fallback response if agent not available
             return {
-                "response": f"Mensaje recibido: {texto}",
-                "session_id": session
-            }
+                    "success": False,
+                    "response": f"Mensaje recibido: {texto}",
+                    "acciones": [],
+                    "timestamp": datetime.now().isoformat(),
+                    "session_id": session
+                }
     except Exception as e:
         logger.error(f"Error in chat endpoint: {str(e)}")
         return {
-            "response": "Error procesando mensaje. Intenta de nuevo.",
-            "session_id": request.session_id or "anon"
-        }
+                "success": False,
+                "response": "Error procesando mensaje. Intenta de nuevo.",
+                "acciones": [],
+                "timestamp": datetime.now().isoformat(),
+                "session_id": request.session_id or "anon"
+            }
 
 # =========================
 # ROUTES - Authentication
