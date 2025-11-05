@@ -1098,6 +1098,47 @@ def require_role(required_roles: List[str]):
         return current_user
     return role_checker
 
+
+# =========================
+# TELEGRAM BOT ENDPOINT
+# =========================
+
+class ChatRequest(BaseModel):
+    message: str
+    session_id: Optional[str] = None
+    mode: Optional[str] = None
+    metadata: Optional[Dict[str, Any]] = None
+
+@api_router.post("/chat")
+async def chat_endpoint(request: ChatRequest):
+    """Endpoint for Telegram bot communication"""
+    try:
+        texto = request.message
+        session = request.session_id or "anon"
+        
+        # Process with AI agent if available
+        if agente:
+            resultado = await agente.procesar_comando(
+                command=texto,
+                user_id=session
+            )
+            return {
+                "response": str(resultado),
+                "session_id": session
+            }
+        else:
+            # Fallback response if agent not available
+            return {
+                "response": f"Mensaje recibido: {texto}",
+                "session_id": session
+            }
+    except Exception as e:
+        logger.error(f"Error in chat endpoint: {str(e)}")
+        return {
+            "response": "Error procesando mensaje. Intenta de nuevo.",
+            "session_id": request.session_id or "anon"
+        }
+
 # =========================
 # ROUTES - Authentication
 # =========================
