@@ -1,4 +1,4 @@
-""""Main entry point for unified backend + Telegram bot service
+"""Main entry point for unified backend + Telegram bot service
 
 Runs both FastAPI backend and Telegram bot simultaneously
 """
@@ -44,7 +44,7 @@ async def run_telegram_bot():
     telegram_token = os.environ.get("TELEGRAM_TOKEN")
     
     if not telegram_token:
-        logger.warning("⚠️  TELEGRAM_TOKEN not configured. Skipping Telegram bot.")
+        logger.warning("⚠️ TELEGRAM_TOKEN not configured. Skipping Telegram bot.")
         # Keep running to avoid exiting
         while True:
             await asyncio.sleep(3600)
@@ -69,11 +69,12 @@ async def main():
     
     if run_telegram:
         logger.info("📡 Mode: FastAPI + Telegram Bot")
-        # Run both services concurrently
-        await asyncio.gather(
-            run_fastapi_server(),
-            run_telegram_bot()
-        )
+        # Create tasks for both services to run concurrently
+        fastapi_task = asyncio.create_task(run_fastapi_server())
+        telegram_task = asyncio.create_task(run_telegram_bot())
+        
+        # Wait for both tasks (they should run forever)
+        await asyncio.gather(fastapi_task, telegram_task)
     else:
         logger.info("📡 Mode: FastAPI Only (no TELEGRAM_TOKEN)")
         # Run only FastAPI
