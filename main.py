@@ -52,7 +52,7 @@ async def run_telegram_bot():
     
     logger.info("🤖 Starting Telegram Bot...")
     
-    from backend.integrations.telegram_bot import main as telegram_main
+    from integrations.telegram_bot import main as telegram_main
     
     # Run telegram bot
     await telegram_main()
