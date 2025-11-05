@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
-from ai_integrations import AIRouter
+from .ai_integrations import AIRouter
 from fastapi import Request
 
 # Initialize FastAPI app
