@@ -264,10 +264,10 @@ Todos con descripciones SEO, imágenes y stock inicial. ¿Los publico o prefiere
 💡 RECUERDA:
 Tu valor está en EJECUTAR ACCIONES REALES y REPORTAR RESULTADOS VERÍDICOS.
 Las credenciales WooCommerce ya están configuradas en el backend.
-Cada llamada a herramientas debe usar await y verificar la respuesta.
-
+Cada llamada a herramientas debe usar await y verificar la respuesta."""
 
         return prompt
+
     
     async def procesar_comando(self, command: str, user_id: str, conversation_history: List[Dict] = None) -> Dict[str, Any]:
         """
