@@ -1,3 +1,4 @@
+42
 """Main entry point for unified backend + Telegram bot service
 
 Runs both FastAPI backend and Telegram bot simultaneously using threading
@@ -15,6 +16,7 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO
 )
+57
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +57,12 @@ def run_fastapi():
     
     logger.info("🤖 Starting Telegram Bot...")
     
-    from integrations.telegram_bot import main as telegram_main
+    from integrations.telegram_bot import main as telegram_mai
+    
+    # Create a new event loop for this thread
+    import asyncio
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)n
     telegram_main()    
 
 
