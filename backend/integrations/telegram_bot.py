@@ -143,7 +143,7 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
     logger.error(f"Update error: {context.error}")
 
 # ===== WEBHOOK STARTUP FOR RENDER / LOCAL POLLING =====
-def main():
+async def main():
     application = Application.builder().token(TELEGRAM_TOKEN).build()
     
     application.add_handler(CommandHandler("start", start))
@@ -163,6 +163,3 @@ def main():
     else:
         logger.info("Starting in LOCAL POLLING mode")
         application.run_polling()
-
-if __name__ == "__main__":
-    main()
