@@ -39,7 +39,8 @@ def run_fastapi():
     server.run()
 
 
-def run_telegram_bot():
+59
+():
     """Run Telegram bot"""
     # Only start Telegram bot if TELEGRAM_TOKEN is configured
     telegram_token = os.environ.get("TELEGRAM_TOKEN")
@@ -55,10 +56,7 @@ def run_telegram_bot():
     logger.info("🤖 Starting Telegram Bot...")
     
     from integrations.telegram_bot import main as telegram_main
-    
-    # Run telegram bot (it handles its own event loop with run_polling)
-    import asyncio
-    asyncio.run(telegram_main())
+    telegram_main()    
 
 
 if __name__ == "__main__":
