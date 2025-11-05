@@ -1124,9 +1124,9 @@ async def chat_endpoint(request: ChatRequest):
             )
             return {
                     "success": True,
-                    "response": str(resultado),
-                    "acciones": [],
-                    "timestamp": datetime.now().isoformat(),
+                    "response": resultado.get('response', str(resultado)),
+                "acciones": resultado.get('acciones', [])
+                ,                    "timestamp": datetime.now().isoformat(),
                     "session_id": session
                 }
         else:
@@ -1134,7 +1134,7 @@ async def chat_endpoint(request: ChatRequest):
             return {
                     "success": False,
                     "response": f"Mensaje recibido: {texto}",
-                    "acciones": [],
+                    "acciones": resultado.get('acciones', []),
                     "timestamp": datetime.now().isoformat(),
                     "session_id": session
                 }
