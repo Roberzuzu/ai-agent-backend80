@@ -151,15 +151,6 @@ async def main():
     application.add_handler(MessageHandler(filters.ALL, handle_message))
     application.add_error_handler(error_handler)
     
-    # Detect if environment is Render (webhook) or local (polling)
-    if "RENDER" in os.environ or os.environ.get("WEBHOOK_URL"):
-        logger.info("Starting in WEBHOOK mode for Render")
-        application.run_webhook(
-            listen="0.0.0.0",
-            port=PORT,
-            url_path=TELEGRAM_TOKEN.split(":")[0],  # Unique segment for Telegram webhook
-            webhook_url=f"{WEBHOOK_URL}/{TELEGRAM_TOKEN.split(':')[0]}"
-        )
-    else:
-        logger.info("Starting in LOCAL POLLING mode")
-        application.run_polling()
+    # Always use polling since we're integrated with FastAPI
+    logger.info("🤖 Starting Telegram Bot in POLLING mode")
+    application.run_polling()
