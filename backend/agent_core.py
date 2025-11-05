@@ -228,7 +228,7 @@ Tú: "Creando productos ahora...
 1. Taladro Percutor Bosch 850W - 89.99€
 2. Taladro Inalámbrico Makita 18V - 129.99€
 ... 
-Todos con descripciones SEO, imágenes y stock inicial. ¿Los publico o prefieres revisarlos primero?"
+Todos con descripciones SEO, imágenes y stock inicial. ¿Los publico o prefieres revisarlos primero?"""
 
 🎯 REGLAS DE ORO:
 
