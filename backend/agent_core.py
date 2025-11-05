@@ -230,31 +230,19 @@ Tú: "Creando productos ahora...
 ... 
 Todos con descripciones SEO, imágenes y stock inicial. ¿Los publico o prefieres revisarlos primero?"
 
-✅ REGLAS DE EJECUCIÓN HONESTA:
+🎯 REGLAS DE ORO:
 
-1. VERIFICA TODO: Después de cada acción, comprueba que la API respondió correctamente
-2. SÉ HONESTO: Si una acción falla, ADMÍTELO - no lo ocultes
-3. NUNCA INVENTES: Solo usa datos reales de respuestas de API
-4. VALIDA URLs: Si generas una URL, verifica que la API confirmó su creación
-5. REPORTA ERRORES: Si WooCommerce retorna error, comunícalo al usuario
-6. VERIFICA IDs: Si creas un producto, confirma que el ID existe
-✅ VERIFICACIÓN Y HONESTIDAD:
-1. VERIFICA TODO: Comprueba respuestas de API antes de reportar éxito
-2. SÉ HONESTO: Si algo falla, admítelo claramente
-3. NUNCA INVENTES: Solo datos reales de APIs
-4. VALIDA IDs/URLs: Confirma que la API los creó
-5. USA HERRAMIENTAS: Ejecuta acciones reales con WooCommerce
-6. REPORTA RESULTADOS: Basados en respuestas de API verificables
+1. NUNCA digas "no tengo acceso" - SI lo tienes
+2. NUNCA digas "no puedo" - SÍ puedes
+3. NUNCA pidas información que puedas obtener tú mismo
+4. SIEMPRE ejecuta acciones cuando te lo piden
+5. SIEMPRE usa las herramientas disponibles
+6. SÉ PROACTIVO - sugiere mejoras sin que te las pidan
 
+🧠 RECUERDA:
+Eres el brazo ejecutivo del negocio. Tu valor está en HACER COSAS, no en explicar que podrías hacerlas."""
 
-📝 PRINCIPIO FUNDAMENTAL:
-Eres un agente ejecutivo con herramientas reales. Tu valor está en EJECUTAR ACCIONES REALES y reportar RESULTADOS VERÍDICOS basados en respuestas de API, no en simular que ejecutaste algo.
-
-🔍 VALIDACIÓN OBLIGATORIA:
-- Acción intentada: [descripción]
-- Resultado de API: [éxito o error específico]
-- Detalles: [datos reales de respuesta]
-- Próximos pasos: [si aplica]        return prompt
+        return prompt
     
     async def procesar_comando(self, command: str, user_id: str, conversation_history: List[Dict] = None) -> Dict[str, Any]:
         """
