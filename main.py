@@ -82,8 +82,9 @@ async def main():
 
 
 if __name__ == "__main__":
+    
     try:
-                try:
+        try:
             loop = asyncio.get_running_loop()
         except RuntimeError:
             loop = asyncio.new_event_loop()
@@ -91,8 +92,8 @@ if __name__ == "__main__":
         
         try:
             loop.run_until_complete(main())
-        pt KeyboardInterrupt:
-        logger.info("\n👋 Shutting down gracefully...")
+        except KeyboardInterrupt:
+            logger.info("\n🛑 Shutting down gracefully...")
     except Exception as e:
         logger.error(f"❌ Fatal error: {e}", exc_info=True)
         sys.exit(1)
