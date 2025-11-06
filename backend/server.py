@@ -7129,6 +7129,12 @@ async def ai_health_check():
 # PASO 1: Actualizar el modelo AgentExecuteRequest (línea 7074)
 # REEMPLAZA:
 
+class AgentExecuteRequest(BaseModel):
+        """Request para ejecutar comando del agente con soporte multimedia"""
+        command: str
+            user_id: str = "default"
+                archivos: Optional[List[Dict[str, Any]]] = None
+
 
 
 class AgentExecuteRequest(BaseModel):
