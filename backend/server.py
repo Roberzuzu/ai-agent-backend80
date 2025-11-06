@@ -121,8 +121,8 @@ logger = logging.getLogger(__name__)
 app = FastAPI(title="Social Media Monetization Agent")
 
 # Create a router with the /api prefix
-api_router = APIRouter(prefix="/api"
-                      app.include_router(api_router))
+api_router = APIRouter(prefix="/api")
+                      app.include_router(api_router)
 
 # Initialize social media publisher
 social_publisher = SocialMediaPublisher()
