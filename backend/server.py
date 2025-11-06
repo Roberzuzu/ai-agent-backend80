@@ -7127,9 +7127,6 @@ class AgentExecuteRequest(BaseModel):
     user_id: str = "default"
     archivos: Optional[List[Dict[str, Any]]] = None
 
-@api_router.post("/agent/execute")
-@api_router.post("/agent/execute")
-@api_router.post("/agent/execute")
 # ==========================================
 # FIX PARA server.py - SOPORTE MULTIMEDIA
 # ==========================================
