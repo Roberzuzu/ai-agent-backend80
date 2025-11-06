@@ -7153,7 +7153,6 @@ class AgentExecuteRequest(BaseModel):
 # REEMPLAZA TODO desde línea 7083 hasta 7151 POR:
 
 @api_router.post("/agent/execute")
-@api_router.post("/agent/chat")
 async def agent_execute_command(request: AgentExecuteRequest):
     """
     Endpoint principal del agente con IA completa y soporte multimedia
