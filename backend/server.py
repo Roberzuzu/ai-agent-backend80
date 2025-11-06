@@ -7122,12 +7122,6 @@ async def ai_health_check():
 # TEMPORARY AGENT ENDPOINTS - WORDPRESS PLUGIN SUPPORT
 # =====================================================
 
-class AgentExecuteRequest(BaseModel):
-    """Request para ejecutar comando del agente con soporte multimedia"""
-    command: str
-    user_id: str = "default"
-    archivos: Optional[List[Dict[str, Any]]] = None
-
 # ==========================================
 # FIX PARA server.py - SOPORTE MULTIMEDIA
 # ==========================================
@@ -7135,12 +7129,7 @@ class AgentExecuteRequest(BaseModel):
 # PASO 1: Actualizar el modelo AgentExecuteRequest (línea 7074)
 # REEMPLAZA:
 
-class AgentExecuteRequest(BaseModel):
-    """Request para ejecutar comando del agente"""
-    command: str
-    user_id: str = "default"
 
-# POR:
 
 class AgentExecuteRequest(BaseModel):
     """Request para ejecutar comando del agente con soporte multimedia"""
