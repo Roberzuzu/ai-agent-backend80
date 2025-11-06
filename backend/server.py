@@ -7137,13 +7137,6 @@ class AgentExecuteRequest(BaseModel):
 
 
 
-class AgentExecuteRequest(BaseModel):
-    """Request para ejecutar comando del agente con soporte multimedia"""
-    command: str
-    user_id: str = "default"
-    archivos: Optional[List[Dict[str, Any]]] = None
-
-
 # ==========================================
 # PASO 2: Actualizar función agent_execute_command (línea 7083)
 # REEMPLAZA TODO desde línea 7083 hasta 7151 POR:
