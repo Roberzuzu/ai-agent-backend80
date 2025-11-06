@@ -122,7 +122,7 @@ app = FastAPI(title="Social Media Monetization Agent")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
-                      app.include_router(api_router)
+#                       app.include_router(api_router)
 
 # Initialize social media publisher
 social_publisher = SocialMediaPublisher()
@@ -7825,3 +7825,6 @@ async def test_ai_detailed():
         results['openai'] = {"success": False, "error": "No API key"}
 
     return results
+
+# Register the API router with all endpoints defined above
+app.include_router(api_router)
