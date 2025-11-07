@@ -1,7 +1,7 @@
 {
-  "name": "venice-platform-backend",
+    "name": "las-herramientas-de-cerebro",
   "version": "2.0.0",
-  "description": "Backend orquestador Venice - Plataforma de AI con múltiples herramientas integradas",
+  "description": "Las Herramientas de Cerebro - Plataforma de orquestación AI con múltiples herramientas integradas",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -13,6 +13,7 @@
     "ai",
     "orchestrator",
     "venice",
+    "cerebro",
     "openrouter",
     "chatbot",
     "automation"
