@@ -52,7 +52,7 @@ class AIWCA_Agent_Executor {
         
         return array(
             'success' => true,
-            'message' => isset($response['respuesta_usuario']) ? $response['respuesta_usuario'] : 'Comando ejecutado',
+            'message' => isset($response['response']) ? $response['response'] : 'Comando ejecutado',
             'plan' => isset($response['plan']) ? $response['plan'] : '',
             'results' => isset($response['results']) ? $response['results'] : array()
         );
@@ -76,7 +76,7 @@ class AIWCA_Agent_Executor {
         $prompt .= "CONTEXTO:\n";
         $prompt .= $context . "\n\n";
         $prompt .= "COMANDO: {$command}\n\n";
-        $prompt .= "Responde en JSON con: {\"plan\": \"\", \"respuesta_usuario\": \"\", \"acciones\": [{\"herramienta\": \"\", \"parametros\": {}}]}";
+        $prompt .= "Responde en JSON con: {\"plan\": \"\", \"response\": \"\", \"acciones\": [{\"herramienta\": \"\", \"parametros\": {}}]}";
         
         return $prompt;
     }
@@ -95,7 +95,7 @@ class AIWCA_Agent_Executor {
         
         return array(
             'plan' => 'Ejecutar comando',
-            'respuesta_usuario' => $content,
+            'response' => $content,
             'acciones' => array()
         );
     }
@@ -251,7 +251,7 @@ class AIWCA_Agent_Executor {
     private function update_memory($user_id, $command, $response) {
         global $wpdb;
         
-        $response_text = isset($response['respuesta_usuario']) ? $response['respuesta_usuario'] : json_encode($response);
+        $response_text = isset($response['response']) ? $response['response'] : json_encode($response);
         $plan = isset($response['plan']) ? $response['plan'] : '';
         
         $wpdb->update(
