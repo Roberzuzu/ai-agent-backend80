@@ -1,0 +1,41 @@
+# Render Blueprint para Las Herramientas de Cerebro
+# Configuración para despliegue automático en Render.com
+
+services:
+  - type: web
+    name: las-herramientas-de-cerebro
+    env: node
+    region: frankfurt  # O la región más cercana a tu ubicación
+    plan: free  # Cambia a 'starter' o superior según necesites
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8080
+      # Las siguientes variables deben configurarse en Render Dashboard
+      - key: API_AUTH_TOKEN
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: SERVICE_PERPLEXITY_KEY
+        sync: false
+      - key: SERVICE_MONGODB_URI
+        sync: false
+      - key: SERVICE_N8N_URL
+        sync: false
+      - key: SERVICE_N8N_API_KEY
+        sync: false
+      - key: SERVICE_WOO_URL
+        sync: false
+      - key: SERVICE_WOO_CONSUMER_KEY
+        sync: false
+      - key: SERVICE_WOO_CONSUMER_SECRET
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+    healthCheckPath: /internal/health
+    autoDeploy: true
