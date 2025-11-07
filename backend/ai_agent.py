@@ -67,3 +67,10 @@ async def chat(request: ChatRequest):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+    # Endpoint para WordPress plugin compatibility
+@app.post('/api/agent/execute', response_model=ChatResponse)
+async def agent_execute(request: ChatRequest):
+    """Endpoint compatible con el plugin de WordPress"""
+    # Reutilizar la lógica del endpoint /chat
+    return await chat(request)
