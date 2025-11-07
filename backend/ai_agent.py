@@ -70,7 +70,24 @@ async def chat(request: ChatRequest):
 
     # Endpoint para WordPress plugin compatibility
 @app.post('/api/agent/execute', response_model=ChatResponse)
-async def agent_execute(request: ChatRequest):
-    """Endpoint compatible con el plugin de WordPress"""
-    # Reutilizar la lógica del endpoint /chat
-    return await chat(request)
+async def agent_execute(request: Request):
+    """Endpoint compatible con el plugin de WordPress que acepta command/user_id"""
+    try:
+        # Obtener el body de la petición
+        body = await request.json()
+        
+        # Soportar ambos formatos: {message, session_id} y {command, user_id}
+        message_text = body.get('message') or body.get('command', '')
+        session_id = body.get('session_id') or body.get('user_id', 'default_session')
+        
+        if not message_text:
+            raise HTTPException(status_code=400, detail="Missing message or command")
+        
+        # Crear el objeto ChatRequest con el formato correcto
+        chat_request = ChatRequest(message=message_text, session_id=session_id)
+        
+        # Llamar a la función chat existente
+        return await chat(chat_request)
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
