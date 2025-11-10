@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-"""
-Telegram Bot - AI Product Processor
-Escucha comandos de Telegram y procesa productos automáticamente
-"""
+
 
 import os
 import sys
